@@ -18,12 +18,14 @@ const MAX_SPEED = 20.0;
 const COLOURS  = ['orange', 'blue', 'green', 'purple', 'yellow'];
 const PATTERNS = ['solid', 'striped', 'spotted'];
 
-// Rare colours (1% each on Add Fish)
+// Rare colours (1% each)
 const RARE_COLOURS = ['red', 'pink', 'silver'];
+// Super-rare colours (0.5% each)
+const SUPER_COLOURS = ['crimson', 'cyan'];
 
 /** 
  * Generate an array of FISH_COUNT fish with id, x, y, angle, colour, pattern.
- * Rare colours do NOT appear here—they only come in via handleAddFish.
+ * Rare and super-rare only come via handleAddFish.
  */
 function createInitialFish() {
   const w = window.innerWidth;
@@ -50,24 +52,30 @@ export default function App() {
   const [isJerking, setIsJerking] = useState(false);
   // 4) Active catch animations
   const [catchAnimations, setCatchAnimations] = useState([]);
-  // 5) Caught‐fish records (array of “colour pattern” strings)
+  // 5) Caught-fish records (array of “colour pattern” strings)
   const [caughtRecords, setCaughtRecords] = useState([]);
   // 6) Show/hide “Fish Caught” popup
   const [showCaughtPopup, setShowCaughtPopup] = useState(false);
   // 7) Detect mobile (touch) environment
   const [isMobile, setIsMobile] = useState(false);
+  // 8) Show welcome popup only on first visit
+  const [showWelcome, setShowWelcome] = useState(false);
 
   // Refs: for mouse repulsion and next unique ID
   const cursorRef = useRef({ x: -1000, y: -1000 });
   const nextId    = useRef(FISH_COUNT);
 
-  // On mount: populate initial fish, detect touch support
+  // On mount: populate initial fish, detect touch support, check welcome flag
   useEffect(() => {
     setFishArray(createInitialFish());
     setIsMobile('ontouchstart' in window);
+    const seen = localStorage.getItem('seenWelcome');
+    if (!seen) {
+      setShowWelcome(true);
+    }
   }, []);
 
-  // Movement loop (re‐runs on speed change; does NOT re‐init fish)
+  // Movement loop (re-runs on speed change; does NOT re-init fish)
   useEffect(() => {
     const interval = setInterval(() => {
       setFishArray((prevFish) => {
@@ -130,8 +138,9 @@ export default function App() {
 
   // Hook “jerk” effect on mousedown / touch
   const handlePointerDown = (e) => {
-    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+    const clientX = e.clientX ?? e.touches?.[0]?.clientX;
+    const clientY = e.clientY ?? e.touches?.[0]?.clientY;
+    if (clientX == null || clientY == null) return;
     const pos = { x: clientX, y: clientY };
     cursorRef.current = pos;
     setCursorPos(pos);
@@ -143,7 +152,7 @@ export default function App() {
   const handleFishClick = (fishId, e) => {
     e.stopPropagation();
     const fishObj = fishArray.find((f) => f.id === fishId);
-    const { colour, pattern } = fishObj || {};
+    const { colour, pattern } = fishObj ?? {};
     const caughtType = `${colour} ${pattern}`;
     const { x: curX, y: curY } = cursorRef.current;
 
@@ -169,7 +178,7 @@ export default function App() {
 
   const isCatching = catchAnimations.length > 0;
 
-  // Reset: clear animations, re‐populate fish, reset speed, clear caughtRecords
+  // Reset: clear animations, re-populate fish, reset speed, clear caughtRecords
   const handleReset = () => {
     setCatchAnimations([]);
     setFishArray(createInitialFish());
@@ -179,10 +188,12 @@ export default function App() {
   };
 
   // Add Fish:
-  //  • 1% chance → red (rare)
-  //  • 1% chance → pink (rare)
-  //  • 1% chance → silver (rare)
-  //  • Else choose random from common COLOURS × PATTERNS
+  //  • 0.5% → crimson (super-rare)
+  //  • 0.5% → cyan (super-rare)
+  //  • 1%   → red (rare)
+  //  • 1%   → pink (rare)
+  //  • 1%   → silver (rare)
+  //  • Else random common COLOURS × PATTERNS
   const handleAddFish = () => {
     const w = window.innerWidth;
     const h = window.innerHeight;
@@ -192,16 +203,28 @@ export default function App() {
 
     let colour, pattern;
     const roll = Math.random();
-    if (roll < 0.01) {
-      colour = 'red';
+    if (roll < 0.005) {
+      // 0.5% for super-rare crimson
+      colour = 'crimson';
+      pattern = 'solid';
+    } else if (roll < 0.01) {
+      // next 0.5% for super-rare cyan
+      colour = 'cyan';
       pattern = 'solid';
     } else if (roll < 0.02) {
-      colour = 'pink';
+      // 1% for rare red
+      colour = 'red';
       pattern = 'solid';
     } else if (roll < 0.03) {
+      // 1% for rare pink
+      colour = 'pink';
+      pattern = 'solid';
+    } else if (roll < 0.04) {
+      // 1% for rare silver
       colour = 'silver';
       pattern = 'solid';
     } else {
+      // common
       colour  = COLOURS[Math.floor(Math.random() * COLOURS.length)];
       pattern = PATTERNS[Math.floor(Math.random() * PATTERNS.length)];
     }
@@ -226,6 +249,12 @@ export default function App() {
     setShowCaughtPopup((prev) => !prev);
   };
 
+  // Close welcome and mark as seen
+  const closeWelcome = () => {
+    localStorage.setItem('seenWelcome', 'true');
+    setShowWelcome(false);
+  };
+
   // Build a tally: { "red solid": 2, "blue striped": 3, … }
   const tally = caughtRecords.reduce((acc, typeStr) => {
     acc[typeStr] = (acc[typeStr] || 0) + 1;
@@ -233,26 +262,51 @@ export default function App() {
   }, {});
 
   return (
-    <div className="container" onMouseDown={handlePointerDown} onTouchStart={handlePointerDown}>
+    <div
+      className={`container ${!showWelcome ? 'no-cursor' : ''}`}
+      onMouseDown={handlePointerDown}
+      onTouchStart={handlePointerDown}
+    >
+      {/* Welcome popup on first visit */}
+      {showWelcome && (
+        <div className="welcome-overlay">
+          <div className="welcome-content">
+            <h2>Welcome to My Fishing App</h2>
+            <p>
+              See what fish you can catch. There are <strong>rare</strong> and{' '}
+              <strong>super rare</strong> fish to collect. You can speed up or slow
+              down&nbsp;the fish depending on how good you think you are. Good luck
+              and happy fishing!
+            </p>
+            <button className="welcome-close" onClick={closeWelcome}>
+              Got it!
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* 1) Bubbles */}
       <Bubbles />
 
-      {/* 2) Live fish */}
-      {fishArray.map((fish) => (
-        <Fish
-          key={fish.id}
-          id={fish.id}
-          x={fish.x}
-          y={fish.y}
-          size={FISH_SIZE}
-          colour={fish.colour}
-          pattern={fish.pattern}
-          onClick={(e) => handleFishClick(fish.id, e)}
-        />
-      ))}
+      {/* 2) Live fish (size 1.5× for super-rares) */}
+      {fishArray.map((fish) => {
+        const isSuper = SUPER_COLOURS.includes(fish.colour);
+        return (
+          <Fish
+            key={fish.id}
+            id={fish.id}
+            x={fish.x}
+            y={fish.y}
+            size={isSuper ? FISH_SIZE * 1.5 : FISH_SIZE}
+            colour={fish.colour}
+            pattern={fish.pattern}
+            onClick={(e) => handleFishClick(fish.id, e)}
+          />
+        );
+      })}
 
-      {/* 3) Cursor hook (desktop only, hidden if catching or on mobile) */}
-      {!isCatching && !isMobile && (
+      {/* 3) Cursor hook (desktop only, hidden if catching or on mobile or welcome) */}
+      {!isCatching && !isMobile && !showWelcome && (
         <Hook x={cursorPos.x} y={cursorPos.y} jerking={isJerking} />
       )}
 
@@ -265,7 +319,7 @@ export default function App() {
           fishSize={FISH_SIZE}
           onAnimationEnd={() => handleCatchAnimationEnd(anim.id)}
         >
-          {/* During catch, always show hook + dead fish (regardless of mobile) */}
+          {/* During catch, always show hook + dead fish */}
           <Hook x={anim.startX} y={anim.startY} jerking={false} />
           <Fish
             x={0}
@@ -313,7 +367,40 @@ export default function App() {
                 <p>No fish caught yet.</p>
               ) : (
                 <div>
-                  {/* a) Render all rare fish first */}
+                  {/* a) Render super-rare fish first */}
+                  <ul>
+                    {Object.entries(tally)
+                      .filter(([typeStr]) => {
+                        const [colour] = typeStr.split(' ');
+                        return SUPER_COLOURS.includes(colour);
+                      })
+                      .map(([typeStr, count]) => {
+                        const [colour, pattern] = typeStr.split(' ');
+                        const capitalized = typeStr
+                          .split(' ')
+                          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                          .join(' ');
+                        return (
+                          <li key={typeStr} className="caught-item">
+                            <div className="mini-fish-container">
+                              <Fish
+                                x={0}
+                                y={0}
+                                size={50}
+                                colour={colour}
+                                pattern={pattern}
+                                isDead={false}
+                              />
+                            </div>
+                            <span className="super-rare-label">
+                              <strong>Super Rare {capitalized}:</strong> {count}
+                            </span>
+                          </li>
+                        );
+                      })}
+                  </ul>
+
+                  {/* b) Render rare fish next */}
                   <ul>
                     {Object.entries(tally)
                       .filter(([typeStr]) => {
@@ -346,13 +433,15 @@ export default function App() {
                       })}
                   </ul>
 
-                  {/* b) Now group and render common fish by colour */}
+                  {/* c) Now group and render common fish by colour */}
                   {(() => {
-                    // Filter common entries and group by colour
                     const commonEntries = Object.entries(tally).filter(
                       ([typeStr]) => {
                         const [colour] = typeStr.split(' ');
-                        return !RARE_COLOURS.includes(colour);
+                        return (
+                          !RARE_COLOURS.includes(colour) &&
+                          !SUPER_COLOURS.includes(colour)
+                        );
                       }
                     );
                     const commonByColour = {};
