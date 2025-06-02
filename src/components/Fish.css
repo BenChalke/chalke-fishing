@@ -11,6 +11,7 @@
 .fish svg {
   width: 100%;
   height: 100%;
+  cursor: none;
 }
 
 /* 2) Tail‐wiggle: target the .fish-tail polygon inside the SVG */

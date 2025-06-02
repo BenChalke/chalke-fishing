@@ -1,5 +1,9 @@
 /* src/App.css */
 
+html, body, .container {
+  cursor: none !important;
+}
+
 /* Container: full‐screen underwater gradient */
 .container {
   position: relative;

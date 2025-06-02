@@ -8,12 +8,12 @@ import './Fish.css';
  *  - x: left (px)
  *  - y: top (px)
  *  - size: width in px (height = size × 0.5)
- *  - onClick: callback when fish is clicked
- *  - isDead: boolean; if true, draw a red “✕” on the eye
- *  - colour: one of 'orange','blue','green','purple','yellow'
+ *  - onClick: callback when fish is clicked (optional)
+ *  - isDead: boolean; if true, overlay a red “✕” on the eye
+ *  - colour: one of 'orange','blue','green','purple','yellow','red','pink','silver'
  *  - pattern: one of 'solid','striped','spotted'
  */
-export default function Fish({ x, y, size, onClick, isDead, colour, pattern }) {
+export default function Fish({ x, y, size, onClick, isDead = false, colour, pattern }) {
   const fishWidth = size;
   const fishHeight = size * 0.5;
 
@@ -23,7 +23,7 @@ export default function Fish({ x, y, size, onClick, isDead, colour, pattern }) {
     top: `${y}px`,
     width: `${fishWidth}px`,
     height: `${fishHeight}px`,
-    cursor: onClick ? 'pointer' : 'default',
+    cursor: 'none',
   };
 
   // Determine fill/stroke based on colour & isDead
@@ -39,6 +39,7 @@ export default function Fish({ x, y, size, onClick, isDead, colour, pattern }) {
       finStroke = isDead ? '#4D6190' : '#4A7FB3';
       eyeFill = isDead ? '#CCCCCC' : '#FFFFFF';
       break;
+
     case 'green':
       bodyFill = isDead ? '#667B6F' : '#3CB371';
       bodyStroke = isDead ? '#4D6053' : '#29875A';
@@ -48,6 +49,7 @@ export default function Fish({ x, y, size, onClick, isDead, colour, pattern }) {
       finStroke = isDead ? '#5F8067' : '#5EB700';
       eyeFill = isDead ? '#CCCCCC' : '#FFFFFF';
       break;
+
     case 'purple':
       bodyFill = isDead ? '#766D87' : '#8A2BE2';
       bodyStroke = isDead ? '#5A5870' : '#6529C7';
@@ -57,6 +59,7 @@ export default function Fish({ x, y, size, onClick, isDead, colour, pattern }) {
       finStroke = isDead ? '#7D7190' : '#8033C2';
       eyeFill = isDead ? '#CCCCCC' : '#FFFFFF';
       break;
+
     case 'yellow':
       bodyFill = isDead ? '#A69A56' : '#FFD700';
       bodyStroke = isDead ? '#7F763F' : '#E6B800';
@@ -66,8 +69,9 @@ export default function Fish({ x, y, size, onClick, isDead, colour, pattern }) {
       finStroke = isDead ? '#9C964A' : '#C7B047';
       eyeFill = isDead ? '#CCCCCC' : '#FFFFFF';
       break;
+
     case 'spotted':
-      // Teal for spotted
+      // Teal base
       bodyFill = isDead ? '#5B7A7A' : '#20B2AA';
       bodyStroke = isDead ? '#3F5555' : '#1F8F85';
       tailFill = isDead ? '#3F5555' : '#1F8F85';
@@ -76,6 +80,40 @@ export default function Fish({ x, y, size, onClick, isDead, colour, pattern }) {
       finStroke = isDead ? '#617A7A' : '#329990';
       eyeFill = isDead ? '#CCCCCC' : '#FFFFFF';
       break;
+
+    case 'red':
+      // Shiny red gradient if alive, darker if dead
+      bodyFill = isDead
+        ? '#8B0000'
+        : 'url(#red-gradient)'; // see <defs> below
+      bodyStroke = isDead ? '#5A0000' : '#FF0000';
+      tailFill = isDead ? '#5A0000' : '#FF2020';
+      tailStroke = isDead ? '#3C0000' : '#CC1010';
+      finFill = isDead ? '#A00000' : '#FF4040';
+      finStroke = isDead ? '#770000' : '#CC3030';
+      eyeFill = isDead ? '#CCCCCC' : '#FFFFFF';
+      break;
+
+    case 'pink':
+      bodyFill = isDead ? '#B07080' : '#FF69B4';
+      bodyStroke = isDead ? '#803050' : '#FF1493';
+      tailFill = isDead ? '#803050' : '#FF1493';
+      tailStroke = isDead ? '#502030' : '#C71585';
+      finFill = isDead ? '#D08098' : '#FFB6C1';
+      finStroke = isDead ? '#A06078' : '#FF82AB';
+      eyeFill = isDead ? '#CCCCCC' : '#FFFFFF';
+      break;
+
+    case 'silver':
+      bodyFill = isDead ? '#808080' : '#C0C0C0';
+      bodyStroke = isDead ? '#606060' : '#A9A9A9';
+      tailFill = isDead ? '#606060' : '#A9A9A9';
+      tailStroke = isDead ? '#404040' : '#808080';
+      finFill = isDead ? '#909090' : '#E0E0E0';
+      finStroke = isDead ? '#707070' : '#B0B0B0';
+      eyeFill = isDead ? '#CCCCCC' : '#FFFFFF';
+      break;
+
     default: // 'orange'
       bodyFill = isDead ? '#777777' : '#FFA500';
       bodyStroke = isDead ? '#555555' : '#FF8C00';
@@ -96,7 +134,18 @@ export default function Fish({ x, y, size, onClick, isDead, colour, pattern }) {
         width="100%"
         height="100%"
       >
-        {/* 1) Define clipPath for the body (used by stripes/spots) */}
+        {/* 1) Red gradient definition (only for live red) */}
+        {colour === 'red' && !isDead && (
+          <defs>
+            <linearGradient id="red-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%"   stopColor="#FF8080" />
+              <stop offset="50%"  stopColor="#FF0000" />
+              <stop offset="100%" stopColor="#CC0000" />
+            </linearGradient>
+          </defs>
+        )}
+
+        {/* 2) ClipPath for fish body (for stripes/spots) */}
         <defs>
           <clipPath id="clip-body">
             <path
@@ -111,7 +160,7 @@ export default function Fish({ x, y, size, onClick, isDead, colour, pattern }) {
           </clipPath>
         </defs>
 
-        {/* 2) Body */}
+        {/* 3) Fish body */}
         <path
           d="
             M20 50
@@ -125,7 +174,7 @@ export default function Fish({ x, y, size, onClick, isDead, colour, pattern }) {
           strokeWidth="4"
         />
 
-        {/* 3) If striped (and not dead), draw clipped vertical rectangles */}
+        {/* 4) Stripes (if striped & alive) */}
         {pattern === 'striped' && !isDead && (
           <g clipPath="url(#clip-body)">
             <rect x="40"  y="0" width="12" height="100" fill={bodyStroke} />
@@ -135,7 +184,7 @@ export default function Fish({ x, y, size, onClick, isDead, colour, pattern }) {
           </g>
         )}
 
-        {/* 4) If spotted (and not dead), draw clipped circles */}
+        {/* 5) Spots (if spotted & alive) */}
         {pattern === 'spotted' && !isDead && (
           <g clipPath="url(#clip-body)" fill={bodyStroke}>
             <circle cx="60" cy="30" r="8" />
@@ -146,7 +195,7 @@ export default function Fish({ x, y, size, onClick, isDead, colour, pattern }) {
           </g>
         )}
 
-        {/* 5) Tail */}
+        {/* 6) Tail */}
         <path
           d="
             M20 50
@@ -159,7 +208,7 @@ export default function Fish({ x, y, size, onClick, isDead, colour, pattern }) {
           strokeWidth="3"
         />
 
-        {/* 6) Top (dorsal) fin */}
+        {/* 7) Top (dorsal) fin */}
         <path
           d="
             M60 20
@@ -171,7 +220,7 @@ export default function Fish({ x, y, size, onClick, isDead, colour, pattern }) {
           strokeWidth="2"
         />
 
-        {/* 7) Bottom (pelvic) fin */}
+        {/* 8) Bottom (pelvic) fin */}
         <path
           d="
             M60 80
@@ -183,15 +232,24 @@ export default function Fish({ x, y, size, onClick, isDead, colour, pattern }) {
           strokeWidth="2"
         />
 
-        {/* 8) Eye */}
+        {/* 9) Eye */}
         <circle cx="140" cy="35" r="8" fill={eyeFill} />
         <circle cx="140" cy="35" r="4" fill={isDead ? '#444444' : '#000000'} />
 
-        {/* 9) Red “✕” if dead */}
+        {/* 10) Red “✕” for dead fish */}
         {isDead && (
           <g stroke="#FF0000" strokeWidth="3">
             <line x1="136" y1="31" x2="144" y2="39" />
             <line x1="144" y1="31" x2="136" y2="39" />
+          </g>
+        )}
+
+        {/* 11) Sparkles on live red fish */}
+        {colour === 'red' && !isDead && (
+          <g>
+            <circle cx="80"  cy="30" r="4" fill="#FFFFFF" opacity="0.8" />
+            <circle cx="120" cy="60" r="3" fill="#FFFFFF" opacity="0.6" />
+            <circle cx="100" cy="40" r="2" fill="#FFFFFF" opacity="0.7" />
           </g>
         )}
       </svg>

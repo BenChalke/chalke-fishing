@@ -1,37 +1,65 @@
 // src/components/Hook.js
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import './Hook.css';
 
-function Hook({ x, y, jerking }) {
-  const hookRef = useRef(null);
+/**
+ * Hook component: renders
+ *  1) a vertical line (“string”) from the top of the viewport down to the hook
+ *  2) the hook SVG itself, positioned at (x, y)
+ *
+ * Props:
+ *  - x: clientX coordinate (cursor)
+ *  - y: clientY coordinate (cursor)
+ *  - jerking: boolean  // if true, play a quick “jerk” animation on the hook
+ */
+export default function Hook({ x, y, jerking }) {
+  // Hook dimensions in px
+  const HOOK_WIDTH  = 64;
+  const HOOK_HEIGHT = 64;
 
-  useEffect(() => {
-    if (jerking && hookRef.current) {
-      hookRef.current.classList.add('jerk');
-      const timeout = setTimeout(() => {
-        if (hookRef.current) hookRef.current.classList.remove('jerk');
-      }, 300);
-      return () => clearTimeout(timeout);
-    }
-  }, [jerking]);
+  // Position the hook SVG so its tip is at (x, y)
+  const hookLeft = x - HOOK_WIDTH  / 2;
+  const hookTop  = y - HOOK_HEIGHT / 2;
 
-  // If x/y are way off (e.g. -1000), you could skip rendering, but since
-  // we control via App whether to render the Hook at all (via isCatching),
-  // we can simply always render it when called.
+  // Style for the vertical line (string)
+  const lineStyle = {
+    position: 'absolute',
+    left: `${x}px`,
+    top: `0px`,
+    width: '2px',
+    height: `${y}px`,
+    backgroundColor: '#333333',
+    zIndex: 150,             // above popup (100), below hook (200)
+    pointerEvents: 'none',
+  };
 
-  // Position the top of the hook at (y - 64) and center it at (x)
-  const hookTop = y - 32;
-  const lineHeight = hookTop > 0 ? hookTop : 0;
+  // Style for the hook itself
+  const hookStyle = {
+    position: 'absolute',
+    left: `${hookLeft}px`,
+    top: `${hookTop}px`,
+    width: `${HOOK_WIDTH}px`,
+    height: `${HOOK_HEIGHT}px`,
+    pointerEvents: 'none',
+    zIndex: 200,             // topmost
+    transform: jerking ? 'scale(1.2)' : 'scale(1)',
+    transition: jerking ? 'transform 0.2s ease' : 'transform 0.1s ease',
+  };
 
   return (
     <>
-      <div className="fishing-line" style={{ left: x + 'px', height: lineHeight + 'px' }} />
-      <div
-        className="hook-wrapper"
-        style={{ left: `${x - 32}px`, top: `${hookTop}px` }}
-        ref={hookRef}
-      >
-        <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" width="64" height="64">
+      {/* 1) Vertical fishing line */}
+      <div style={lineStyle} />
+
+      {/* 2) Hook SVG */}
+      <div className="hook-wrapper" style={hookStyle}>
+        <svg
+          viewBox="0 0 32 32"
+          xmlns="http://www.w3.org/2000/svg"
+          width="64"
+          height="64"
+        >
+          {/* The hook shape */}
           <path
             d="
               M16 0
@@ -46,12 +74,17 @@ function Hook({ x, y, jerking }) {
             strokeLinecap="round"
             strokeLinejoin="round"
           />
-          <path d="M12 24 L14 26" stroke="#333333" strokeWidth="2" strokeLinecap="round" />
+          {/* Small accent on the hook */}
+          <path
+            d="M12 24 L14 26"
+            stroke="#333333"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+          {/* Highlight ellipse */}
           <ellipse cx="20" cy="6" rx="3" ry="1.5" fill="#FFFFFF" opacity="0.5" />
         </svg>
       </div>
     </>
   );
 }
-
-export default Hook;

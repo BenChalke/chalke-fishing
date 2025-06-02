@@ -1,4 +1,3 @@
-// src/App.js
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import Fish from './components/Fish';
@@ -14,53 +13,57 @@ const REPULSE_DISTANCE = 100;
 const MIN_SPEED = 0.5;
 const MAX_SPEED = 20.0;
 
-// Colours and patterns
-const COLOURS   = ['orange', 'blue', 'green', 'purple', 'yellow'];
-const PATTERNS  = ['solid', 'striped', 'spotted'];
+// Common colours (used when no rare roll succeeds)
+const COLOURS  = ['orange', 'blue', 'green', 'purple', 'yellow'];
+const PATTERNS = ['solid', 'striped', 'spotted'];
+
+// Rare colours (1% each on Add Fish)
+const RARE_COLOURS = ['red', 'pink', 'silver'];
 
 /** 
- * Generate FISH_COUNT fish, each with id, x, y, angle, colour, pattern 
+ * Generate an array of FISH_COUNT fish with id, x, y, angle, colour, pattern.
+ * Rare colours do NOT appear here—they only come in via handleAddFish.
  */
 function createInitialFish() {
-  const width = window.innerWidth;
-  const height = window.innerHeight;
-  const initialFish = [];
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const arr = [];
   for (let i = 0; i < FISH_COUNT; i++) {
-    const x = Math.random() * (width - FISH_SIZE);
-    const y = Math.random() * (height - FISH_SIZE / 2);
+    const x = Math.random() * (w - FISH_SIZE);
+    const y = Math.random() * (h - FISH_SIZE / 2);
     const angle = Math.random() * 2 * Math.PI;
     const colour = COLOURS[Math.floor(Math.random() * COLOURS.length)];
     const pattern = PATTERNS[Math.floor(Math.random() * PATTERNS.length)];
-    initialFish.push({ id: i, x, y, angle, colour, pattern });
+    arr.push({ id: i, x, y, angle, colour, pattern });
   }
-  return initialFish;
+  return arr;
 }
 
 export default function App() {
-  // 1) State: live fish array
+  // 1) State: live fish
   const [fishArray, setFishArray] = useState([]);
-  // 2) State: shared speed
+  // 2) Shared speed
   const [speed, setSpeed] = useState(1.5);
-  // 3) Cursor tracking + hook jerk
+  // 3) Cursor + hook jerk
   const [cursorPos, setCursorPos] = useState({ x: -1000, y: -1000 });
   const [isJerking, setIsJerking] = useState(false);
   // 4) Active catch animations
   const [catchAnimations, setCatchAnimations] = useState([]);
   // 5) Caught‐fish records (array of “colour pattern” strings)
   const [caughtRecords, setCaughtRecords] = useState([]);
-  // 6) Show/hide caught‐fish popup
+  // 6) Show/hide “Fish Caught” popup
   const [showCaughtPopup, setShowCaughtPopup] = useState(false);
 
-  // Refs for cursorPos (inside interval) and next unique ID
+  // Refs: for mouse repulsion and next unique ID
   const cursorRef = useRef({ x: -1000, y: -1000 });
   const nextId    = useRef(FISH_COUNT);
 
-  // Populate initial fish on mount
+  // On mount: populate initial fish
   useEffect(() => {
     setFishArray(createInitialFish());
   }, []);
 
-  // Movement loop (re‐runs when `speed` changes; does NOT re‐init fish)
+  // Movement loop (re‐runs on speed change; does NOT re‐init fish)
   useEffect(() => {
     const interval = setInterval(() => {
       setFishArray((prevFish) => {
@@ -72,7 +75,7 @@ export default function App() {
           let dx = Math.cos(angle) * speed;
           let dy = Math.sin(angle) * speed;
 
-          // Repulsion if cursor is close
+          // Repulsion if cursor is too close
           const centerX = x + FISH_SIZE / 2;
           const centerY = y + FISH_SIZE / 4;
           const diffX = centerX - cursorRef.current.x;
@@ -89,14 +92,14 @@ export default function App() {
           let newY = y + dy;
           let newAngle = angle;
 
-          // Horizontal bounce (reflect angle over vertical axis)
+          // Horizontal bounce: reflect over vertical axis
           if (newX <= 0 || newX + FISH_SIZE >= w) {
             newAngle = Math.PI - angle;
             dx = Math.cos(newAngle) * speed;
             newX = x + dx;
           }
 
-          // Vertical bounce (reflect angle over horizontal axis)
+          // Vertical bounce: reflect over horizontal axis
           if (newY <= 0 || newY + FISH_SIZE / 2 >= h) {
             newAngle = -angle;
             dy = Math.sin(newAngle) * speed;
@@ -110,7 +113,7 @@ export default function App() {
     return () => clearInterval(interval);
   }, [speed]);
 
-  // Track global mouse movement
+  // Track global mouse movement (for repulsion & hook)
   useEffect(() => {
     const handleMouseMove = (e) => {
       const pos = { x: e.clientX, y: e.clientY };
@@ -121,7 +124,7 @@ export default function App() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  // Hook “jerk” on mousedown
+  // Hook “jerk” effect on mousedown
   const handleMouseDown = (e) => {
     const pos = { x: e.clientX, y: e.clientY };
     cursorRef.current = pos;
@@ -130,16 +133,15 @@ export default function App() {
     setTimeout(() => setIsJerking(false), 300);
   };
 
-  // When user clicks a fish: record its “colour pattern,” remove from array, start catch animation
+  // When a fish is clicked: record its type, remove, and start catch animation
   const handleFishClick = (fishId, e) => {
     e.stopPropagation();
-    // Find that fish’s data
     const fishObj = fishArray.find((f) => f.id === fishId);
     const { colour, pattern } = fishObj || {};
-    const caughtType = `${colour} ${pattern}`; // e.g. “blue striped”
+    const caughtType = `${colour} ${pattern}`;
     const { x: curX, y: curY } = cursorPos;
 
-    // Remove from live fish
+    // Remove from live array
     setFishArray((prev) => prev.filter((f) => f.id !== fishId));
 
     // Add to caughtRecords if valid
@@ -147,21 +149,21 @@ export default function App() {
       setCaughtRecords((prev) => [...prev, caughtType]);
     }
 
-    // Start catch animation at cursor
+    // Start catch animation
     setCatchAnimations((prev) => [
       ...prev,
       { id: fishId, startX: curX, startY: curY, colour, pattern },
     ]);
   };
 
-  // Remove a catch‐animation entry when it finishes
+  // Remove one catch-animation entry when done
   const handleCatchAnimationEnd = (animId) => {
     setCatchAnimations((prev) => prev.filter((a) => a.id !== animId));
   };
 
   const isCatching = catchAnimations.length > 0;
 
-  // Reset: clear catches, repopulate fish, reset speed, clear caughtRecords
+  // Reset: clear animations, re‐populate fish, reset speed, clear caughtRecords
   const handleReset = () => {
     setCatchAnimations([]);
     setFishArray(createInitialFish());
@@ -170,36 +172,55 @@ export default function App() {
     setCaughtRecords([]);
   };
 
-  // Add one new fish at random pos/angle/colour/pattern
+  // Add Fish:
+  //  • 1% chance → red (rare)
+  //  • 1% chance → pink (rare)
+  //  • 1% chance → silver (rare)
+  //  • Else choose random from common COLOURS × PATTERNS
   const handleAddFish = () => {
     const w = window.innerWidth;
     const h = window.innerHeight;
-    const angle   = Math.random() * 2 * Math.PI;
-    const x       = Math.random() * (w - FISH_SIZE);
-    const y       = Math.random() * (h - FISH_SIZE / 2);
-    const colour  = COLOURS[Math.floor(Math.random() * COLOURS.length)];
-    const pattern = PATTERNS[Math.floor(Math.random() * PATTERNS.length)];
+    const angle = Math.random() * 2 * Math.PI;
+    const x = Math.random() * (w - FISH_SIZE);
+    const y = Math.random() * (h - FISH_SIZE / 2);
+
+    let colour, pattern;
+    const roll = Math.random();
+    if (roll < 0.01) {
+      colour = 'red';
+      pattern = 'solid';
+    } else if (roll < 0.02) {
+      colour = 'pink';
+      pattern = 'solid';
+    } else if (roll < 0.03) {
+      colour = 'silver';
+      pattern = 'solid';
+    } else {
+      colour  = COLOURS[Math.floor(Math.random() * COLOURS.length)];
+      pattern = PATTERNS[Math.floor(Math.random() * PATTERNS.length)];
+    }
+
     const newFish = { id: nextId.current, x, y, angle, colour, pattern };
     nextId.current += 1;
     setFishArray((prev) => [...prev, newFish]);
   };
 
-  // Decrease speed by 0.5 (down to MIN_SPEED)
+  // Decrease speed by 0.5, no lower than MIN_SPEED
   const handleSpeedDown = () => {
     setSpeed((s) => Math.max(MIN_SPEED, parseFloat((s - 0.5).toFixed(2))));
   };
 
-  // Increase speed by 0.5 (up to MAX_SPEED)
+  // Increase speed by 0.5, no higher than MAX_SPEED
   const handleSpeedUp = () => {
     setSpeed((s) => Math.min(MAX_SPEED, parseFloat((s + 0.5).toFixed(2))));
   };
 
-  // Toggle the caught‐fish popup
+  // Toggle the “Fish Caught” popup
   const toggleCaughtPopup = () => {
     setShowCaughtPopup((prev) => !prev);
   };
 
-  // Build a tally object: { "blue striped": 3, "orange solid": 1, … }
+  // Build a tally: { "red solid": 2, "blue striped": 4, … }
   const tally = caughtRecords.reduce((acc, typeStr) => {
     acc[typeStr] = (acc[typeStr] || 0) + 1;
     return acc;
@@ -224,7 +245,7 @@ export default function App() {
         />
       ))}
 
-      {/* 3) Cursor hook (hidden during catch) */}
+      {/* 3) Cursor hook (hidden if catching) */}
       {!isCatching && (
         <Hook x={cursorPos.x} y={cursorPos.y} jerking={isJerking} />
       )}
@@ -238,7 +259,7 @@ export default function App() {
           fishSize={FISH_SIZE}
           onAnimationEnd={() => handleCatchAnimationEnd(anim.id)}
         >
-          {/* Pass in the same Fish component, but with isDead */}
+          {/* Render the caught fish (dead) */}
           <Fish
             x={0}
             y={0}
@@ -253,7 +274,7 @@ export default function App() {
       {/* 5) Display current speed */}
       <div className="speed-label">Speed: {speed.toFixed(1)}</div>
 
-      {/* 6) Control buttons in bottom‐right */}
+      {/* 6) Control buttons */}
       <button className="control-button speed-down" onClick={handleSpeedDown}>
         Speed–
       </button>
@@ -270,7 +291,7 @@ export default function App() {
         Fish Caught
       </button>
 
-      {/* 7) Popup overlay with detailed tally and mini‐fish icons */}
+      {/* 7) “Fish Caught” popup with mini‐fish icons and “Rare …” labels */}
       {showCaughtPopup && (
         <div className="caught-popup-overlay" onClick={toggleCaughtPopup}>
           <div className="caught-popup-content" onClick={(e) => e.stopPropagation()}>
@@ -280,11 +301,17 @@ export default function App() {
             ) : (
               <ul>
                 {Object.entries(tally).map(([typeStr, count]) => {
-                  // Split “colour pattern” back into variables
                   const [colour, pattern] = typeStr.split(' ');
+                  const isRare = RARE_COLOURS.includes(colour);
+                  // Capitalize each word
+                  const capitalized = typeStr
+                    .split(' ')
+                    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                    .join(' ');
+                  const label = isRare ? `Rare ${capitalized}` : capitalized;
+
                   return (
                     <li key={typeStr} className="caught-item">
-                      {/* Mini fish icon ↴ */}
                       <div className="mini-fish-container">
                         <Fish
                           x={0}
@@ -295,19 +322,13 @@ export default function App() {
                           isDead={false}
                         />
                       </div>
-                      {/* Text label */}
-                      <span>
-                        {typeStr.charAt(0).toUpperCase() + typeStr.slice(1)}: {count}
-                      </span>
+                      <span>{label}: {count}</span>
                     </li>
                   );
                 })}
               </ul>
             )}
-            <button
-              className="close-popup-button"
-              onClick={toggleCaughtPopup}
-            >
+            <button className="close-popup-button" onClick={toggleCaughtPopup}>
               Close
             </button>
           </div>
