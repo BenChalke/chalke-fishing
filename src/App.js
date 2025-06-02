@@ -1,3 +1,4 @@
+// src/App.js
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import Fish from './components/Fish';
@@ -45,7 +46,7 @@ export default function App() {
   const [isJerking, setIsJerking] = useState(false);
   // 4) Active catch animations
   const [catchAnimations, setCatchAnimations] = useState([]);
-  // 5) Caught‐fish records (array of “Colour Pattern” strings)
+  // 5) Caught‐fish records (array of “colour pattern” strings)
   const [caughtRecords, setCaughtRecords] = useState([]);
   // 6) Show/hide caught‐fish popup
   const [showCaughtPopup, setShowCaughtPopup] = useState(false);
@@ -106,7 +107,6 @@ export default function App() {
         });
       });
     }, 30);
-
     return () => clearInterval(interval);
   }, [speed]);
 
@@ -253,7 +253,7 @@ export default function App() {
       {/* 5) Display current speed */}
       <div className="speed-label">Speed: {speed.toFixed(1)}</div>
 
-      {/* 6) Control buttons */}
+      {/* 6) Control buttons in bottom‐right */}
       <button className="control-button speed-down" onClick={handleSpeedDown}>
         Speed–
       </button>
@@ -270,7 +270,7 @@ export default function App() {
         Fish Caught
       </button>
 
-      {/* 7) Popup overlay with detailed tally */}
+      {/* 7) Popup overlay with detailed tally and mini‐fish icons */}
       {showCaughtPopup && (
         <div className="caught-popup-overlay" onClick={toggleCaughtPopup}>
           <div className="caught-popup-content" onClick={(e) => e.stopPropagation()}>
@@ -279,14 +279,35 @@ export default function App() {
               <p>No fish caught yet.</p>
             ) : (
               <ul>
-                {Object.entries(tally).map(([typeStr, count]) => (
-                  <li key={typeStr}>
-                    {typeStr.charAt(0).toUpperCase() + typeStr.slice(1)}: {count}
-                  </li>
-                ))}
+                {Object.entries(tally).map(([typeStr, count]) => {
+                  // Split “colour pattern” back into variables
+                  const [colour, pattern] = typeStr.split(' ');
+                  return (
+                    <li key={typeStr} className="caught-item">
+                      {/* Mini fish icon ↴ */}
+                      <div className="mini-fish-container">
+                        <Fish
+                          x={0}
+                          y={0}
+                          size={40}
+                          colour={colour}
+                          pattern={pattern}
+                          isDead={false}
+                        />
+                      </div>
+                      {/* Text label */}
+                      <span>
+                        {typeStr.charAt(0).toUpperCase() + typeStr.slice(1)}: {count}
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
             )}
-            <button className="close-popup-button" onClick={toggleCaughtPopup}>
+            <button
+              className="close-popup-button"
+              onClick={toggleCaughtPopup}
+            >
               Close
             </button>
           </div>
