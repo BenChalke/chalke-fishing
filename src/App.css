@@ -1,11 +1,5 @@
 /* src/App.css */
 
-/* Prevent the 300 ms tap delay on modern mobile browsers */
-html,
-body {
-  touch-action: manipulation;
-}
-
 /* Container: full-screen underwater gradient */
 .container {
   position: relative;
@@ -18,6 +12,12 @@ body {
 /* When this class is added, hide the system cursor */
 .no-cursor {
   cursor: none;
+}
+
+/* Prevent the 300ms touch delay */
+html,
+body {
+  touch-action: manipulation;
 }
 
 /* Pull-up animation for caught fish, hook, and line */
@@ -43,10 +43,22 @@ body {
 /* Label showing current speed (desktop) */
 .speed-label {
   position: absolute;
-  bottom: 80px;
+  bottom: 110px;
   right: 20px;
   color: #ffffff;
   font-size: 18px;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+  z-index: 50;
+}
+
+/* Label showing total fish caught (just under speed) */
+.fish-count-label {
+  position: absolute;
+  bottom: 80px; /* 30px below speed-label */
+  right: 20px;
+  color: #ffffff;
+  font-size: 16px;
   font-weight: bold;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
   z-index: 50;
@@ -280,13 +292,20 @@ body {
    ======================================== */
 
 @media (max-width: 600px) {
-  /* Move speed-label to top-right on mobile so it's not covered */
+  /* Move speed-label & fish-count-label up so they’re not covered */
   .speed-label {
     position: absolute;
     top: 10px;
     bottom: auto;
     right: 10px;
     font-size: 16px;
+  }
+  .fish-count-label {
+    position: absolute;
+    top: 40px; /* below speed-label */
+    bottom: auto;
+    right: 10px;
+    font-size: 14px;
   }
 
   /* Shrink button text & padding */
@@ -298,27 +317,27 @@ body {
   /* Stack buttons vertically along right edge with extra 50px offset */
   .caught-button {
     right: 10px;
-    bottom: 100px; /* was 10px, now +50px */
+    bottom: 100px;
   }
 
   .speed-down {
     right: 10px;
-    bottom: 150px; /* was 60px, now +50px */
+    bottom: 150px;
   }
 
   .speed-up {
     right: 10px;
-    bottom: 200px; /* was 110px, now +50px */
+    bottom: 200px;
   }
 
   .add-button {
     right: 10px;
-    bottom: 250px; /* was 160px, now +50px */
+    bottom: 250px;
   }
 
   .reset-button {
     right: 10px;
-    bottom: 300px; /* was 210px, now +50px */
+    bottom: 300px;
   }
 
   /* Reduce popup width on small screens */

@@ -331,12 +331,16 @@ export default function App() {
             colour={anim.colour}
             pattern={anim.pattern}
             isDead={true}
+            isMobile={isMobile} 
           />
         </CatchAnimation>
       ))}
 
       {/* 5) Display current speed */}
       <div className="speed-label">Speed: {speed.toFixed(1)}</div>
+
+      {/* 6) Display total fish caught */}
+      <div className="fish-count-label">Fish Caught: {caughtRecords.length}</div>
 
       {/* 6) Control buttons */}
       <button className="control-button speed-down" onClick={handleSpeedDown}>
@@ -393,6 +397,7 @@ export default function App() {
                                 colour={colour}
                                 pattern={pattern}
                                 isDead={false}
+                                isMobile={isMobile} 
                               />
                             </div>
                             <span className="super-rare-label">
@@ -426,6 +431,7 @@ export default function App() {
                                 colour={colour}
                                 pattern={pattern}
                                 isDead={false}
+                                isMobile={isMobile} 
                               />
                             </div>
                             <span className="rare-label">
@@ -477,6 +483,7 @@ export default function App() {
                                       colour={colour}
                                       pattern={pattern}
                                       isDead={false}
+                                      isMobile={isMobile} 
                                     />
                                   </div>
                                   <span>
