@@ -303,6 +303,7 @@ export default function App() {
             colour={fish.colour}
             pattern={fish.pattern}
             onClick={(e) => handleFishClick(fish.id, e)}
+            isMobile={isMobile} 
           />
         );
       })}
@@ -356,10 +357,10 @@ export default function App() {
 
       {/* 7) “Fish Caught” popup with sorted stats and top-right close */}
       {showCaughtPopup && (
-        <div className="caught-popup-overlay" onClick={toggleCaughtPopup} onTouchEnd={toggleCaughtPopup}>
-          <div className="caught-popup-content" onClick={(e) => e.stopPropagation()} onTouchEnd={(e) => e.stopPropagation()}>
+        <div className="caught-popup-overlay" onClick={toggleCaughtPopup}>
+          <div className="caught-popup-content" onClick={(e) => e.stopPropagation()}>
             {/* Top-right “X” close button */}
-            <button className="popup-close-x" onClick={toggleCaughtPopup} onTouchEnd={toggleCaughtPopup}>
+            <button className="popup-close-x" onClick={toggleCaughtPopup}>
               ×
             </button>
             <h2>Fish Caught</h2>

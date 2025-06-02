@@ -9,14 +9,22 @@ import './Fish.css';
  *  - x: left (px)
  *  - y: top (px)
  *  - size: width in px (height = size × 0.5)
- *  - onClick: callback when fish is clicked (optional)
+ *  - onClick: callback when fish is clicked
  *  - isDead: boolean; if true, overlay a red “✕” on the eye
  *  - colour: one of 'orange','blue','green','purple','yellow',
  *            'red','pink','silver','crimson','cyan'
  *  - pattern: one of 'solid','striped','spotted'
+ *  - isMobile: boolean; if true, bind touch instead of click
  */
 export default function Fish({
-  x, y, size, onClick, isDead = false, colour, pattern
+  x,
+  y,
+  size,
+  onClick,
+  isDead = false,
+  colour,
+  pattern,
+  isMobile,
 }) {
   const fishWidth = size;
   const fishHeight = size * 0.5;
@@ -31,7 +39,13 @@ export default function Fish({
   };
 
   // Determine fill/stroke based on colour & isDead
-  let bodyFill, bodyStroke, tailFill, tailStroke, finFill, finStroke, eyeFill;
+  let bodyFill,
+    bodyStroke,
+    tailFill,
+    tailStroke,
+    finFill,
+    finStroke,
+    eyeFill;
 
   switch (colour) {
     case 'blue':
@@ -75,7 +89,7 @@ export default function Fish({
       break;
 
     case 'spotted':
-      // Teal base
+      /* Teal base for spotted fish */
       bodyFill = isDead ? '#5B7A7A' : '#20B2AA';
       bodyStroke = isDead ? '#3F5555' : '#1F8F85';
       tailFill = isDead ? '#3F5555' : '#1F8F85';
@@ -86,10 +100,7 @@ export default function Fish({
       break;
 
     case 'red':
-      // Shiny red gradient if alive, darker if dead
-      bodyFill = isDead
-        ? '#8B0000'
-        : 'url(#red-gradient)';
+      bodyFill = isDead ? '#8B0000' : 'url(#red-gradient)';
       bodyStroke = isDead ? '#5A0000' : '#FF0000';
       tailFill = isDead ? '#5A0000' : '#FF2020';
       tailStroke = isDead ? '#3C0000' : '#CC1010';
@@ -119,10 +130,7 @@ export default function Fish({
       break;
 
     case 'crimson':
-      // Shiny crimson gradient if alive, darker if dead
-      bodyFill = isDead
-        ? '#5C0008'
-        : 'url(#crimson-gradient)';
+      bodyFill = isDead ? '#5C0008' : 'url(#crimson-gradient)';
       bodyStroke = isDead ? '#3F0005' : '#DC143C';
       tailFill = isDead ? '#3F0005' : '#E00040';
       tailStroke = isDead ? '#260003' : '#B01230';
@@ -132,10 +140,7 @@ export default function Fish({
       break;
 
     case 'cyan':
-      // Shiny cyan gradient if alive, darker if dead
-      bodyFill = isDead
-        ? '#02666B'
-        : 'url(#cyan-gradient)';
+      bodyFill = isDead ? '#02666B' : 'url(#cyan-gradient)';
       bodyStroke = isDead ? '#014344' : '#00CED1';
       tailFill = isDead ? '#014344' : '#20E0E6';
       tailStroke = isDead ? '#012826' : '#06A0A4';
@@ -156,7 +161,12 @@ export default function Fish({
   }
 
   return (
-    <div style={wrapperStyle} onClick={onClick} onTouchEnd={onClick}>
+    <div
+      style={wrapperStyle}
+      {...(isMobile
+        ? { onTouchEnd: onClick }
+        : { onClick: onClick })}
+    >
       <svg
         viewBox="0 0 200 100"
         preserveAspectRatio="xMidYMid meet"
@@ -168,8 +178,8 @@ export default function Fish({
         {colour === 'red' && !isDead && (
           <defs>
             <linearGradient id="red-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%"   stopColor="#FF8080" />
-              <stop offset="50%"  stopColor="#FF0000" />
+              <stop offset="0%" stopColor="#FF8080" />
+              <stop offset="50%" stopColor="#FF0000" />
               <stop offset="100%" stopColor="#CC0000" />
             </linearGradient>
           </defs>
@@ -178,9 +188,15 @@ export default function Fish({
         {/* 2) Crimson gradient for 'crimson' fish */}
         {colour === 'crimson' && !isDead && (
           <defs>
-            <linearGradient id="crimson-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%"   stopColor="#FF4F69" />
-              <stop offset="50%"  stopColor="#DC143C" />
+            <linearGradient
+              id="crimson-gradient"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="100%"
+            >
+              <stop offset="0%" stopColor="#FF4F69" />
+              <stop offset="50%" stopColor="#DC143C" />
               <stop offset="100%" stopColor="#A1122A" />
             </linearGradient>
           </defs>
@@ -190,8 +206,8 @@ export default function Fish({
         {colour === 'cyan' && !isDead && (
           <defs>
             <linearGradient id="cyan-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%"   stopColor="#80FFFF" />
-              <stop offset="50%"  stopColor="#00CED1" />
+              <stop offset="0%" stopColor="#80FFFF" />
+              <stop offset="50%" stopColor="#00CED1" />
               <stop offset="100%" stopColor="#008C8F" />
             </linearGradient>
           </defs>
@@ -229,8 +245,8 @@ export default function Fish({
         {/* 6) Stripes (if striped & alive) */}
         {pattern === 'striped' && !isDead && (
           <g clipPath="url(#clip-body)">
-            <rect x="40"  y="0" width="12" height="100" fill={bodyStroke} />
-            <rect x="80"  y="0" width="12" height="100" fill={bodyStroke} />
+            <rect x="40" y="0" width="12" height="100" fill={bodyStroke} />
+            <rect x="80" y="0" width="12" height="100" fill={bodyStroke} />
             <rect x="120" y="0" width="12" height="100" fill={bodyStroke} />
             <rect x="160" y="0" width="12" height="100" fill={bodyStroke} />
           </g>
@@ -286,7 +302,12 @@ export default function Fish({
 
         {/* 11) Eye */}
         <circle cx="140" cy="35" r="8" fill={eyeFill} />
-        <circle cx="140" cy="35" r="4" fill={isDead ? '#444444' : '#000000'} />
+        <circle
+          cx="140"
+          cy="35"
+          r="4"
+          fill={isDead ? '#444444' : '#000000'}
+        />
 
         {/* 12) Red “✕” if dead */}
         {isDead && (
@@ -299,7 +320,7 @@ export default function Fish({
         {/* 13) Sparkles on red fish */}
         {colour === 'red' && !isDead && (
           <g>
-            <circle cx="80"  cy="30" r="4" fill="#FFFFFF" opacity="0.8" />
+            <circle cx="80" cy="30" r="4" fill="#FFFFFF" opacity="0.8" />
             <circle cx="120" cy="60" r="3" fill="#FFFFFF" opacity="0.6" />
             <circle cx="100" cy="40" r="2" fill="#FFFFFF" opacity="0.7" />
           </g>
