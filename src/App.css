@@ -1,0 +1,9 @@
+/* src/App.css */
+.container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(to bottom, #0e2f44, #051924);
+  overflow: hidden;
+  cursor: none; /* Hide the system cursor; show only our hook */
+}

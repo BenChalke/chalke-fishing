@@ -1,0 +1,71 @@
+/* 1) The wrapper that holds each <svg> fish. */
+/*    It’s absolutely positioned at (left: x, top: y) from Fish.js. */
+.fish {
+  position: absolute;
+  cursor: none;
+  /* Gentle up/down body‐sway to mimic swimming */
+  animation: body-sway 2s infinite ease-in-out;
+}
+
+/* Make the <svg> fill the entire wrapper. */
+.fish svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* 2) Tail‐wiggle: target the .fish-tail polygon inside the SVG */
+.fish svg .fish-tail {
+  /* 
+    transform-origin: 0% 50% means "left‐center" of that polygon, 
+    which corresponds to the point (0,25) in viewBox coords.
+  */
+  transform-origin: 0% 50%;
+  transform-box: fill-box; /* so transform-origin is relative to the SVG shape */
+  animation: tail-wag 0.3s infinite ease-in-out;
+}
+
+/* 3) Body—no extra animations; it’s the orange ellipse. */
+.fish svg .fish-body {
+  fill: #FFA500;
+  stroke: #FF8C00;
+  stroke-width: 2;
+}
+
+/* 4) Head—red circle on the right. */
+.fish svg .fish-head {
+  fill: #FF4500;
+  stroke: #FF8C00;
+  stroke-width: 2;
+}
+
+/* 5) Dorsal fin (small darker triangle). */
+.fish svg .fish-fin {
+  fill: #FF8C00;
+  stroke: #FF8C00;
+  stroke-width: 1;
+}
+
+/* 6) Eye (white circle) and pupil (inner black circle). */
+.fish svg .fish-eye {
+  fill: #FFFFFF;
+  stroke: #000000;
+  stroke-width: 1;
+}
+
+.fish svg .fish-eye-pupil {
+  fill: #000000;
+}
+
+/* --- Tail‐wag animation: wiggle back and forth around the left‐center pivot --- */
+@keyframes tail-wag {
+  0%   { transform: rotate(0deg); }
+  50%  { transform: rotate(20deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* --- Body‐sway animation: gentle vertical bobbing --- */
+@keyframes body-sway {
+  0%   { transform: translateY(0px); }
+  50%  { transform: translateY(4px); }
+  100% { transform: translateY(0px); }
+}
