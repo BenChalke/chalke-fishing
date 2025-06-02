@@ -1,21 +1,19 @@
-// src/components/Fish.js
 import React from 'react';
 import './Fish.css';
 
 /**
- * Fish component supporting seven variants:
- *  - orange, blue, striped, green, purple, yellow, spotted
- *  - Each has its own color scheme and minor shape/pattern tweaks.
+ * Fish component with separate colour + pattern.
  *
  * Props:
- *  - x: left position (px)
- *  - y: top position (px)
- *  - size: width (px) (height = size × 0.5)
+ *  - x: left (px)
+ *  - y: top (px)
+ *  - size: width in px (height = size × 0.5)
  *  - onClick: callback when fish is clicked
- *  - isDead: if true, desaturate and overlay cross on eye
- *  - type: one of the seven types
+ *  - isDead: boolean; if true, draw a red “✕” on the eye
+ *  - colour: one of 'orange','blue','green','purple','yellow'
+ *  - pattern: one of 'solid','striped','spotted'
  */
-export default function Fish({ x, y, size, onClick, isDead, type }) {
+export default function Fish({ x, y, size, onClick, isDead, colour, pattern }) {
   const fishWidth = size;
   const fishHeight = size * 0.5;
 
@@ -28,9 +26,10 @@ export default function Fish({ x, y, size, onClick, isDead, type }) {
     cursor: onClick ? 'pointer' : 'default',
   };
 
+  // Determine fill/stroke based on colour & isDead
   let bodyFill, bodyStroke, tailFill, tailStroke, finFill, finStroke, eyeFill;
 
-  switch (type) {
+  switch (colour) {
     case 'blue':
       bodyFill = isDead ? '#556B7D' : '#4A90E2';
       bodyStroke = isDead ? '#3A556A' : '#336FB3';
@@ -40,17 +39,6 @@ export default function Fish({ x, y, size, onClick, isDead, type }) {
       finStroke = isDead ? '#4D6190' : '#4A7FB3';
       eyeFill = isDead ? '#CCCCCC' : '#FFFFFF';
       break;
-
-    case 'striped':
-      bodyFill = isDead ? '#999999' : '#FFD700';
-      bodyStroke = isDead ? '#666666' : '#CC8400';
-      tailFill = isDead ? '#666666' : '#CC8400';
-      tailStroke = isDead ? '#444444' : '#A65200';
-      finFill = isDead ? '#AAAAAA' : '#FFB84C';
-      finStroke = isDead ? '#777777' : '#CC8400';
-      eyeFill = isDead ? '#CCCCCC' : '#FFFFFF';
-      break;
-
     case 'green':
       bodyFill = isDead ? '#667B6F' : '#3CB371';
       bodyStroke = isDead ? '#4D6053' : '#29875A';
@@ -60,38 +48,35 @@ export default function Fish({ x, y, size, onClick, isDead, type }) {
       finStroke = isDead ? '#5F8067' : '#5EB700';
       eyeFill = isDead ? '#CCCCCC' : '#FFFFFF';
       break;
-
     case 'purple':
-      bodyFill = isDead ? '#8C7AA5' : '#9B30FF';
-      bodyStroke = isDead ? '#6A5E7A' : '#7A1E9A';
-      tailFill = isDead ? '#6A5E7A' : '#7A1E9A';
-      tailStroke = isDead ? '#4B3A52' : '#561E7A';
-      finFill = isDead ? '#A396C1' : '#BE55FF';
-      finStroke = isDead ? '#7F6DA2' : '#8C1ECC';
+      bodyFill = isDead ? '#766D87' : '#8A2BE2';
+      bodyStroke = isDead ? '#5A5870' : '#6529C7';
+      tailFill = isDead ? '#5A5870' : '#6529C7';
+      tailStroke = isDead ? '#3C3B4C' : '#321995';
+      finFill = isDead ? '#9B94A8' : '#B266E6';
+      finStroke = isDead ? '#7D7190' : '#8033C2';
       eyeFill = isDead ? '#CCCCCC' : '#FFFFFF';
       break;
-
     case 'yellow':
-      bodyFill = isDead ? '#A09A4C' : '#FFD700';
-      bodyStroke = isDead ? '#87824B' : '#FFC200';
-      tailFill = isDead ? '#87824B' : '#FFC200';
-      tailStroke = isDead ? '#5F5B32' : '#E09E00';
-      finFill = isDead ? '#C0BA6C' : '#FFEB7F';
-      finStroke = isDead ? '#9E984D' : '#FFD200';
+      bodyFill = isDead ? '#A69A56' : '#FFD700';
+      bodyStroke = isDead ? '#7F763F' : '#E6B800';
+      tailFill = isDead ? '#7F763F' : '#E6B800';
+      tailStroke = isDead ? '#605C2C' : '#B38C00';
+      finFill = isDead ? '#BFB56C' : '#FFEA5C';
+      finStroke = isDead ? '#9C964A' : '#C7B047';
       eyeFill = isDead ? '#CCCCCC' : '#FFFFFF';
       break;
-
     case 'spotted':
-      bodyFill = isDead ? '#606F6D' : '#20B2AA';
-      bodyStroke = isDead ? '#4A5958' : '#1E8C86';
-      tailFill = isDead ? '#4A5958' : '#1E8C86';
-      tailStroke = isDead ? '#2F3A39' : '#145B57';
-      finFill = isDead ? '#728D8C' : '#66CDAA';
-      finStroke = isDead ? '#5E7675' : '#4CA694';
+      // Teal for spotted
+      bodyFill = isDead ? '#5B7A7A' : '#20B2AA';
+      bodyStroke = isDead ? '#3F5555' : '#1F8F85';
+      tailFill = isDead ? '#3F5555' : '#1F8F85';
+      tailStroke = isDead ? '#2A3A3A' : '#14514D';
+      finFill = isDead ? '#79A5A5' : '#40C2B6';
+      finStroke = isDead ? '#617A7A' : '#329990';
       eyeFill = isDead ? '#CCCCCC' : '#FFFFFF';
       break;
-
-    default: // "orange"
+    default: // 'orange'
       bodyFill = isDead ? '#777777' : '#FFA500';
       bodyStroke = isDead ? '#555555' : '#FF8C00';
       tailFill = isDead ? '#555555' : '#E07000';
@@ -111,7 +96,22 @@ export default function Fish({ x, y, size, onClick, isDead, type }) {
         width="100%"
         height="100%"
       >
-        {/* Main body */}
+        {/* 1) Define clipPath for the body (used by stripes/spots) */}
+        <defs>
+          <clipPath id="clip-body">
+            <path
+              d="
+                M20 50
+                C20 20, 80 0, 120 20
+                C160 40, 160 60, 120 80
+                C80 100, 20 80, 20 50
+                Z
+              "
+            />
+          </clipPath>
+        </defs>
+
+        {/* 2) Body */}
         <path
           d="
             M20 50
@@ -125,7 +125,28 @@ export default function Fish({ x, y, size, onClick, isDead, type }) {
           strokeWidth="4"
         />
 
-        {/* Tail */}
+        {/* 3) If striped (and not dead), draw clipped vertical rectangles */}
+        {pattern === 'striped' && !isDead && (
+          <g clipPath="url(#clip-body)">
+            <rect x="40"  y="0" width="12" height="100" fill={bodyStroke} />
+            <rect x="80"  y="0" width="12" height="100" fill={bodyStroke} />
+            <rect x="120" y="0" width="12" height="100" fill={bodyStroke} />
+            <rect x="160" y="0" width="12" height="100" fill={bodyStroke} />
+          </g>
+        )}
+
+        {/* 4) If spotted (and not dead), draw clipped circles */}
+        {pattern === 'spotted' && !isDead && (
+          <g clipPath="url(#clip-body)" fill={bodyStroke}>
+            <circle cx="60" cy="30" r="8" />
+            <circle cx="100" cy="50" r="6" />
+            <circle cx="140" cy="70" r="10" />
+            <circle cx="120" cy="30" r="7" />
+            <circle cx="80" cy="70" r="5" />
+          </g>
+        )}
+
+        {/* 5) Tail */}
         <path
           d="
             M20 50
@@ -138,7 +159,7 @@ export default function Fish({ x, y, size, onClick, isDead, type }) {
           strokeWidth="3"
         />
 
-        {/* Dorsal fin */}
+        {/* 6) Top (dorsal) fin */}
         <path
           d="
             M60 20
@@ -150,7 +171,7 @@ export default function Fish({ x, y, size, onClick, isDead, type }) {
           strokeWidth="2"
         />
 
-        {/* Pelvic fin */}
+        {/* 7) Bottom (pelvic) fin */}
         <path
           d="
             M60 80
@@ -162,34 +183,16 @@ export default function Fish({ x, y, size, onClick, isDead, type }) {
           strokeWidth="2"
         />
 
-        {/* Eye */}
+        {/* 8) Eye */}
         <circle cx="140" cy="35" r="8" fill={eyeFill} />
         <circle cx="140" cy="35" r="4" fill={isDead ? '#444444' : '#000000'} />
 
-        {/* Red “✕” over eye if dead */}
+        {/* 9) Red “✕” if dead */}
         {isDead && (
           <g stroke="#FF0000" strokeWidth="3">
             <line x1="136" y1="31" x2="144" y2="39" />
             <line x1="144" y1="31" x2="136" y2="39" />
           </g>
-        )}
-
-        {/* Stripes for striped fish (only when alive) */}
-        {type === 'striped' && !isDead && (
-          <>
-            <path d="M50 20 L50 80" stroke="#FF0000" strokeWidth="4" />
-            <path d="M80 20 L80 80" stroke="#FF0000" strokeWidth="4" />
-            <path d="M110 20 L110 80" stroke="#FF0000" strokeWidth="4" />
-          </>
-        )}
-
-        {/* Spots for spotted fish (only when alive) */}
-        {type === 'spotted' && !isDead && (
-          <>
-            <circle cx="60" cy="40" r="6" fill="#145B57" />
-            <circle cx="90" cy="60" r="8" fill="#145B57" />
-            <circle cx="120" cy="35" r="5" fill="#145B57" />
-          </>
         )}
       </svg>
     </div>

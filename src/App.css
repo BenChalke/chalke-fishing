@@ -9,7 +9,7 @@
   cursor: none;
 }
 
-/* Pull-up animations for caught fish */
+/* Pull‐up animations for caught fish */
 @keyframes pull-up {
   from { transform: translateY(0); }
   to   { transform: translateY(calc(-100vh - 200px)); }
@@ -29,10 +29,10 @@
   z-index: 10;
 }
 
-/* Label showing current speed */
+/* Current speed label */
 .speed-label {
   position: absolute;
-  bottom: 80px;    /* sits above buttons */
+  bottom: 80px;
   right: 20px;
   color: #ffffff;
   font-size: 18px;
@@ -52,7 +52,7 @@
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.2s ease;
-  z-index: 50; /* sits above fish */
+  z-index: 50;
 }
 
 .control-button:hover {
@@ -73,15 +73,15 @@
 }
 
 .speed-up {
-  right: 260px; /* 120px left of Add Fish + 20px gap */
+  right: 260px; /* ~120px left of Add Fish + 20px gap */
 }
 
 .speed-down {
-  right: 380px; /* 120px left of Speed+ + 20px gap */
+  right: 380px; /* ~120px left of Speed+ + 20px gap */
 }
 
 .caught-button {
-  right: 500px; /* 120px left of Speed– + 20px gap */
+  right: 500px; /* ~120px left of Speed– + 20px gap */
 }
 
 /* Popup overlay background */
@@ -95,7 +95,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100; /* above everything */
+  z-index: 100; /* on top of everything */
 }
 
 /* Popup content box */
@@ -107,7 +107,7 @@
   max-width: 80%;
   max-height: 80%;
   overflow-y: auto;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 .caught-popup-content h2 {
