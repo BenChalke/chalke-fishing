@@ -289,30 +289,30 @@
     padding: 8px 12px;
   }
 
-  /* Stack buttons vertically along right edge with adjusted spacing */
+  /* Stack buttons vertically along right edge with extra 50px offset */
   .caught-button {
     right: 10px;
-    bottom: 10px;
+    bottom: 100px; /* was 10px, now +50px */
   }
 
   .speed-down {
     right: 10px;
-    bottom: 60px;
+    bottom: 150px; /* was 60px, now +50px */
   }
 
   .speed-up {
     right: 10px;
-    bottom: 110px;
+    bottom: 200px; /* was 110px, now +50px */
   }
 
   .add-button {
     right: 10px;
-    bottom: 160px;
+    bottom: 250px; /* was 160px, now +50px */
   }
 
   .reset-button {
     right: 10px;
-    bottom: 210px;
+    bottom: 300px; /* was 210px, now +50px */
   }
 
   /* Reduce popup width on small screens */
