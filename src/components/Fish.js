@@ -1,19 +1,21 @@
+// src/components/Fish.js
 import React from 'react';
 import './Fish.css';
 
 /**
- * Fish component with a more realistic fish silhouette:
+ * Fish component with multiple “types.” Each type has a different color scheme and slight shape variation.
  *
  * Props:
  *  - x: left (px)
  *  - y: top (px)
  *  - size: width in px (height = size × 0.5)
- *  - onClick: function to call when clicked (optional)
- *  - isDead: boolean; if true, draw a red cross over the eye
+ *  - onClick: callback when fish is clicked
+ *  - isDead: boolean; if true, overlay a red “✕” on the eye and desaturate
+ *  - type: one of "orange", "blue", "striped", "green"
  */
-export default function Fish({ x, y, size, onClick, isDead }) {
+export default function Fish({ x, y, size, onClick, isDead, type }) {
   const fishWidth = size;
-  const fishHeight = size * 0.5; // maintain a 2:1 ratio
+  const fishHeight = size * 0.5;
 
   const wrapperStyle = {
     position: 'absolute',
@@ -24,6 +26,53 @@ export default function Fish({ x, y, size, onClick, isDead }) {
     cursor: onClick ? 'pointer' : 'default',
   };
 
+  // Choose color scheme based on type & dead/alive
+  let bodyFill, bodyStroke, tailFill, tailStroke, finFill, finStroke, eyeFill;
+
+  switch (type) {
+    case 'blue':
+      bodyFill = isDead ? '#556B7D' : '#4A90E2';
+      bodyStroke = isDead ? '#3A556A' : '#336FB3';
+      tailFill = isDead ? '#3A556A' : '#336FB3';
+      tailStroke = isDead ? '#1F2F3C' : '#1E4F7A';
+      finFill = isDead ? '#6D8CA5' : '#7FB3E6';
+      finStroke = isDead ? '#4D6190' : '#4A7FB3';
+      eyeFill = isDead ? '#CCCCCC' : '#FFFFFF';
+      break;
+
+    case 'striped':
+      // body: yellow with red stripes
+      bodyFill = isDead ? '#999999' : '#FFD700';
+      bodyStroke = isDead ? '#666666' : '#CC8400';
+      tailFill = isDead ? '#666666' : '#CC8400';
+      tailStroke = isDead ? '#444444' : '#A65200';
+      finFill = isDead ? '#AAAAAA' : '#FFB84C';
+      finStroke = isDead ? '#777777' : '#CC8400';
+      eyeFill = isDead ? '#CCCCCC' : '#FFFFFF';
+      break;
+
+    case 'green':
+      bodyFill = isDead ? '#667B6F' : '#3CB371';
+      bodyStroke = isDead ? '#4D6053' : '#29875A';
+      tailFill = isDead ? '#4D6053' : '#29875A';
+      tailStroke = isDead ? '#2F3B32' : '#1F533A';
+      finFill = isDead ? '#7FAE97' : '#7CFC00';
+      finStroke = isDead ? '#5F8067' : '#5EB700';
+      eyeFill = isDead ? '#CCCCCC' : '#FFFFFF';
+      break;
+
+    default:
+      // "orange"
+      bodyFill = isDead ? '#777777' : '#FFA500';
+      bodyStroke = isDead ? '#555555' : '#FF8C00';
+      tailFill = isDead ? '#555555' : '#E07000';
+      tailStroke = isDead ? '#333333' : '#CC5500';
+      finFill = isDead ? '#888888' : '#FFD27F';
+      finStroke = isDead ? '#666666' : '#FFB347';
+      eyeFill = isDead ? '#CCCCCC' : '#FFFFFF';
+      break;
+  }
+
   return (
     <div style={wrapperStyle} onClick={onClick}>
       <svg
@@ -33,7 +82,7 @@ export default function Fish({ x, y, size, onClick, isDead }) {
         width="100%"
         height="100%"
       >
-        {/* 1) Main body */}
+        {/* Main body */}
         <path
           d="
             M20 50
@@ -42,12 +91,12 @@ export default function Fish({ x, y, size, onClick, isDead }) {
             C80 100, 20 80, 20 50
             Z
           "
-          fill={isDead ? '#777777' : '#FFA500'}
-          stroke={isDead ? '#555555' : '#FF8C00'}
+          fill={bodyFill}
+          stroke={bodyStroke}
           strokeWidth="4"
         />
 
-        {/* 2) Tail */}
+        {/* Tail */}
         <path
           d="
             M20 50
@@ -55,56 +104,68 @@ export default function Fish({ x, y, size, onClick, isDead }) {
             L0 70
             Z
           "
-          fill={isDead ? '#555555' : '#FF8C00'}
-          stroke={isDead ? '#333333' : '#E07000'}
+          fill={tailFill}
+          stroke={tailStroke}
           strokeWidth="3"
         />
 
-        {/* 3) Top dorsal fin */}
+        {/* Dorsal (top) fin */}
         <path
           d="
             M60 20
             C50 0, 80 10, 90 20
             Z
           "
-          fill={isDead ? '#666666' : '#FFD27F'}
-          stroke={isDead ? '#444444' : '#FFB347'}
+          fill={finFill}
+          stroke={finStroke}
           strokeWidth="2"
         />
 
-        {/* 4) Bottom pelvic fin */}
+        {/* Pelvic (bottom) fin */}
         <path
           d="
             M60 80
             C50 100, 80 90, 90 80
             Z
           "
-          fill={isDead ? '#666666' : '#FFD27F'}
-          stroke={isDead ? '#444444' : '#FFB347'}
+          fill={finFill}
+          stroke={finStroke}
           strokeWidth="2"
         />
 
-        {/* 5) Eye (white circle) */}
-        <circle
-          cx="140"
-          cy="35"
-          r="8"
-          fill={isDead ? '#CCCCCC' : '#FFFFFF'}
-        />
-        {/* 6) Pupil (black) */}
-        <circle
-          cx="140"
-          cy="35"
-          r="4"
-          fill={isDead ? '#333333' : '#000000'}
-        />
+        {/* Eye (circle) */}
+        <circle cx="140" cy="35" r="8" fill={eyeFill} />
 
-        {/* 7) “✕” over eye if dead */}
+        {/* Pupil */}
+        <circle cx="140" cy="35" r="4" fill={isDead ? '#444444' : '#000000'} />
+
+        {/* Red “✕” on the eye if dead */}
         {isDead && (
           <g stroke="#FF0000" strokeWidth="3">
             <line x1="136" y1="31" x2="144" y2="39" />
             <line x1="144" y1="31" x2="136" y2="39" />
           </g>
+        )}
+
+        {/* Additional detail for striped fish */}
+        {type === 'striped' && !isDead && (
+          <>
+            <path
+              d="M50 20 L50 80"
+              stroke="#FF0000"
+              strokeWidth="4"
+            />
+            <path
+              d="M80 20 L80 80"
+              stroke="#FF0000"
+              strokeWidth="4"
+            />
+            <path
+              d="M110 20 L110 80"
+              stroke="#FF0000"
+              strokeWidth="4"
+            />
+          </>
         )}
       </svg>
     </div>

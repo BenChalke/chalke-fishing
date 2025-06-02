@@ -69,3 +69,14 @@
   50%  { transform: translateY(4px); }
   100% { transform: translateY(0px); }
 }
+
+/* src/components/Fish.css */
+
+/* Example: smooth out transforms if you add hover effects */
+div > svg {
+  transition: transform 0.2s ease-in-out;
+}
+
+div:hover > svg {
+  transform: scale(1.05);
+}

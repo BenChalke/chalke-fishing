@@ -1,6 +1,5 @@
 /* src/App.css */
 
-/* Underwater gradient & hide default cursor */
 .container {
   position: relative;
   width: 100vw;
@@ -10,7 +9,7 @@
   cursor: none;
 }
 
-/* Pull‐up keyframes for catch */
+/* Pull‐up keyframes and caught animations continue unchanged */
 @keyframes pull-up {
   from { transform: translateY(0); }
   to   { transform: translateY(calc(-100vh - 200px)); }
@@ -28,4 +27,27 @@
   position: absolute;
   animation: pull-up 1s ease-in-out forwards;
   z-index: 10;
+}
+
+/* Reset button in bottom‐right corner */
+.reset-button {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 16px;
+  cursor: pointer;
+  z-index: 50;
+  transition: background-color 0.2s ease;
+}
+
+.reset-button:hover {
+  background-color: rgba(255, 255, 255, 1);
+}
+
+.reset-button:active {
+  transform: scale(0.96);
 }
