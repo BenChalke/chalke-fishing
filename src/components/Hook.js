@@ -15,37 +15,23 @@ function Hook({ x, y, jerking }) {
     }
   }, [jerking]);
 
-  // Calculate the hook’s top‐edge y‐coordinate:
-  const hookTopY = y - 32;
-  // Ensure the line height never goes negative:
-  const lineHeight = hookTopY > 0 ? hookTopY : 0;
+  // If x/y are way off (e.g. -1000), you could skip rendering, but since
+  // we control via App whether to render the Hook at all (via isCatching),
+  // we can simply always render it when called.
 
-  // 1) Vertical fishing line now goes from top:0 down to hookTopY:
-  const lineStyle = {
-    left: `${x}px`,
-    height: `${lineHeight}px`,
-  };
-
-  // 2) Position the hook SVG so its bottom (tip) is at (x, y):
-  const hookStyle = {
-    left: `${x - 32}px`,    // center 64px-wide SVG under the cursor
-    top: `${hookTopY}px`,   // place top of SVG at y - 64
-  };
+  // Position the top of the hook at (y - 64) and center it at (x)
+  const hookTop = y - 32;
+  const lineHeight = hookTop > 0 ? hookTop : 0;
 
   return (
     <>
-      {/* 1) Vertical fishing line */}
-      <div className="fishing-line" style={lineStyle} />
-
-      {/* 2) Hook SVG */}
-      <div className="hook-wrapper" style={hookStyle} ref={hookRef}>
-        <svg
-          viewBox="0 0 32 32"
-          xmlns="http://www.w3.org/2000/svg"
-          width="64"
-          height="64"
-        >
-          {/* Main hook shape */}
+      <div className="fishing-line" style={{ left: x + 'px', height: lineHeight + 'px' }} />
+      <div
+        className="hook-wrapper"
+        style={{ left: `${x - 32}px`, top: `${hookTop}px` }}
+        ref={hookRef}
+      >
+        <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" width="64" height="64">
           <path
             d="
               M16 0
@@ -60,22 +46,8 @@ function Hook({ x, y, jerking }) {
             strokeLinecap="round"
             strokeLinejoin="round"
           />
-          {/* Barb detail */}
-          <path
-            d="M12 24 L14 26"
-            stroke="#333333"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-          {/* White highlight */}
-          <ellipse
-            cx="20"
-            cy="6"
-            rx="3"
-            ry="1.5"
-            fill="#FFFFFF"
-            opacity="0.5"
-          />
+          <path d="M12 24 L14 26" stroke="#333333" strokeWidth="2" strokeLinecap="round" />
+          <ellipse cx="20" cy="6" rx="3" ry="1.5" fill="#FFFFFF" opacity="0.5" />
         </svg>
       </div>
     </>

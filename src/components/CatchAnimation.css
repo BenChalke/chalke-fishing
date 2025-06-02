@@ -1,0 +1,32 @@
+/* src/components/CatchAnimation.css */
+
+/* Pull‐up animation (moves upward off‐screen) */
+@keyframes pull-up {
+  from { transform: translateY(0); }
+  to   { transform: translateY(calc(-100vh - 200px)); }
+}
+
+/* The fishing line (caught) */
+.fishing-line.caught {
+  animation: pull-up 1s ease-in-out forwards;
+}
+
+/* The hook (caught) */
+.hook-wrapper.caught {
+  animation: pull-up 1s ease-in-out forwards;
+}
+
+/* The fish (caught) */
+.fish-caught {
+  position: absolute;
+  animation: pull-up 1s ease-in-out forwards;
+  z-index: 10; /* on top of other elements while animating */
+}
+
+/* 
+  Optional: if you want the fish’s “✕” cross to fade or scale, you can 
+  add additional keyframes here, but it’s not strictly necessary.
+*/
+.fish-eye-cross {
+  /* no animation needed—just a static red cross */
+}

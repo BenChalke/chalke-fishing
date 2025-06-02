@@ -1,83 +1,112 @@
 import React from 'react';
 import './Fish.css';
 
-function Fish({ id, x, y, size, onClick }) {
-  // Position the wrapper at (x,y), and make it `size` px wide, `size/2` px tall:
-  const style = {
-    left: x,
-    top: y,
-    width: `${size}px`,
-    height: `${size / 2}px`,
+/**
+ * Fish component with a more realistic fish silhouette:
+ *
+ * Props:
+ *  - x: left (px)
+ *  - y: top (px)
+ *  - size: width in px (height = size × 0.5)
+ *  - onClick: function to call when clicked (optional)
+ *  - isDead: boolean; if true, draw a red cross over the eye
+ */
+export default function Fish({ x, y, size, onClick, isDead }) {
+  const fishWidth = size;
+  const fishHeight = size * 0.5; // maintain a 2:1 ratio
+
+  const wrapperStyle = {
+    position: 'absolute',
+    left: `${x}px`,
+    top: `${y}px`,
+    width: `${fishWidth}px`,
+    height: `${fishHeight}px`,
+    cursor: onClick ? 'pointer' : 'default',
   };
 
   return (
-    <div className="fish" style={style} onClick={onClick}>
+    <div style={wrapperStyle} onClick={onClick}>
       <svg
-        viewBox="0 0 100 50"
+        viewBox="0 0 200 100"
         preserveAspectRatio="xMidYMid meet"
         xmlns="http://www.w3.org/2000/svg"
+        width="100%"
+        height="100%"
       >
-        {/* Tail: yellow triangle on left */}
-        <polygon
-          className="fish-tail"
-          points="10,25 0,10 0,40"
-          fill="#FFD700"
-          stroke="#FFA500"
+        {/* 1) Main body */}
+        <path
+          d="
+            M20 50
+            C20 20, 80 0, 120 20
+            C160 40, 160 60, 120 80
+            C80 100, 20 80, 20 50
+            Z
+          "
+          fill={isDead ? '#777777' : '#FFA500'}
+          stroke={isDead ? '#555555' : '#FF8C00'}
+          strokeWidth="4"
+        />
+
+        {/* 2) Tail */}
+        <path
+          d="
+            M20 50
+            L0 30
+            L0 70
+            Z
+          "
+          fill={isDead ? '#555555' : '#FF8C00'}
+          stroke={isDead ? '#333333' : '#E07000'}
+          strokeWidth="3"
+        />
+
+        {/* 3) Top dorsal fin */}
+        <path
+          d="
+            M60 20
+            C50 0, 80 10, 90 20
+            Z
+          "
+          fill={isDead ? '#666666' : '#FFD27F'}
+          stroke={isDead ? '#444444' : '#FFB347'}
           strokeWidth="2"
         />
 
-        {/* Body: orange ellipse */}
-        <ellipse
-          className="fish-body"
-          cx="50"
-          cy="25"
-          rx="40"
-          ry="20"
-          fill="#FFA500"
-          stroke="#FF8C00"
+        {/* 4) Bottom pelvic fin */}
+        <path
+          d="
+            M60 80
+            C50 100, 80 90, 90 80
+            Z
+          "
+          fill={isDead ? '#666666' : '#FFD27F'}
+          stroke={isDead ? '#444444' : '#FFB347'}
           strokeWidth="2"
         />
 
-        {/* Head: red circle on the right */}
+        {/* 5) Eye (white circle) */}
         <circle
-          className="fish-head"
-          cx="75"
-          cy="25"
-          r="15"
-          fill="#FF4500"
-          stroke="#FF8C00"
-          strokeWidth="2"
+          cx="140"
+          cy="35"
+          r="8"
+          fill={isDead ? '#CCCCCC' : '#FFFFFF'}
         />
-
-        {/* Dorsal Fin (top): small darker‐orange triangle */}
-        <polygon
-          className="fish-fin"
-          points="50,5 60,15 40,15"
-          fill="#FF8C00"
-          stroke="#FF8C00"
-          strokeWidth="1"
-        />
-
-        {/* Eye: white circle with black pupil */}
+        {/* 6) Pupil (black) */}
         <circle
-          className="fish-eye"
-          cx="82"
-          cy="20"
+          cx="140"
+          cy="35"
           r="4"
-          fill="#FFFFFF"
-          stroke="#000000"
-          strokeWidth="1"
+          fill={isDead ? '#333333' : '#000000'}
         />
-        <circle
-          className="fish-eye-pupil"
-          cx="82"
-          cy="20"
-          r="2"
-          fill="#000000"
-        />
+
+        {/* 7) “✕” over eye if dead */}
+        {isDead && (
+          <g stroke="#FF0000" strokeWidth="3">
+            <line x1="136" y1="31" x2="144" y2="39" />
+            <line x1="144" y1="31" x2="136" y2="39" />
+          </g>
+        )}
       </svg>
     </div>
   );
 }
-
-export default Fish;

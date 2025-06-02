@@ -1,0 +1,26 @@
+/* src/components/Bubbles.css */
+
+.bubble {
+  position: absolute;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  /* Start fully opaque, then fade out as it rises */
+  animation: rise 4s linear forwards;
+  pointer-events: none; /* Let clicks pass through */
+}
+
+/* Keyframes for rising + fading */
+@keyframes rise {
+  0% {
+    transform: translateY(0);
+    opacity: 0.8;
+  }
+  70% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateY(-110vh);
+    opacity: 0;
+  }
+}

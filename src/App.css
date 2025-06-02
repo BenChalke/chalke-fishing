@@ -1,9 +1,31 @@
 /* src/App.css */
+
+/* Underwater gradient & hide default cursor */
 .container {
   position: relative;
   width: 100vw;
   height: 100vh;
   background: linear-gradient(to bottom, #0e2f44, #051924);
   overflow: hidden;
-  cursor: none; /* Hide the system cursor; show only our hook */
+  cursor: none;
+}
+
+/* Pull‐up keyframes for catch */
+@keyframes pull-up {
+  from { transform: translateY(0); }
+  to   { transform: translateY(calc(-100vh - 200px)); }
+}
+
+.fishing-line.caught {
+  animation: pull-up 1s ease-in-out forwards;
+}
+
+.hook-wrapper.caught {
+  animation: pull-up 1s ease-in-out forwards;
+}
+
+.fish-caught {
+  position: absolute;
+  animation: pull-up 1s ease-in-out forwards;
+  z-index: 10;
 }
