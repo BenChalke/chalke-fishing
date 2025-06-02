@@ -8,12 +8,14 @@ import CatchAnimation from './components/CatchAnimation';
 const FISH_COUNT = 10;
 const FISH_SIZE = 120;
 const REPULSE_DISTANCE = 100;
-const SPEED = 1.5;
 
-// Available fish types
+// Minimum and maximum fish speeds
+const MIN_SPEED = 0.5;
+const MAX_SPEED = 20.0;
+
 const FISH_TYPES = ['orange', 'blue', 'striped', 'green'];
 
-/** Helper to create an initial array of FISH_COUNT fish */
+/** Generates an initial array of fish (id, x, y, angle, type) */
 function createInitialFish() {
   const width = window.innerWidth;
   const height = window.innerHeight;
@@ -23,75 +25,86 @@ function createInitialFish() {
     const y = Math.random() * (height - FISH_SIZE / 2);
     const angle = Math.random() * 2 * Math.PI;
     const type = FISH_TYPES[Math.floor(Math.random() * FISH_TYPES.length)];
-    initialFish.push({
-      id: i,
-      x,
-      y,
-      dx: Math.cos(angle) * SPEED,
-      dy: Math.sin(angle) * SPEED,
-      type,
-    });
+    initialFish.push({ id: i, x, y, angle, type });
   }
   return initialFish;
 }
 
 function App() {
-  // 1) State for all live fish
+  // 1) State for all fish
   const [fishArray, setFishArray] = useState([]);
-  // 2) Cursor position & hook‐jerk logic
+  // 2) Shared speed for every fish
+  const [speed, setSpeed] = useState(1.5);
+  // 3) Cursor position & hook‐jerk
   const [cursorPos, setCursorPos] = useState({ x: -1000, y: -1000 });
   const [isJerking, setIsJerking] = useState(false);
-  // 3) Ongoing catch animations
+  // 4) Ongoing catch animations
   const [catchAnimations, setCatchAnimations] = useState([]);
-  // 4) A ref to hold the next unique fish ID
+
+  // Ref to access latest cursor position inside the movement loop
+  const cursorRef = useRef({ x: -1000, y: -1000 });
+  // Ref to generate unique IDs for newly added fish
   const nextId = useRef(FISH_COUNT);
 
-  // Ref to always read the latest cursor position inside movement loop
-  const cursorRef = useRef({ x: -1000, y: -1000 });
-
-  // On mount: populate initial fish and start movement loop
+  // Populate fish once on mount
   useEffect(() => {
     setFishArray(createInitialFish());
+  }, []);
 
+  // Movement loop: recalculates positions whenever speed changes
+  useEffect(() => {
     const interval = setInterval(() => {
       setFishArray((prevFish) => {
         const w = window.innerWidth;
         const h = window.innerHeight;
+
         return prevFish.map((fish) => {
-          let { x, y, dx, dy, id, type } = fish;
+          let { id, x, y, angle, type } = fish;
+
+          // Compute dx, dy from angle & current speed
+          let dx = Math.cos(angle) * speed;
+          let dy = Math.sin(angle) * speed;
+
+          // Repulsion if cursor is close
           const centerX = x + FISH_SIZE / 2;
           const centerY = y + FISH_SIZE / 4;
           const diffX = centerX - cursorRef.current.x;
           const diffY = centerY - cursorRef.current.y;
           const dist = Math.sqrt(diffX * diffX + diffY * diffY);
-
           if (dist < REPULSE_DISTANCE) {
-            const angle = Math.atan2(diffY, diffX);
-            dx = Math.cos(angle) * SPEED;
-            dy = Math.sin(angle) * SPEED;
+            const repelAngle = Math.atan2(diffY, diffX);
+            dx = Math.cos(repelAngle) * speed;
+            dy = Math.sin(repelAngle) * speed;
+            angle = repelAngle;
           }
 
           let newX = x + dx;
           let newY = y + dy;
+          let newAngle = angle;
 
+          // Horizontal bounce: reflect angle
           if (newX <= 0 || newX + FISH_SIZE >= w) {
-            dx = -dx;
+            newAngle = Math.PI - angle;
+            dx = Math.cos(newAngle) * speed;
             newX = x + dx;
           }
+
+          // Vertical bounce: reflect angle
           if (newY <= 0 || newY + FISH_SIZE / 2 >= h) {
-            dy = -dy;
+            newAngle = -angle;
+            dy = Math.sin(newAngle) * speed;
             newY = y + dy;
           }
 
-          return { id, x: newX, y: newY, dx, dy, type };
+          return { id, x: newX, y: newY, angle: newAngle, type };
         });
       });
     }, 30);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [speed]);
 
-  // Track global mouse movement for both repulsion and hook position
+  // Track global mouse movement (for repulsion & hook)
   useEffect(() => {
     const handleGlobalMouseMove = (e) => {
       const pos = { x: e.clientX, y: e.clientY };
@@ -102,7 +115,7 @@ function App() {
     return () => window.removeEventListener('mousemove', handleGlobalMouseMove);
   }, []);
 
-  // Hook “jerk” animation on mousedown
+  // Hook “jerk” feedback on mousedown
   const handleMouseDown = (e) => {
     const pos = { x: e.clientX, y: e.clientY };
     cursorRef.current = pos;
@@ -111,7 +124,7 @@ function App() {
     setTimeout(() => setIsJerking(false), 300);
   };
 
-  // When a fish is clicked: remove it and start its catch animation
+  // When a fish is clicked: remove it + start its catch animation
   const handleFishClick = (fishId, e) => {
     e.stopPropagation();
     const { x: curX, y: curY } = cursorPos;
@@ -122,22 +135,21 @@ function App() {
     ]);
   };
 
-  // Remove a catch animation once pull‐up finishes
+  // Remove a catch animation when it finishes
   const handleCatchAnimationEnd = (animId) => {
     setCatchAnimations((prev) => prev.filter((a) => a.id !== animId));
   };
 
-  // Are we currently catching? (hide cursor‐hook if true)
   const isCatching = catchAnimations.length > 0;
 
-  // Reset: clear catches and repopulate fish (and reset nextId)
+  // Reset: clear catches & repopulate fish
   const handleReset = () => {
     setCatchAnimations([]);
     setFishArray(createInitialFish());
     nextId.current = FISH_COUNT;
   };
 
-  // Add Fish: create one new fish with a unique ID and random attributes
+  // Add one new fish at random pos/angle/type
   const handleAddFish = () => {
     const width = window.innerWidth;
     const height = window.innerHeight;
@@ -145,16 +157,19 @@ function App() {
     const x = Math.random() * (width - FISH_SIZE);
     const y = Math.random() * (height - FISH_SIZE / 2);
     const type = FISH_TYPES[Math.floor(Math.random() * FISH_TYPES.length)];
-    const newFish = {
-      id: nextId.current,
-      x,
-      y,
-      dx: Math.cos(angle) * SPEED,
-      dy: Math.sin(angle) * SPEED,
-      type,
-    };
+    const newFish = { id: nextId.current, x, y, angle, type };
     nextId.current += 1;
     setFishArray((prev) => [...prev, newFish]);
+  };
+
+  // Decrease speed by 0.5, down to MIN_SPEED
+  const handleSpeedDown = () => {
+    setSpeed((s) => Math.max(MIN_SPEED, parseFloat((s - 0.5).toFixed(2))));
+  };
+
+  // Increase speed by 0.5, up to MAX_SPEED
+  const handleSpeedUp = () => {
+    setSpeed((s) => Math.min(MAX_SPEED, parseFloat((s + 0.5).toFixed(2))));
   };
 
   return (
@@ -162,7 +177,7 @@ function App() {
       {/* 1) Bubbles */}
       <Bubbles />
 
-      {/* 2) Live fish (various types) */}
+      {/* 2) Live fish */}
       {fishArray.map((fish) => (
         <Fish
           key={fish.id}
@@ -175,12 +190,12 @@ function App() {
         />
       ))}
 
-      {/* 3) Cursor hook, but only when not currently catching */}
+      {/* 3) Cursor hook (hidden if catching) */}
       {!isCatching && (
         <Hook x={cursorPos.x} y={cursorPos.y} jerking={isJerking} />
       )}
 
-      {/* 4) Catch animations (dead fish + pulling hook) */}
+      {/* 4) Catch animations (dead fish + pulled hook) */}
       {catchAnimations.map((anim) => (
         <CatchAnimation
           key={anim.id}
@@ -191,11 +206,20 @@ function App() {
         />
       ))}
 
-      {/* 5) “Add Fish” and “Reset Fish” buttons in bottom‐right */}
-      <button className="add-button" onClick={handleAddFish}>
+      {/* 5) Display current speed */}
+      <div className="speed-label">Speed: {speed.toFixed(1)}</div>
+
+      {/* 6) Control buttons in bottom‐right */}
+      <button className="control-button speed-down" onClick={handleSpeedDown}>
+        Speed–
+      </button>
+      <button className="control-button speed-up" onClick={handleSpeedUp}>
+        Speed+
+      </button>
+      <button className="control-button add-button" onClick={handleAddFish}>
         Add Fish
       </button>
-      <button className="reset-button" onClick={handleReset}>
+      <button className="control-button reset-button" onClick={handleReset}>
         Reset Fish
       </button>
     </div>
