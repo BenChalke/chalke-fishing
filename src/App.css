@@ -9,7 +9,7 @@
   cursor: none;
 }
 
-/* Pull‐up animations for caught fish */
+/* Pull-up animations for caught fish */
 @keyframes pull-up {
   from { transform: translateY(0); }
   to   { transform: translateY(calc(-100vh - 200px)); }
@@ -32,7 +32,7 @@
 /* Label showing current speed */
 .speed-label {
   position: absolute;
-  bottom: 80px;    /* above the buttons */
+  bottom: 80px;    /* sits above buttons */
   right: 20px;
   color: #ffffff;
   font-size: 18px;
@@ -41,7 +41,7 @@
   z-index: 50;
 }
 
-/* Base style for all control buttons */
+/* Base style for control buttons */
 .control-button {
   position: absolute;
   bottom: 20px;
@@ -52,7 +52,7 @@
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.2s ease;
-  z-index: 50;
+  z-index: 50; /* sits above fish */
 }
 
 .control-button:hover {
@@ -63,19 +63,81 @@
   transform: scale(0.96);
 }
 
-/* Positioning of individual buttons (from right→left) */
+/* Positioning of buttons (from right → left) */
 .reset-button {
   right: 20px;
 }
 
 .add-button {
-  right: 140px; /* ~100px button width + 20px gap */
+  right: 140px; /* ~100px width + 20px gap */
 }
 
 .speed-up {
-  right: 260px; /* ~120px to the left of Add Fish + 20px gap */
+  right: 260px; /* 120px left of Add Fish + 20px gap */
 }
 
 .speed-down {
-  right: 380px; /* ~120px to the left of Speed+ + 20px gap */
+  right: 380px; /* 120px left of Speed+ + 20px gap */
+}
+
+.caught-button {
+  right: 500px; /* 120px left of Speed– + 20px gap */
+}
+
+/* Popup overlay background */
+.caught-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100; /* above everything */
+}
+
+/* Popup content box */
+.caught-popup-content {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 20px 30px;
+  width: 300px;
+  max-width: 80%;
+  max-height: 80%;
+  overflow-y: auto;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.caught-popup-content h2 {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.caught-popup-content ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.caught-popup-content li {
+  font-size: 16px;
+  margin: 6px 0;
+}
+
+/* Close button inside popup */
+.close-popup-button {
+  margin-top: 12px;
+  padding: 8px 14px;
+  font-size: 14px;
+  background-color: #FF6B6B;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.close-popup-button:hover {
+  background-color: #ff4c4c;
 }
