@@ -18,9 +18,9 @@ const MAX_SPEED = 20.0;
 const COLOURS  = ['orange', 'blue', 'green', 'purple', 'yellow'];
 const PATTERNS = ['solid', 'striped', 'spotted'];
 
-// Rare colours (1% each)
+// Rare colours (was 1% each, now 0.1% each)
 const RARE_COLOURS = ['red', 'pink', 'silver'];
-// Super-rare colours (0.5% each)
+// Super-rare colours (was 0.5% each, now 0.05% each)
 const SUPER_COLOURS = ['crimson', 'cyan'];
 
 /** 
@@ -188,11 +188,11 @@ export default function App() {
   };
 
   // Add Fish:
-  //  • 0.5% → crimson (super-rare)
-  //  • 0.5% → cyan (super-rare)
-  //  • 1%   → red (rare)
-  //  • 1%   → pink (rare)
-  //  • 1%   → silver (rare)
+  //  • 0.05% → crimson (super-rare)
+  //  • 0.05% → cyan (super-rare)
+  //  • 0.1%  → red (rare)
+  //  • 0.1%  → pink (rare)
+  //  • 0.1%  → silver (rare)
   //  • Else random common COLOURS × PATTERNS
   const handleAddFish = () => {
     const w = window.innerWidth;
@@ -203,24 +203,24 @@ export default function App() {
 
     let colour, pattern;
     const roll = Math.random();
-    if (roll < 0.005) {
-      // 0.5% for super-rare crimson
+    if (roll < 0.0005) {
+      // 0.05% for super-rare crimson
       colour = 'crimson';
       pattern = 'solid';
-    } else if (roll < 0.01) {
-      // next 0.5% for super-rare cyan
+    } else if (roll < 0.001) {
+      // next 0.05% for super-rare cyan
       colour = 'cyan';
       pattern = 'solid';
-    } else if (roll < 0.02) {
-      // 1% for rare red
+    } else if (roll < 0.002) {
+      // 0.1% for rare red
       colour = 'red';
       pattern = 'solid';
-    } else if (roll < 0.03) {
-      // 1% for rare pink
+    } else if (roll < 0.003) {
+      // 0.1% for rare pink
       colour = 'pink';
       pattern = 'solid';
-    } else if (roll < 0.04) {
-      // 1% for rare silver
+    } else if (roll < 0.004) {
+      // 0.1% for rare silver
       colour = 'silver';
       pattern = 'solid';
     } else {
