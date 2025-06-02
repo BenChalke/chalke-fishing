@@ -41,7 +41,7 @@ function App() {
   // 4) Ongoing catch animations
   const [catchAnimations, setCatchAnimations] = useState([]);
 
-  // Ref to access latest cursor position inside the movement loop
+  // Ref to keep latest cursor position inside the movement loop
   const cursorRef = useRef({ x: -1000, y: -1000 });
   // Ref to generate unique IDs for newly added fish
   const nextId = useRef(FISH_COUNT);
@@ -142,11 +142,12 @@ function App() {
 
   const isCatching = catchAnimations.length > 0;
 
-  // Reset: clear catches & repopulate fish
+  // Reset: clear catches, repopulate fish, and reset speed to 1.5
   const handleReset = () => {
     setCatchAnimations([]);
     setFishArray(createInitialFish());
     nextId.current = FISH_COUNT;
+    setSpeed(1.5); // ← also reset speed here
   };
 
   // Add one new fish at random pos/angle/type
@@ -167,7 +168,7 @@ function App() {
     setSpeed((s) => Math.max(MIN_SPEED, parseFloat((s - 0.5).toFixed(2))));
   };
 
-  // Increase speed by 0.5, up to MAX_SPEED
+  // Increase speed by 0.5, up to MAX_SPEED (20.0)
   const handleSpeedUp = () => {
     setSpeed((s) => Math.min(MAX_SPEED, parseFloat((s + 0.5).toFixed(2))));
   };
@@ -195,7 +196,7 @@ function App() {
         <Hook x={cursorPos.x} y={cursorPos.y} jerking={isJerking} />
       )}
 
-      {/* 4) Catch animations (dead fish + pulled hook) */}
+      {/* 4) Catch animations (dead fish + pulling hook) */}
       {catchAnimations.map((anim) => (
         <CatchAnimation
           key={anim.id}
@@ -209,7 +210,7 @@ function App() {
       {/* 5) Display current speed */}
       <div className="speed-label">Speed: {speed.toFixed(1)}</div>
 
-      {/* 6) Control buttons in bottom‐right */}
+      {/* 6) Control buttons in bottom‐right: Speed–, Speed+, Add Fish, Reset Fish */}
       <button className="control-button speed-down" onClick={handleSpeedDown}>
         Speed–
       </button>
