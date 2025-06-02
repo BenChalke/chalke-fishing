@@ -1,3 +1,4 @@
+// src/App.js
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import Fish from './components/Fish';
@@ -13,9 +14,17 @@ const REPULSE_DISTANCE = 100;
 const MIN_SPEED = 0.5;
 const MAX_SPEED = 20.0;
 
-const FISH_TYPES = ['orange', 'blue', 'striped', 'green'];
+// Now we have 7 types
+const FISH_TYPES = [
+  'orange',
+  'blue',
+  'striped',
+  'green',
+  'purple',
+  'yellow',
+  'spotted',
+];
 
-/** Generates an initial array of fish (id, x, y, angle, type) */
 function createInitialFish() {
   const width = window.innerWidth;
   const height = window.innerHeight;
@@ -31,27 +40,19 @@ function createInitialFish() {
 }
 
 function App() {
-  // 1) State for all fish
   const [fishArray, setFishArray] = useState([]);
-  // 2) Shared speed for every fish
   const [speed, setSpeed] = useState(1.5);
-  // 3) Cursor position & hook‐jerk
   const [cursorPos, setCursorPos] = useState({ x: -1000, y: -1000 });
   const [isJerking, setIsJerking] = useState(false);
-  // 4) Ongoing catch animations
   const [catchAnimations, setCatchAnimations] = useState([]);
 
-  // Ref to keep latest cursor position inside the movement loop
   const cursorRef = useRef({ x: -1000, y: -1000 });
-  // Ref to generate unique IDs for newly added fish
   const nextId = useRef(FISH_COUNT);
 
-  // Populate fish once on mount
   useEffect(() => {
     setFishArray(createInitialFish());
   }, []);
 
-  // Movement loop: recalculates positions whenever speed changes
   useEffect(() => {
     const interval = setInterval(() => {
       setFishArray((prevFish) => {
@@ -60,12 +61,10 @@ function App() {
 
         return prevFish.map((fish) => {
           let { id, x, y, angle, type } = fish;
-
-          // Compute dx, dy from angle & current speed
           let dx = Math.cos(angle) * speed;
           let dy = Math.sin(angle) * speed;
 
-          // Repulsion if cursor is close
+          // Repulsion
           const centerX = x + FISH_SIZE / 2;
           const centerY = y + FISH_SIZE / 4;
           const diffX = centerX - cursorRef.current.x;
@@ -82,14 +81,14 @@ function App() {
           let newY = y + dy;
           let newAngle = angle;
 
-          // Horizontal bounce: reflect angle
+          // Horizontal bounce
           if (newX <= 0 || newX + FISH_SIZE >= w) {
             newAngle = Math.PI - angle;
             dx = Math.cos(newAngle) * speed;
             newX = x + dx;
           }
 
-          // Vertical bounce: reflect angle
+          // Vertical bounce
           if (newY <= 0 || newY + FISH_SIZE / 2 >= h) {
             newAngle = -angle;
             dy = Math.sin(newAngle) * speed;
@@ -104,7 +103,6 @@ function App() {
     return () => clearInterval(interval);
   }, [speed]);
 
-  // Track global mouse movement (for repulsion & hook)
   useEffect(() => {
     const handleGlobalMouseMove = (e) => {
       const pos = { x: e.clientX, y: e.clientY };
@@ -115,7 +113,6 @@ function App() {
     return () => window.removeEventListener('mousemove', handleGlobalMouseMove);
   }, []);
 
-  // Hook “jerk” feedback on mousedown
   const handleMouseDown = (e) => {
     const pos = { x: e.clientX, y: e.clientY };
     cursorRef.current = pos;
@@ -124,7 +121,6 @@ function App() {
     setTimeout(() => setIsJerking(false), 300);
   };
 
-  // When a fish is clicked: remove it + start its catch animation
   const handleFishClick = (fishId, e) => {
     e.stopPropagation();
     const { x: curX, y: curY } = cursorPos;
@@ -135,22 +131,19 @@ function App() {
     ]);
   };
 
-  // Remove a catch animation when it finishes
   const handleCatchAnimationEnd = (animId) => {
     setCatchAnimations((prev) => prev.filter((a) => a.id !== animId));
   };
 
   const isCatching = catchAnimations.length > 0;
 
-  // Reset: clear catches, repopulate fish, and reset speed to 1.5
   const handleReset = () => {
     setCatchAnimations([]);
     setFishArray(createInitialFish());
     nextId.current = FISH_COUNT;
-    setSpeed(1.5); // ← also reset speed here
+    setSpeed(1.5);
   };
 
-  // Add one new fish at random pos/angle/type
   const handleAddFish = () => {
     const width = window.innerWidth;
     const height = window.innerHeight;
@@ -163,22 +156,20 @@ function App() {
     setFishArray((prev) => [...prev, newFish]);
   };
 
-  // Decrease speed by 0.5, down to MIN_SPEED
   const handleSpeedDown = () => {
     setSpeed((s) => Math.max(MIN_SPEED, parseFloat((s - 0.5).toFixed(2))));
   };
 
-  // Increase speed by 0.5, up to MAX_SPEED (20.0)
   const handleSpeedUp = () => {
     setSpeed((s) => Math.min(MAX_SPEED, parseFloat((s + 0.5).toFixed(2))));
   };
 
   return (
     <div className="container" onMouseDown={handleMouseDown}>
-      {/* 1) Bubbles */}
+      {/* Bubbles */}
       <Bubbles />
 
-      {/* 2) Live fish */}
+      {/* Live fish */}
       {fishArray.map((fish) => (
         <Fish
           key={fish.id}
@@ -191,12 +182,12 @@ function App() {
         />
       ))}
 
-      {/* 3) Cursor hook (hidden if catching) */}
+      {/* Cursor hook (hidden if catching) */}
       {!isCatching && (
         <Hook x={cursorPos.x} y={cursorPos.y} jerking={isJerking} />
       )}
 
-      {/* 4) Catch animations (dead fish + pulling hook) */}
+      {/* Catch animations */}
       {catchAnimations.map((anim) => (
         <CatchAnimation
           key={anim.id}
@@ -207,10 +198,10 @@ function App() {
         />
       ))}
 
-      {/* 5) Display current speed */}
+      {/* Display current speed */}
       <div className="speed-label">Speed: {speed.toFixed(1)}</div>
 
-      {/* 6) Control buttons in bottom‐right: Speed–, Speed+, Add Fish, Reset Fish */}
+      {/* Control buttons */}
       <button className="control-button speed-down" onClick={handleSpeedDown}>
         Speed–
       </button>
