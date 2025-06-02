@@ -315,7 +315,7 @@ body {
   }
 
   /* Stack buttons vertically along right edge with extra 50px offset */
-  .caught-button {
+  .reset-button {
     right: 10px;
     bottom: 100px;
   }
@@ -335,7 +335,7 @@ body {
     bottom: 250px;
   }
 
-  .reset-button {
+  .caught-button {
     right: 10px;
     bottom: 300px;
   }
