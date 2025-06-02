@@ -54,14 +54,17 @@ export default function App() {
   const [caughtRecords, setCaughtRecords] = useState([]);
   // 6) Show/hide “Fish Caught” popup
   const [showCaughtPopup, setShowCaughtPopup] = useState(false);
+  // 7) Detect mobile (touch) environment
+  const [isMobile, setIsMobile] = useState(false);
 
   // Refs: for mouse repulsion and next unique ID
   const cursorRef = useRef({ x: -1000, y: -1000 });
   const nextId    = useRef(FISH_COUNT);
 
-  // On mount: populate initial fish
+  // On mount: populate initial fish, detect touch support
   useEffect(() => {
     setFishArray(createInitialFish());
+    setIsMobile('ontouchstart' in window);
   }, []);
 
   // Movement loop (re‐runs on speed change; does NOT re‐init fish)
@@ -125,9 +128,11 @@ export default function App() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  // Hook “jerk” effect on mousedown
-  const handleMouseDown = (e) => {
-    const pos = { x: e.clientX, y: e.clientY };
+  // Hook “jerk” effect on mousedown / touch
+  const handlePointerDown = (e) => {
+    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+    const pos = { x: clientX, y: clientY };
     cursorRef.current = pos;
     setCursorPos(pos);
     setIsJerking(true);
@@ -140,7 +145,7 @@ export default function App() {
     const fishObj = fishArray.find((f) => f.id === fishId);
     const { colour, pattern } = fishObj || {};
     const caughtType = `${colour} ${pattern}`;
-    const { x: curX, y: curY } = cursorPos;
+    const { x: curX, y: curY } = cursorRef.current;
 
     // Remove from live array
     setFishArray((prev) => prev.filter((f) => f.id !== fishId));
@@ -228,7 +233,7 @@ export default function App() {
   }, {});
 
   return (
-    <div className="container" onMouseDown={handleMouseDown}>
+    <div className="container" onMouseDown={handlePointerDown} onTouchStart={handlePointerDown}>
       {/* 1) Bubbles */}
       <Bubbles />
 
@@ -246,12 +251,12 @@ export default function App() {
         />
       ))}
 
-      {/* 3) Cursor hook (hidden if catching) */}
-      {!isCatching && (
+      {/* 3) Cursor hook (desktop only, hidden if catching or on mobile) */}
+      {!isCatching && !isMobile && (
         <Hook x={cursorPos.x} y={cursorPos.y} jerking={isJerking} />
       )}
 
-      {/* 4) Catch animations (dead fish + pulling hook) */}
+      {/* 4) Catch animations (hook + dead fish) */}
       {catchAnimations.map((anim) => (
         <CatchAnimation
           key={anim.id}
@@ -260,7 +265,8 @@ export default function App() {
           fishSize={FISH_SIZE}
           onAnimationEnd={() => handleCatchAnimationEnd(anim.id)}
         >
-          {/* Render the caught fish (dead) */}
+          {/* During catch, always show hook + dead fish (regardless of mobile) */}
+          <Hook x={anim.startX} y={anim.startY} jerking={false} />
           <Fish
             x={0}
             y={0}
@@ -292,103 +298,109 @@ export default function App() {
         Fish Caught
       </button>
 
-      {/* 7) “Fish Caught” popup with sorted stats */}
+      {/* 7) “Fish Caught” popup with sorted stats and top-right close */}
       {showCaughtPopup && (
         <div className="caught-popup-overlay" onClick={toggleCaughtPopup}>
           <div className="caught-popup-content" onClick={(e) => e.stopPropagation()}>
-            <h2>Fish Caught</h2>
-            {caughtRecords.length === 0 ? (
-              <p>No fish caught yet.</p>
-            ) : (
-              <div>
-                {/* a) Render all rare fish first */}
-                {Object.entries(tally)
-                  .filter(([typeStr]) => {
-                    const [colour] = typeStr.split(' ');
-                    return RARE_COLOURS.includes(colour);
-                  })
-                  .map(([typeStr, count]) => {
-                    const [colour, pattern] = typeStr.split(' ');
-                    const capitalized = typeStr
-                      .split(' ')
-                      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-                      .join(' ');
-                    return (
-                      <li key={typeStr} className="caught-item">
-                        <div className="mini-fish-container">
-                          <Fish
-                            x={0}
-                            y={0}
-                            size={40}
-                            colour={colour}
-                            pattern={pattern}
-                            isDead={false}
-                          />
-                        </div>
-                        <span className="rare-label">
-                          <strong>Rare {capitalized}:</strong> {count}
-                        </span>
-                      </li>
-                    );
-                  })}
-
-                {/* b) Now group and render common fish by colour */}
-                {(() => {
-                  // Filter common entries and group by colour
-                  const commonEntries = Object.entries(tally).filter(
-                    ([typeStr]) => {
-                      const [colour] = typeStr.split(' ');
-                      return !RARE_COLOURS.includes(colour);
-                    }
-                  );
-                  const commonByColour = {};
-                  commonEntries.forEach(([typeStr, count]) => {
-                    const [colour, pattern] = typeStr.split(' ');
-                    if (!commonByColour[colour]) {
-                      commonByColour[colour] = [];
-                    }
-                    commonByColour[colour].push({ pattern, count });
-                  });
-
-                  return Object.keys(commonByColour).map((colour) => {
-                    const colourHeading =
-                      colour.charAt(0).toUpperCase() + colour.slice(1);
-                    return (
-                      <div key={colour} className="common-group">
-                        <h3>{colourHeading}</h3>
-                        <ul>
-                          {commonByColour[colour].map(({ pattern, count }) => {
-                            const patternLabel =
-                              pattern.charAt(0).toUpperCase() + pattern.slice(1);
-                            const typeStr = `${colour} ${pattern}`;
-                            return (
-                              <li key={typeStr} className="caught-item">
-                                <div className="mini-fish-container">
-                                  <Fish
-                                    x={0}
-                                    y={0}
-                                    size={40}
-                                    colour={colour}
-                                    pattern={pattern}
-                                    isDead={false}
-                                  />
-                                </div>
-                                <span>
-                                  {patternLabel}: {count}
-                                </span>
-                              </li>
-                            );
-                          })}
-                        </ul>
-                      </div>
-                    );
-                  });
-                })()}
-              </div>
-            )}
-            <button className="close-popup-button" onClick={toggleCaughtPopup}>
-              Close
+            {/* Top-right “X” close button */}
+            <button className="popup-close-x" onClick={toggleCaughtPopup}>
+              ×
             </button>
+            <h2>Fish Caught</h2>
+            {/* Scrollable stats area */}
+            <div className="popup-body">
+              {caughtRecords.length === 0 ? (
+                <p>No fish caught yet.</p>
+              ) : (
+                <div>
+                  {/* a) Render all rare fish first */}
+                  <ul>
+                    {Object.entries(tally)
+                      .filter(([typeStr]) => {
+                        const [colour] = typeStr.split(' ');
+                        return RARE_COLOURS.includes(colour);
+                      })
+                      .map(([typeStr, count]) => {
+                        const [colour, pattern] = typeStr.split(' ');
+                        const capitalized = typeStr
+                          .split(' ')
+                          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                          .join(' ');
+                        return (
+                          <li key={typeStr} className="caught-item">
+                            <div className="mini-fish-container">
+                              <Fish
+                                x={0}
+                                y={0}
+                                size={40}
+                                colour={colour}
+                                pattern={pattern}
+                                isDead={false}
+                              />
+                            </div>
+                            <span className="rare-label">
+                              <strong>Rare {capitalized}:</strong> {count}
+                            </span>
+                          </li>
+                        );
+                      })}
+                  </ul>
+
+                  {/* b) Now group and render common fish by colour */}
+                  {(() => {
+                    // Filter common entries and group by colour
+                    const commonEntries = Object.entries(tally).filter(
+                      ([typeStr]) => {
+                        const [colour] = typeStr.split(' ');
+                        return !RARE_COLOURS.includes(colour);
+                      }
+                    );
+                    const commonByColour = {};
+                    commonEntries.forEach(([typeStr, count]) => {
+                      const [colour, pattern] = typeStr.split(' ');
+                      if (!commonByColour[colour]) {
+                        commonByColour[colour] = [];
+                      }
+                      commonByColour[colour].push({ pattern, count });
+                    });
+
+                    return Object.keys(commonByColour).map((colour) => {
+                      const colourHeading =
+                        colour.charAt(0).toUpperCase() + colour.slice(1);
+                      return (
+                        <div key={colour} className="common-group">
+                          <h3>{colourHeading}</h3>
+                          <ul>
+                            {commonByColour[colour].map(({ pattern, count }) => {
+                              const patternLabel =
+                                pattern.charAt(0).toUpperCase() + pattern.slice(1);
+                              const typeStr = `${colour} ${pattern}`;
+                              return (
+                                <li key={typeStr} className="caught-item">
+                                  <div className="mini-fish-container">
+                                    <Fish
+                                      x={0}
+                                      y={0}
+                                      size={40}
+                                      colour={colour}
+                                      pattern={pattern}
+                                      isDead={false}
+                                    />
+                                  </div>
+                                  <span>
+                                    {patternLabel}: {count}
+                                  </span>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
