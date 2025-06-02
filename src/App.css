@@ -1,5 +1,11 @@
 /* src/App.css */
 
+/* Prevent the 300 ms tap delay on modern mobile browsers */
+html,
+body {
+  touch-action: manipulation;
+}
+
 /* Container: full-screen underwater gradient */
 .container {
   position: relative;

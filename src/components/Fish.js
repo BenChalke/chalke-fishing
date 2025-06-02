@@ -156,7 +156,7 @@ export default function Fish({
   }
 
   return (
-    <div style={wrapperStyle} onClick={onClick}>
+    <div style={wrapperStyle} onClick={onClick} onTouchEnd={onClick}>
       <svg
         viewBox="0 0 200 100"
         preserveAspectRatio="xMidYMid meet"

@@ -18,9 +18,9 @@ const MAX_SPEED = 20.0;
 const COLOURS  = ['orange', 'blue', 'green', 'purple', 'yellow'];
 const PATTERNS = ['solid', 'striped', 'spotted'];
 
-// Rare colours (was 1% each, now 0.1% each)
+// Rare colours (0.1% each now)
 const RARE_COLOURS = ['red', 'pink', 'silver'];
-// Super-rare colours (was 0.5% each, now 0.05% each)
+// Super-rare colours (0.05% each now)
 const SUPER_COLOURS = ['crimson', 'cyan'];
 
 /** 
@@ -52,7 +52,7 @@ export default function App() {
   const [isJerking, setIsJerking] = useState(false);
   // 4) Active catch animations
   const [catchAnimations, setCatchAnimations] = useState([]);
-  // 5) Caught-fish records (array of “colour pattern” strings)
+  // 5) Caught-fish records
   const [caughtRecords, setCaughtRecords] = useState([]);
   // 6) Show/hide “Fish Caught” popup
   const [showCaughtPopup, setShowCaughtPopup] = useState(false);
@@ -87,17 +87,19 @@ export default function App() {
           let dx = Math.cos(angle) * speed;
           let dy = Math.sin(angle) * speed;
 
-          // Repulsion if cursor is too close
-          const centerX = x + FISH_SIZE / 2;
-          const centerY = y + FISH_SIZE / 4;
-          const diffX = centerX - cursorRef.current.x;
-          const diffY = centerY - cursorRef.current.y;
-          const dist  = Math.hypot(diffX, diffY);
-          if (dist < REPULSE_DISTANCE) {
-            const repelAngle = Math.atan2(diffY, diffX);
-            dx = Math.cos(repelAngle) * speed;
-            dy = Math.sin(repelAngle) * speed;
-            angle = repelAngle;
+          // Only apply repulsion on non-mobile
+          if (!isMobile) {
+            const centerX = x + FISH_SIZE / 2;
+            const centerY = y + FISH_SIZE / 4;
+            const diffX = centerX - cursorRef.current.x;
+            const diffY = centerY - cursorRef.current.y;
+            const dist  = Math.hypot(diffX, diffY);
+            if (dist < REPULSE_DISTANCE) {
+              const repelAngle = Math.atan2(diffY, diffX);
+              dx = Math.cos(repelAngle) * speed;
+              dy = Math.sin(repelAngle) * speed;
+              angle = repelAngle;
+            }
           }
 
           let newX = x + dx;
@@ -123,9 +125,9 @@ export default function App() {
       });
     }, 30);
     return () => clearInterval(interval);
-  }, [speed]);
+  }, [speed, isMobile]);
 
-  // Track global mouse movement (for repulsion & hook)
+  // Track global mouse movement (for repulsion & hook) on desktop
   useEffect(() => {
     const handleMouseMove = (e) => {
       const pos = { x: e.clientX, y: e.clientY };
@@ -337,10 +339,10 @@ export default function App() {
 
       {/* 6) Control buttons */}
       <button className="control-button speed-down" onClick={handleSpeedDown}>
-        Speed–
+        Speed –
       </button>
       <button className="control-button speed-up" onClick={handleSpeedUp}>
-        Speed+
+        Speed +
       </button>
       <button className="control-button add-button" onClick={handleAddFish}>
         Add Fish
@@ -349,15 +351,15 @@ export default function App() {
         Reset Fish
       </button>
       <button className="control-button caught-button" onClick={toggleCaughtPopup}>
-        Fish Caught
+        See Fish Caught
       </button>
 
       {/* 7) “Fish Caught” popup with sorted stats and top-right close */}
       {showCaughtPopup && (
-        <div className="caught-popup-overlay" onClick={toggleCaughtPopup}>
-          <div className="caught-popup-content" onClick={(e) => e.stopPropagation()}>
+        <div className="caught-popup-overlay" onClick={toggleCaughtPopup} onTouchEnd={toggleCaughtPopup}>
+          <div className="caught-popup-content" onClick={(e) => e.stopPropagation()} onTouchEnd={(e) => e.stopPropagation()}>
             {/* Top-right “X” close button */}
-            <button className="popup-close-x" onClick={toggleCaughtPopup}>
+            <button className="popup-close-x" onClick={toggleCaughtPopup} onTouchEnd={toggleCaughtPopup}>
               ×
             </button>
             <h2>Fish Caught</h2>
