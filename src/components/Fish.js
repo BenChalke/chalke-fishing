@@ -1,6 +1,7 @@
 // src/components/Fish.js
 import React from 'react';
 import './Fish.css';
+import { SUPER_COLOURS, RARE_COLOURS } from "../constants/fishConstants";
 
 /**
  * Fish component with separate colour + pattern.
@@ -53,6 +54,14 @@ export default function Fish({
     transform: `scaleX(${facing})`,
     transformOrigin: 'center center',
   };
+
+  // Determine extra CSS class based on rarity
+  let rarityClass = '';
+  if (SUPER_COLOURS.includes(colour)) {
+    rarityClass = 'super-fish';
+  } else if (RARE_COLOURS.includes(colour)) {
+    rarityClass = 'rare-fish';
+  }
 
   // Determine fill/stroke based on colour & isDead
   let bodyFill,
@@ -166,12 +175,12 @@ export default function Fish({
       break;
 
     case 'emerald':
-      bodyFill   = isDead ? '#405f48' : '#50C878';
-      bodyStroke = isDead ? '#304a37' : '#388E3C';
-      tailFill   = isDead ? '#304a37' : '#388E3C';
-      tailStroke = isDead ? '#203123' : '#2d5a2e';
-      finFill    = isDead ? '#6fae91' : '#76EE00';
-      finStroke  = isDead ? '#5a9a75' : '#2e8b57';
+      bodyFill   = isDead ? '#2F4F2F' : 'url(#emerald-gradient)';
+      bodyStroke = isDead ? '#233B23' : '#388E3C';
+      tailFill   = isDead ? '#233B23' : '#388E3C';
+      tailStroke = isDead ? '#1F2C1A' : '#2D5A2E';
+      finFill    = isDead ? '#6FAE97' : '#76EE00';
+      finStroke  = isDead ? '#5A9A75' : '#2E8B57';
       eyeFill    = isDead ? '#CCCCCC' : '#FFFFFF';
       break;
 
@@ -196,50 +205,50 @@ export default function Fish({
       break;
 
     case 'golden':
-      bodyFill   = isDead ? '#7f6a00' : '#FFD700';
-      bodyStroke = isDead ? '#5f4f00' : '#FFC300';
-      tailFill   = isDead ? '#5f4f00' : '#FFB600';
-      tailStroke = isDead ? '#3f3300' : '#FF9F00';
-      finFill    = isDead ? '#a09200' : '#FFEA00';
-      finStroke  = isDead ? '#7f7000' : '#FFD100';
+      bodyFill   = isDead ? '#8B7D46' : 'url(#gold-gradient)';
+      bodyStroke = isDead ? '#6A5E2D' : '#B8860B';
+      tailFill   = isDead ? '#6A5E2D' : '#B8860B';
+      tailStroke = isDead ? '#4E421F' : '#8B6508';
+      finFill    = isDead ? '#A29050' : '#FFD700';
+      finStroke  = isDead ? '#7B6B34' : '#DAA520';
       eyeFill    = isDead ? '#CCCCCC' : '#FFFFFF';
       break;
 
     case 'aqua':
-      bodyFill   = isDead ? '#4a6a6a' : '#00FFFF';
-      bodyStroke = isDead ? '#2a4d4d' : '#00EEEE';
-      tailFill   = isDead ? '#2a4d4d' : '#00CDCD';
-      tailStroke = isDead ? '#1a2d2d' : '#009999';
-      finFill    = isDead ? '#6aa8a8' : '#7FFFD4';
-      finStroke  = isDead ? '#4d9191' : '#40E0D0';
+      bodyFill   = isDead ? '#4A6A6A' : '#00FFFF';
+      bodyStroke = isDead ? '#2A4D4D' : '#00EEEE';
+      tailFill   = isDead ? '#2A4D4D' : '#00CDCD';
+      tailStroke = isDead ? '#1A2D2D' : '#009999';
+      finFill    = isDead ? '#6AA8A8' : '#7FFFD4';
+      finStroke  = isDead ? '#4D9191' : '#40E0D0';
       eyeFill    = isDead ? '#CCCCCC' : '#FFFFFF';
       break;
 
     case 'lavender':
-      bodyFill   = isDead ? '#6a5a7a' : '#E6E6FA';
-      bodyStroke = isDead ? '#4c405b' : '#D8BFD8';
-      tailFill   = isDead ? '#4c405b' : '#D8BFD8';
-      tailStroke = isDead ? '#2e283d' : '#B57FB5';
-      finFill    = isDead ? '#9c8ca5' : '#EE82EE';
-      finStroke  = isDead ? '#7b6880' : '#DA70D6';
+      bodyFill   = isDead ? '#6A5A7A' : '#E6E6FA';
+      bodyStroke = isDead ? '#4C405B' : '#D8BFD8';
+      tailFill   = isDead ? '#4C405B' : '#D8BFD8';
+      tailStroke = isDead ? '#2E283D' : '#B57FB5';
+      finFill    = isDead ? '#9C8CA5' : '#EE82EE';
+      finStroke  = isDead ? '#7B6880' : '#DA70D6';
       eyeFill    = isDead ? '#CCCCCC' : '#FFFFFF';
       break;
 
     case 'coral':
-      bodyFill   = isDead ? '#8a7060' : '#FF7F50';
-      bodyStroke = isDead ? '#6f5543' : '#FF6347';
-      tailFill   = isDead ? '#6f5543' : '#FF4500';
-      tailStroke = isDead ? '#4f3a31' : '#E63900';
-      finFill    = isDead ? '#af8c80' : '#FFA07A';
-      finStroke  = isDead ? '#8c6a60' : '#FF8266';
+      bodyFill   = isDead ? '#8A7060' : '#FF7F50';
+      bodyStroke = isDead ? '#6F5543' : '#FF6347';
+      tailFill   = isDead ? '#6F5543' : '#FF4500';
+      tailStroke = isDead ? '#4F3A31' : '#E63900';
+      finFill    = isDead ? '#AF8C80' : '#FFA07A';
+      finStroke  = isDead ? '#8C6A60' : '#FF8266';
       eyeFill    = isDead ? '#CCCCCC' : '#FFFFFF';
       break;
 
     case 'aurora':
-      bodyFill   = isDead ? '#3a3a3a' : 'url(#aurora-gradient)';
+      bodyFill   = isDead ? '#3A3A3A' : 'url(#aurora-gradient)';
       bodyStroke = isDead ? '#282828' : '#00FFFF';
       tailFill   = isDead ? '#282828' : '#00CED1';
-      tailStroke = isDead ? '#1a1a1a' : '#008B8B';
+      tailStroke = isDead ? '#1A1A1A' : '#008B8B';
       finFill    = isDead ? '#505050' : '#7FFFD4';
       finStroke  = isDead ? '#404040' : '#20B2AA';
       eyeFill    = isDead ? '#CCCCCC' : '#FFFFFF';
@@ -249,59 +258,59 @@ export default function Fish({
       bodyFill   = isDead ? '#222233' : '#191970';
       bodyStroke = isDead ? '#181824' : '#000080';
       tailFill   = isDead ? '#181824' : '#00008B';
-      tailStroke = isDead ? '#0f0f16' : '#00004B';
+      tailStroke = isDead ? '#0F0F16' : '#00004B';
       finFill    = isDead ? '#363648' : '#4169E1';
-      finStroke  = isDead ? '#2c2c3c' : '#27408B';
+      finStroke  = isDead ? '#2C2C3C' : '#27408B';
       eyeFill    = isDead ? '#CCCCCC' : '#FFFFFF';
       break;
 
     case 'obsidian':
-      bodyFill   = isDead ? '#2e2e2e' : 'url(#obsidian-gradient)';
-      bodyStroke = isDead ? '#1f1f1f' : '#0D0D0D';
-      tailFill   = isDead ? '#1f1f1f' : '#1a1a1a';
-      tailStroke = isDead ? '#0f0f0f' : '#0a0a0a';
+      bodyFill   = isDead ? '#2E2E2E' : 'url(#obsidian-gradient)';
+      bodyStroke = isDead ? '#1F1F1F' : '#0D0D0D';
+      tailFill   = isDead ? '#1F1F1F' : '#1A1A1A';
+      tailStroke = isDead ? '#0F0F0F' : '#0A0A0A';
       finFill    = isDead ? '#444444' : '#696969';
       finStroke  = isDead ? '#303030' : '#505050';
       eyeFill    = isDead ? '#CCCCCC' : '#FFFFFF';
       break;
 
     case 'galactic':
-      bodyFill   = isDead ? '#1a1a2e' : '#483D8B';
-      bodyStroke = isDead ? '#10101a' : '#2F4F4F';
-      tailFill   = isDead ? '#10101a' : '#3A5F5F';
-      tailStroke = isDead ? '#0a0a10' : '#1F3F3F';
-      finFill    = isDead ? '#2e2e4a' : '#7B68EE';
-      finStroke  = isDead ? '#24243d' : '#553CB5';
+      bodyFill   = isDead ? '#1A1A2E' : '#483D8B';
+      bodyStroke = isDead ? '#10101A' : '#2F4F4F';
+      tailFill   = isDead ? '#10101A' : '#3A5F5F';
+      tailStroke = isDead ? '#0A0A10' : '#1F3F3F';
+      finFill    = isDead ? '#2E2E4A' : '#7B68EE';
+      finStroke  = isDead ? '#24243D' : '#553CB5';
       eyeFill    = isDead ? '#CCCCCC' : '#FFFFFF';
       break;
 
     case 'phantom':
-      bodyFill   = isDead ? '#2a1a2a' : '#800080';
-      bodyStroke = isDead ? '#1a101a' : '#4B0082';
-      tailFill   = isDead ? '#1a101a' : '#6A0DAD';
-      tailStroke = isDead ? '#0d080d' : '#4D0080';
-      finFill    = isDead ? '#442a44' : '#BA55D3';
+      bodyFill   = isDead ? '#2A1A2A' : '#800080';
+      bodyStroke = isDead ? '#1A101A' : '#4B0082';
+      tailFill   = isDead ? '#1A101A' : '#6A0DAD';
+      tailStroke = isDead ? '#0D080D' : '#4D0080';
+      finFill    = isDead ? '#442A44' : '#BA55D3';
       finStroke  = isDead ? '#332033' : '#9932CC';
       eyeFill    = isDead ? '#CCCCCC' : '#FFFFFF';
       break;
 
     case 'rainbow':
-      bodyFill   = isDead ? '#4a4a4a' : 'url(#rainbow-gradient)';
-      bodyStroke = isDead ? '#2a2a2a' : '#FF00FF';
-      tailFill   = isDead ? '#2a2a2a' : '#9400D3';
-      tailStroke = isDead ? '#1a1a1a' : '#4B0082';
-      finFill    = isDead ? '#5a5a5a' : '#8A2BE2';
-      finStroke  = isDead ? '#3a3a3a' : '#551A8B';
+      bodyFill   = isDead ? '#4A4A4A' : 'url(#rainbow-gradient)';
+      bodyStroke = isDead ? '#2A2A2A' : '#FF00FF';
+      tailFill   = isDead ? '#2A2A2A' : '#9400D3';
+      tailStroke = isDead ? '#1A1A1A' : '#4B0082';
+      finFill    = isDead ? '#5A5A5A' : '#8A2BE2';
+      finStroke  = isDead ? '#3A3A3A' : '#551A8B';
       eyeFill    = isDead ? '#CCCCCC' : '#FFFFFF';
       break;
 
     case 'volcano':
-      bodyFill   = isDead ? '#502b1e' : '#D72600';
+      bodyFill   = isDead ? '#502B1E' : '#D72600';
       bodyStroke = isDead ? '#382115' : '#FF4500';
       tailFill   = isDead ? '#382115' : '#FF6347';
-      tailStroke = isDead ? '#20120d' : '#CD3700';
-      finFill    = isDead ? '#6a3d2e' : '#FF7F50';
-      finStroke  = isDead ? '#51302a' : '#FF4500';
+      tailStroke = isDead ? '#20120D' : '#CD3700';
+      finFill    = isDead ? '#6A3D2E' : '#FF7F50';
+      finStroke  = isDead ? '#51302A' : '#FF4500';
       eyeFill    = isDead ? '#CCCCCC' : '#FFFFFF';
       break;
 
@@ -321,6 +330,7 @@ export default function Fish({
 
   return (
     <div
+      className={rarityClass}
       style={wrapperStyle}
       {...(isMobile ? { onTouchEnd: onClick } : { onClick: onClick })}
     >
@@ -332,7 +342,41 @@ export default function Fish({
         width="100%"
         height="100%"
       >
-        {/* 1) Red gradient for 'red' fish */}
+        {/* 1) Emerald gradient for 'emerald' */}
+        {colour === 'emerald' && !isDead && (
+          <defs>
+            <linearGradient
+              id="emerald-gradient"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="100%"
+            >
+              <stop offset="0%" stopColor="#004d00" />
+              <stop offset="50%" stopColor="#00cc00" />
+              <stop offset="100%" stopColor="#99ff99" />
+            </linearGradient>
+          </defs>
+        )}
+
+        {/* 2) Gold gradient for 'golden' */}
+        {colour === 'golden' && !isDead && (
+          <defs>
+            <linearGradient
+              id="gold-gradient"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="100%"
+            >
+              <stop offset="0%" stopColor="#FFD700" />
+              <stop offset="50%" stopColor="#FFC107" />
+              <stop offset="100%" stopColor="#FF8F00" />
+            </linearGradient>
+          </defs>
+        )}
+
+        {/* 3) Red gradient for 'red' fish */}
         {colour === 'red' && !isDead && (
           <defs>
             <linearGradient id="red-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -343,7 +387,7 @@ export default function Fish({
           </defs>
         )}
 
-        {/* 2) Crimson gradient for 'crimson' fish */}
+        {/* 4) Crimson gradient for 'crimson' fish */}
         {colour === 'crimson' && !isDead && (
           <defs>
             <linearGradient
@@ -360,7 +404,7 @@ export default function Fish({
           </defs>
         )}
 
-        {/* 3) Cyan gradient for 'cyan' fish */}
+        {/* 5) Cyan gradient for 'cyan' fish */}
         {colour === 'cyan' && !isDead && (
           <defs>
             <linearGradient id="cyan-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -371,7 +415,7 @@ export default function Fish({
           </defs>
         )}
 
-        {/* 4) Neon gradient for 'neon' fish */}
+        {/* 6) Neon gradient for 'neon' fish */}
         {colour === 'neon' && !isDead && (
           <defs>
             <linearGradient id="neon-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -382,7 +426,7 @@ export default function Fish({
           </defs>
         )}
 
-        {/* 5) Aurora gradient for 'aurora' fish */}
+        {/* 7) Aurora gradient for 'aurora' fish */}
         {colour === 'aurora' && !isDead && (
           <defs>
             <linearGradient id="aurora-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -393,7 +437,7 @@ export default function Fish({
           </defs>
         )}
 
-        {/* 6) Obsidian gradient for 'obsidian' fish */}
+        {/* 8) Obsidian gradient for 'obsidian' fish */}
         {colour === 'obsidian' && !isDead && (
           <defs>
             <linearGradient id="obsidian-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -404,7 +448,7 @@ export default function Fish({
           </defs>
         )}
 
-        {/* 7) Rainbow gradient for 'rainbow' fish */}
+        {/* 9) Rainbow gradient for 'rainbow' fish */}
         {colour === 'rainbow' && !isDead && (
           <defs>
             <linearGradient id="rainbow-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -418,7 +462,7 @@ export default function Fish({
           </defs>
         )}
 
-        {/* 8) ClipPath for fish body (for stripes/spots) */}
+        {/* 10) ClipPath for fish body (for stripes/spots) */}
         <defs>
           <clipPath id={clipId} clipPathUnits="userSpaceOnUse">
             <path
@@ -433,7 +477,7 @@ export default function Fish({
           </clipPath>
         </defs>
 
-        {/* 9) Fish body */}
+        {/* 11) Fish body */}
         <path
           d="
             M20 50
@@ -447,7 +491,7 @@ export default function Fish({
           strokeWidth="4"
         />
 
-        {/* 10) Stripes (if striped & alive), clipped by unique clipPath */}
+        {/* 12) Stripes (if striped & alive), clipped by unique clipPath */}
         {pattern === 'striped' && !isDead && (
           <g clipPath={`url(#${clipId})`}>
             <rect x="40"  y="0"  width="12" height="100" fill={bodyStroke} />
@@ -457,7 +501,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* 11) Spots (if spotted & alive), clipped by unique clipPath */}
+        {/* 13) Spots (if spotted & alive), clipped by unique clipPath */}
         {pattern === 'spotted' && !isDead && (
           <g clipPath={`url(#${clipId})`} fill={bodyStroke}>
             <circle cx="60"  cy="30"  r="8" />
@@ -468,7 +512,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* 12) Tail (wrapped in <g> for animation) */}
+        {/* 14) Tail (wrapped in <g> for animation) */}
         <g
           className={`fish-tail ${isDead ? 'dead' : ''}`}
           style={{ animationDuration: `${tailDuration}s` }}
@@ -486,7 +530,7 @@ export default function Fish({
           />
         </g>
 
-        {/* 13) Top (dorsal) fin */}
+        {/* 15) Top (dorsal) fin */}
         <path
           d="
             M60 20
@@ -498,7 +542,7 @@ export default function Fish({
           strokeWidth="2"
         />
 
-        {/* 14) Bottom (pelvic) fin */}
+        {/* 16) Bottom (pelvic) fin */}
         <path
           d="
             M60 80
@@ -510,7 +554,7 @@ export default function Fish({
           strokeWidth="2"
         />
 
-        {/* 15) Eye */}
+        {/* 17) Eye */}
         <circle cx="140" cy="35" r="8" fill={eyeFill} />
         <circle
           cx="140"
@@ -519,15 +563,15 @@ export default function Fish({
           fill={isDead ? '#444444' : '#000000'}
         />
 
-        {/* 16) Red “✕” if dead */}
+        {/* 18) Red “✕” if dead */}
         {isDead && (
-          <g stroke="#FF0000" strokeWidth="3">
+          <g className="fish-dead-overlay" stroke="#FF0000" strokeWidth="3">
             <line x1="136" y1="31" x2="144" y2="39" />
             <line x1="144" y1="31" x2="136" y2="39" />
           </g>
         )}
 
-        {/* 17) Sparkles on red fish */}
+        {/* 19) Sparkles on red fish */}
         {colour === 'red' && !isDead && (
           <g>
             <circle cx="80"  cy="30" r="4" fill="#FFFFFF" opacity="0.8" />
@@ -536,7 +580,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* 18) Sparkles on crimson fish */}
+        {/* 20) Sparkles on crimson fish */}
         {colour === 'crimson' && !isDead && (
           <g>
             <circle cx="75"  cy="25" r="5" fill="#FFECEC" opacity="0.9" />
@@ -544,7 +588,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* 19) Sparkles on cyan fish */}
+        {/* 21) Sparkles on cyan fish */}
         {colour === 'cyan' && !isDead && (
           <g>
             <circle cx="70"  cy="30" r="5"  fill="#E0FFFF" opacity="0.8" />
@@ -552,7 +596,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* 20) Neon fish: electric glow lines */}
+        {/* 22) Neon fish: electric glow lines */}
         {colour === 'neon' && !isDead && (
           <g stroke="#39FF14" strokeWidth="2" opacity="0.7">
             <polyline points="50,10 70,50 50,90" fill="none" />
@@ -560,7 +604,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* 21) Aurora fish: swirling aurora arcs */}
+        {/* 23) Aurora fish: swirling aurora arcs */}
         {colour === 'aurora' && !isDead && (
           <g>
             <path
@@ -580,23 +624,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* 22) Sunset fish: mini sun + halo */}
-        {colour === 'sunset' && !isDead && (
-          <g>
-            <circle cx="100" cy="50" r="10" fill="#FFD700" opacity="0.8" />
-            <circle
-              cx="100"
-              cy="50"
-              r="20"
-              stroke="#FFA500"
-              strokeWidth="2"
-              fill="none"
-              opacity="0.5"
-            />
-          </g>
-        )}
-
-        {/* 23) Midnight fish: faint star dots */}
+        {/* 24) Midnight fish: faint star dots */}
         {colour === 'midnight' && !isDead && (
           <g fill="#FFFFFF" opacity="0.8">
             <circle cx="60"  cy="20" r="2" />
@@ -606,7 +634,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* 24) Obsidian fish: subtle “lava-crack” lines */}
+        {/* 25) Obsidian fish: subtle “lava-crack” lines */}
         {colour === 'obsidian' && !isDead && (
           <g stroke="#505050" strokeWidth="1" opacity="0.6">
             <path d="M50 30 L70 50 L50 70" fill="none" />
@@ -614,7 +642,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* 25) Galactic fish: cosmic starburst accents */}
+        {/* 26) Galactic fish: cosmic starburst accents */}
         {colour === 'galactic' && !isDead && (
           <g>
             <circle cx="60"  cy="50" r="3" fill="#FFFFFF" opacity="0.7" />
@@ -623,7 +651,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* 26) Phantom fish: ghostly mist trails */}
+        {/* 27) Phantom fish: ghostly mist trails */}
         {colour === 'phantom' && !isDead && (
           <g stroke="#CCCCCC" strokeWidth="1" opacity="0.5">
             <path d="M30 60 C50 80, 80 80, 100 60" fill="none" />
@@ -631,7 +659,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* 27) Rainbow fish: prism sparkles */}
+        {/* 28) Rainbow fish: prism sparkles */}
         {colour === 'rainbow' && !isDead && (
           <g>
             <circle cx="80"  cy="20" r="4" fill="#FFFFFF" opacity="0.8" />
@@ -640,7 +668,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* 28) Volcano fish: molten lava flicker */}
+        {/* 29) Volcano fish: molten lava flicker */}
         {colour === 'volcano' && !isDead && (
           <g>
             <circle cx="50"  cy="50" r="4" fill="#FF4500" opacity="0.7" />
@@ -648,7 +676,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* 29) Golden fish: metallic glint */}
+        {/* 30) Golden fish: metallic glint */}
         {colour === 'golden' && !isDead && (
           <g>
             <circle cx="100" cy="40" r="5" fill="#FFFACD" opacity="0.8" />
@@ -656,7 +684,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* 30) Aqua fish: bubble trail */}
+        {/* 31) Aqua fish: bubble trail */}
         {colour === 'aqua' && !isDead && (
           <g fill="#E0FFFF" opacity="0.6">
             <circle cx="40"  cy="50" r="3" />
@@ -665,7 +693,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* 31) Lavender fish: floral swirl */}
+        {/* 32) Lavender fish: floral swirl */}
         {colour === 'lavender' && !isDead && (
           <g stroke="#D8BFD8" strokeWidth="1" opacity="0.7">
             <path d="M60 30 C70 20, 100 20, 110 30" fill="none" />
@@ -673,7 +701,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* 32) Coral fish: coral-branch motif */}
+        {/* 33) Coral fish: coral-branch motif */}
         {colour === 'coral' && !isDead && (
           <g stroke="#FF7F50" strokeWidth="1" opacity="0.7">
             <path d="M80 30 L90 40 L80 50" fill="none" />

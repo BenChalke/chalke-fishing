@@ -1,110 +1,145 @@
-/* 1) The wrapper that holds each <svg> fish. */
-/*    It’s absolutely positioned at (left: x, top: y) from Fish.js. */
-.fish {
-  position: absolute;
-  cursor: none;
-  /* Gentle up/down body‐sway to mimic swimming */
-  animation: body-sway 2s infinite ease-in-out;
-}
-
-/* Make the <svg> fill the entire wrapper. */
-.fish svg {
-  width: 100%;
-  height: 100%;
-  cursor: none;
-}
-
-/* 2) Tail‐wiggle: target the .fish-tail polygon inside the SVG */
-.fish svg .fish-tail {
-  /* 
-    transform-origin: 0% 50% means "left‐center" of that polygon, 
-    which corresponds to the point (0,25) in viewBox coords.
-  */
-  transform-origin: 0% 50%;
-  transform-box: fill-box; /* so transform-origin is relative to the SVG shape */
-  animation: tail-wag 0.3s infinite ease-in-out;
-}
-
-/* 3) Body—no extra animations; it’s the orange ellipse. */
-.fish svg .fish-body {
-  fill: #FFA500;
-  stroke: #FF8C00;
-  stroke-width: 2;
-}
-
-/* 4) Head—red circle on the right. */
-.fish svg .fish-head {
-  fill: #FF4500;
-  stroke: #FF8C00;
-  stroke-width: 2;
-}
-
-/* 5) Dorsal fin (small darker triangle). */
-.fish svg .fish-fin {
-  fill: #FF8C00;
-  stroke: #FF8C00;
-  stroke-width: 1;
-}
-
-/* 6) Eye (white circle) and pupil (inner black circle). */
-.fish svg .fish-eye {
-  fill: #FFFFFF;
-  stroke: #000000;
-  stroke-width: 1;
-}
-
-.fish svg .fish-eye-pupil {
-  fill: #000000;
-}
-
-/* --- Tail‐wag animation: wiggle back and forth around the left‐center pivot --- */
-@keyframes tail-wag {
-  0%   { transform: rotate(0deg); }
-  50%  { transform: rotate(20deg); }
-  100% { transform: rotate(0deg); }
-}
-
-/* --- Body‐sway animation: gentle vertical bobbing --- */
-@keyframes body-sway {
-  0%   { transform: translateY(0px); }
-  50%  { transform: translateY(4px); }
-  100% { transform: translateY(0px); }
-}
-
 /* src/components/Fish.css */
 
-/* Example: smooth out transforms if you add hover effects */
-div > svg {
-  transition: transform 0.2s ease-in-out;
+/* =================================
+   1) BASE FISH STYLES
+   ================================= */
+
+/*
+  (No global “.fish-wrapper” needed here because each <div> wrapper
+   already has inline styles from Fish.js for position/size/rotation.)
+*/
+
+/* Example if you have any other global fish SVG tweaks: */
+.fish-wrapper svg {
+  /* No overflow hidden—lets glows extend beyond the shape */
+  overflow: visible;
 }
 
-div:hover > svg {
-  transform: scale(1.05);
+/* =================================
+   2) ANIMATION KEYFRAMES
+   ================================= */
+
+/* 2.1) Gentle golden pulsing glow for rare fish */
+@keyframes pulse-gold {
+  0%   { filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.6)); }
+  50%  { filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.9)); }
+  100% { filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.6)); }
 }
 
-/* Prevent pointer cursor on fish (we use the hook) */
-.fish-svg {
-  cursor: none;
+/* 2.2) Brighter cyan pulsing glow for super-rare fish */
+@keyframes pulse-cyan {
+  0%   { filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.7)); }
+  50%  { filter: drop-shadow(0 0 20px rgba(0, 255, 255, 1)); }
+  100% { filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.7)); }
 }
 
-/* 1) Animate the tail around its base (20,50 in SVG's coordinates)
-   2) Loop infinitely (unless .dead disables it) */
-
-.fish-tail {
-  transform-origin: 20px 50px; /* hinge at the tail base */
-  animation-name: tail-wag;
-  animation-iteration-count: infinite;
-  animation-timing-function: ease-in-out;
+/* 2.3) Sparkle flicker (tiny circles scale/opacity) */
+@keyframes sparkle-flicker {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(1.3); }
 }
 
-/* If the fish is dead, stop tail movement */
-.fish-tail.dead {
-  animation: none;
+/* =================================
+   3) RARE FISH STYLING
+   ================================= */
+
+/* (Applies to the <div className="rare-fish"> wrapper around the SVG) */
+.rare-fish {
+  /* Start with a subtle golden drop-shadow */
+  filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.6));
+  animation: pulse-gold 2s infinite ease-in-out;
 }
 
-/* Tail‐wag keyframes: swing ±20° around hinge */
-@keyframes tail-wag {
-  0%   { transform: rotate(-20deg); }
-  50%  { transform: rotate(20deg); }
-  100% { transform: rotate(-20deg); }
+/* Ensure the glow isn’t clipped */
+.rare-fish svg {
+  overflow: visible;
+}
+
+/* =================================
+   4) SUPER-RARE FISH STYLING
+   ================================= */
+
+/* (Applies to <div className="super-fish">) */
+.super-fish {
+  filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.7));
+  animation: pulse-cyan 1.5s infinite ease-in-out;
+  position: relative; /* so that pseudo-elements can be absolutely positioned inside */
+}
+
+/* Ensure the glow isn’t clipped */
+.super-fish svg {
+  overflow: visible;
+}
+
+/* 4.1) Create three small “sparkle” circles via ::before and ::after */
+.super-fish::before,
+.super-fish::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.8;
+  animation: sparkle-flicker 1s infinite ease-in-out;
+}
+
+/* Positioning: we want one sparkle near the top-left of the fish, one near middle, one near bottom-right */
+
+/* Top-left sparkle */
+.super-fish::before {
+  width: 6px;
+  height: 6px;
+  top: 20%;
+  left: 25%;
+}
+
+/* Bottom-right sparkle */
+.super-fish::after {
+  width: 8px;
+  height: 8px;
+  top: 60%;
+  left: 60%;
+}
+
+/* 4.2) And a third sparkle using an inner <span> (to avoid adding more pseudo-elements) */
+/* If you prefer, you can wrap your <svg> in another <div> or <span> inside .super-fish and apply animation to that. */
+/* But the simplest is: add a tiny child <span className="extra-sparkle"> inside the Fish wrapper in React. */
+/* For brevity, we’ll position another pseudo-element on the fish’s SVG itself: */
+.super-fish svg {
+  position: relative;
+}
+
+.super-fish svg::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 75%;
+  width: 4px;
+  height: 4px;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.7;
+  animation: sparkle-flicker 1.2s infinite ease-in-out;
+}
+
+/* =================================
+   5) TURN OFF GLOW WHEN FISH IS DEAD
+   ================================= */
+
+/* Assume that when isDead={true}, Fish.js renders a child element with class="fish-dead-overlay" */
+/* For example: <g className="fish-dead-overlay">…red “X” …</g> inside the SVG. */
+.rare-fish .fish-dead-overlay,
+.super-fish .fish-dead-overlay {
+  filter: none !important;
+  animation: none !important;
+}
+
+/* =================================
+   6) OPTIONAL: STYLES WHEN A FISH IS DEAD
+   ================================= */
+
+/* You can also fade out or gray out the fish when dead. For instance: */
+.rare-fish.fish-dead,
+.super-fish.fish-dead {
+  opacity: 0.5;
 }
