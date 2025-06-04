@@ -52,11 +52,6 @@
 
 /* Responsive tweaks for small screens */
 @media (max-width: 600px) {
-  .controls-container {
-    top: 64px;  /* slightly less to fit smaller header */
-    left: 8px;
-    gap: 6px;
-  }
   .control-button {
     padding: 6px 12px;
     font-size: 14px;
