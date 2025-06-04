@@ -6,21 +6,23 @@ import './Fish.css';
  * Fish component with separate colour + pattern.
  *
  * Props:
- *  - x: left (px)
- *  - y: top (px)
- *  - size: width in px (height = size × 0.5)
- *  - onClick: callback when fish is clicked
- *  - isDead: boolean; if true, overlay a red “✕” on the eye
- *  - colour: one of 'orange','blue','green','purple','yellow',
- *            'red','pink','silver','crimson','cyan',
- *            'emerald','sunset','neon','aurora','midnight','obsidian',
- *            'galactic','phantom','rainbow','volcano','golden','aqua','lavender','coral'
- *  - pattern: one of 'solid','striped','spotted'
- *  - isMobile: boolean; if true, bind touch instead of click
- *  - angle: number (radians) indicating movement direction
- *  - speed: number (global speed) used to set tail‐wag frequency
+ *  - id:        unique identifier (used to generate a unique clipPath)
+ *  - x:         left (px)
+ *  - y:         top (px)
+ *  - size:      width in px (height = size × 0.5)
+ *  - onClick:   callback when fish is clicked
+ *  - isDead:    boolean; if true, overlay a red “✕” on the eye
+ *  - colour:    e.g. 'orange','blue','green','purple','yellow',
+ *               'red','pink','silver','crimson','cyan',
+ *               'emerald','sunset','neon','aurora','midnight','obsidian',
+ *               'galactic','phantom','rainbow','volcano','golden','aqua','lavender','coral'
+ *  - pattern:   one of 'solid','striped','spotted'
+ *  - isMobile:  boolean; if true, bind touch instead of click
+ *  - angle:     number (radians) indicating movement direction
+ *  - speed:     number (global speed) used to set tail‐wag frequency
  */
 export default function Fish({
+  id,
   x,
   y,
   size,
@@ -35,10 +37,10 @@ export default function Fish({
   const fishWidth  = size;
   const fishHeight = size * 0.5;
 
-  // Flip horizontally based on angle (cos ≥ 0 → face right)
+  // Flip horizontally depending on movement direction
   const facing = Math.cos(angle) >= 0 ? 1 : -1;
 
-  // Tail‐wag duration: inverse to speed (minimum 0.2s)
+  // Tail-wag duration: inverse to speed (minimum 0.2s)
   const tailDuration = Math.max(0.2, 1.5 / speed);
 
   const wrapperStyle = {
@@ -52,8 +54,14 @@ export default function Fish({
     transformOrigin: 'center center',
   };
 
-  // Determine fill/stroke for body, tail, fins, and eye
-  let bodyFill, bodyStroke, tailFill, tailStroke, finFill, finStroke, eyeFill;
+  // Determine fill/stroke based on colour & isDead
+  let bodyFill,
+      bodyStroke,
+      tailFill,
+      tailStroke,
+      finFill,
+      finStroke,
+      eyeFill;
 
   switch (colour) {
     case 'blue':
@@ -157,8 +165,6 @@ export default function Fish({
       eyeFill    = isDead ? '#CCCCCC' : '#FFFFFF';
       break;
 
-    /* —— RARE VARIANTS —— */
-
     case 'emerald':
       bodyFill   = isDead ? '#405f48' : '#50C878';
       bodyStroke = isDead ? '#304a37' : '#388E3C';
@@ -229,8 +235,6 @@ export default function Fish({
       eyeFill    = isDead ? '#CCCCCC' : '#FFFFFF';
       break;
 
-    /* —— SUPER‐RARE VARIANTS —— */
-
     case 'aurora':
       bodyFill   = isDead ? '#3a3a3a' : 'url(#aurora-gradient)';
       bodyStroke = isDead ? '#282828' : '#00FFFF';
@@ -282,7 +286,6 @@ export default function Fish({
       break;
 
     case 'rainbow':
-      // multi-step linear gradient from red→orange→yellow→green→blue→purple
       bodyFill   = isDead ? '#4a4a4a' : 'url(#rainbow-gradient)';
       bodyStroke = isDead ? '#2a2a2a' : '#FF00FF';
       tailFill   = isDead ? '#2a2a2a' : '#9400D3';
@@ -312,6 +315,9 @@ export default function Fish({
       eyeFill    = isDead ? '#CCCCCC' : '#FFFFFF';
       break;
   }
+
+  // Unique clipPath ID per fish instance
+  const clipId = `clip-body-${id}`;
 
   return (
     <div
@@ -414,7 +420,7 @@ export default function Fish({
 
         {/* 8) ClipPath for fish body (for stripes/spots) */}
         <defs>
-          <clipPath id="clip-body">
+          <clipPath id={clipId} clipPathUnits="userSpaceOnUse">
             <path
               d="
                 M20 50
@@ -441,19 +447,19 @@ export default function Fish({
           strokeWidth="4"
         />
 
-        {/* 10) Stripes if needed */}
+        {/* 10) Stripes (if striped & alive), clipped by unique clipPath */}
         {pattern === 'striped' && !isDead && (
-          <g clipPath="url(#clip-body)">
-            <rect x="40" y="0"   width="12" height="100" fill={bodyStroke} />
-            <rect x="80" y="0"   width="12" height="100" fill={bodyStroke} />
+          <g clipPath={`url(#${clipId})`}>
+            <rect x="40"  y="0"  width="12" height="100" fill={bodyStroke} />
+            <rect x="80"  y="0"  width="12" height="100" fill={bodyStroke} />
             <rect x="120" y="0"  width="12" height="100" fill={bodyStroke} />
             <rect x="160" y="0"  width="12" height="100" fill={bodyStroke} />
           </g>
         )}
 
-        {/* 11) Spots if needed */}
+        {/* 11) Spots (if spotted & alive), clipped by unique clipPath */}
         {pattern === 'spotted' && !isDead && (
-          <g clipPath="url(#clip-body)" fill={bodyStroke}>
+          <g clipPath={`url(#${clipId})`} fill={bodyStroke}>
             <circle cx="60"  cy="30"  r="8" />
             <circle cx="100" cy="50"  r="6" />
             <circle cx="140" cy="70"  r="10" />
@@ -521,9 +527,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* 17) Sparkles and special accents for each fish: */}
-
-        {/* — Red fish sparkles — */}
+        {/* 17) Sparkles on red fish */}
         {colour === 'red' && !isDead && (
           <g>
             <circle cx="80"  cy="30" r="4" fill="#FFFFFF" opacity="0.8" />
@@ -532,7 +536,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* — Crimson fish sparkles — */}
+        {/* 18) Sparkles on crimson fish */}
         {colour === 'crimson' && !isDead && (
           <g>
             <circle cx="75"  cy="25" r="5" fill="#FFECEC" opacity="0.9" />
@@ -540,7 +544,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* — Cyan fish sparkles — */}
+        {/* 19) Sparkles on cyan fish */}
         {colour === 'cyan' && !isDead && (
           <g>
             <circle cx="70"  cy="30" r="5"  fill="#E0FFFF" opacity="0.8" />
@@ -548,7 +552,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* — Neon fish: electric bolt lines — */}
+        {/* 20) Neon fish: electric glow lines */}
         {colour === 'neon' && !isDead && (
           <g stroke="#39FF14" strokeWidth="2" opacity="0.7">
             <polyline points="50,10 70,50 50,90" fill="none" />
@@ -556,7 +560,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* — Aurora fish: swirling aurora arcs — */}
+        {/* 21) Aurora fish: swirling aurora arcs */}
         {colour === 'aurora' && !isDead && (
           <g>
             <path
@@ -576,7 +580,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* — Sunset fish: mini sun + halo — */}
+        {/* 22) Sunset fish: mini sun + halo */}
         {colour === 'sunset' && !isDead && (
           <g>
             <circle cx="100" cy="50" r="10" fill="#FFD700" opacity="0.8" />
@@ -592,7 +596,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* — Midnight fish: faint star dots — */}
+        {/* 23) Midnight fish: faint star dots */}
         {colour === 'midnight' && !isDead && (
           <g fill="#FFFFFF" opacity="0.8">
             <circle cx="60"  cy="20" r="2" />
@@ -602,7 +606,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* — Obsidian fish: subtle “lava-crack” lines — */}
+        {/* 24) Obsidian fish: subtle “lava-crack” lines */}
         {colour === 'obsidian' && !isDead && (
           <g stroke="#505050" strokeWidth="1" opacity="0.6">
             <path d="M50 30 L70 50 L50 70" fill="none" />
@@ -610,7 +614,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* — Galactic fish: cosmic starburst accents — */}
+        {/* 25) Galactic fish: cosmic starburst accents */}
         {colour === 'galactic' && !isDead && (
           <g>
             <circle cx="60"  cy="50" r="3" fill="#FFFFFF" opacity="0.7" />
@@ -619,7 +623,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* — Phantom fish: ghostly mist trails — */}
+        {/* 26) Phantom fish: ghostly mist trails */}
         {colour === 'phantom' && !isDead && (
           <g stroke="#CCCCCC" strokeWidth="1" opacity="0.5">
             <path d="M30 60 C50 80, 80 80, 100 60" fill="none" />
@@ -627,7 +631,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* — Rainbow fish: prism sparkles — */}
+        {/* 27) Rainbow fish: prism sparkles */}
         {colour === 'rainbow' && !isDead && (
           <g>
             <circle cx="80"  cy="20" r="4" fill="#FFFFFF" opacity="0.8" />
@@ -636,7 +640,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* — Volcano fish: molten lava flicker — */}
+        {/* 28) Volcano fish: molten lava flicker */}
         {colour === 'volcano' && !isDead && (
           <g>
             <circle cx="50"  cy="50" r="4" fill="#FF4500" opacity="0.7" />
@@ -644,7 +648,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* — Golden fish: metallic glint — */}
+        {/* 29) Golden fish: metallic glint */}
         {colour === 'golden' && !isDead && (
           <g>
             <circle cx="100" cy="40" r="5" fill="#FFFACD" opacity="0.8" />
@@ -652,7 +656,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* — Aqua fish: bubble trail — */}
+        {/* 30) Aqua fish: bubble trail */}
         {colour === 'aqua' && !isDead && (
           <g fill="#E0FFFF" opacity="0.6">
             <circle cx="40"  cy="50" r="3" />
@@ -661,7 +665,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* — Lavender fish: floral swirl — */}
+        {/* 31) Lavender fish: floral swirl */}
         {colour === 'lavender' && !isDead && (
           <g stroke="#D8BFD8" strokeWidth="1" opacity="0.7">
             <path d="M60 30 C70 20, 100 20, 110 30" fill="none" />
@@ -669,7 +673,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* — Coral fish: coral‐branch motif — */}
+        {/* 32) Coral fish: coral-branch motif */}
         {colour === 'coral' && !isDead && (
           <g stroke="#FF7F50" strokeWidth="1" opacity="0.7">
             <path d="M80 30 L90 40 L80 50" fill="none" />

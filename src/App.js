@@ -27,10 +27,8 @@ const MIN_SPEED = 0.5;
 const MAX_SPEED = 20.0;
 
 /**
- * createInitialFish()
- *
- * Spawns FISH_COUNT fish at random positions and angles,
- * using each rare/super-rare cutoff × 2 (100% less rare).
+ * Generate initial set of fish (FISH_COUNT).
+ * Each rare/super-rare cutoff is doubled (100% less rare).
  */
 function createInitialFish() {
   const w = window.innerWidth;
@@ -45,7 +43,7 @@ function createInitialFish() {
     let colour, pattern;
     const roll = Math.random();
 
-    // Super‐rare (each original cut × 2):
+    // Super-rare (each original cutoff × 2)
     if (roll < 0.00040) {
       colour = 'aurora';   pattern = 'solid';
     } else if (roll < 0.00080) {
@@ -61,7 +59,7 @@ function createInitialFish() {
     } else if (roll < 0.00280) {
       colour = 'volcano';  pattern = 'spotted';
 
-    // Rare (each original cut × 2):
+    // Rare (each original cutoff × 2)
     } else if (roll < 0.00500) {
       colour = 'emerald';  pattern = 'striped';
     } else if (roll < 0.00900) {
@@ -77,7 +75,7 @@ function createInitialFish() {
     } else if (roll < 0.02400) {
       colour = 'coral';    pattern = 'spotted';
     } else {
-      // fallback to a common fish
+      // Fallback: common fish
       colour  = COLOURS[Math.floor(Math.random() * COLOURS.length)];
       pattern = PATTERNS[Math.floor(Math.random() * PATTERNS.length)];
     }
@@ -89,12 +87,12 @@ function createInitialFish() {
 }
 
 export default function App() {
-  const [fishArray, setFishArray]           = useState([]);
-  const [speed, setSpeed]                   = useState(1.5);
-  const [cursorPos, setCursorPos]           = useState({ x: -1000, y: -1000 });
-  const [isJerking, setIsJerking]           = useState(false);
+  const [fishArray, setFishArray]            = useState([]);
+  const [speed, setSpeed]                    = useState(1.5);
+  const [cursorPos, setCursorPos]            = useState({ x: -1000, y: -1000 });
+  const [isJerking, setIsJerking]            = useState(false);
   const [catchAnimations, setCatchAnimations] = useState([]);
-  const [caughtRecords, setCaughtRecords]   = useState(() => {
+  const [caughtRecords, setCaughtRecords]    = useState(() => {
     try {
       const saved = localStorage.getItem('caughtRecords');
       return saved ? JSON.parse(saved) : [];
@@ -110,7 +108,7 @@ export default function App() {
   const cursorRef = useRef({ x: -1000, y: -1000 });
   const nextId    = useRef(FISH_COUNT);
 
-  // On‐mount: initialize fish & check touch capability & welcome popup
+  // On mount: initialize fish & check for touch & welcome popup
   useEffect(() => {
     setFishArray(createInitialFish());
     setIsMobile('ontouchstart' in window);
@@ -123,7 +121,7 @@ export default function App() {
     localStorage.setItem('caughtRecords', JSON.stringify(caughtRecords));
   }, [caughtRecords]);
 
-  // Fish‐movement loop (runs every 30ms)
+  // Fish movement loop (every 30ms)
   useEffect(() => {
     const interval = setInterval(() => {
       setFishArray((prevFish) => {
@@ -188,7 +186,7 @@ export default function App() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  // On pointer down (desktop or touch), jerk the hook
+  // On pointer down (desktop/touch), jerk the hook
   const handlePointerDown = (e) => {
     const clientX = e.clientX ?? e.touches?.[0]?.clientX;
     const clientY = e.clientY ?? e.touches?.[0]?.clientY;
@@ -203,9 +201,9 @@ export default function App() {
   // When a fish is clicked/caught
   const handleFishClick = (fishId, e) => {
     e.stopPropagation();
-    const fishObj   = fishArray.find((f) => f.id === fishId);
+    const fishObj       = fishArray.find((f) => f.id === fishId);
     const { colour, pattern } = fishObj ?? {};
-    const caughtType = `${colour} ${pattern}`;
+    const caughtType    = `${colour} ${pattern}`;
     const { x: curX, y: curY } = cursorRef.current;
 
     // Remove from live array
@@ -216,14 +214,14 @@ export default function App() {
       setCaughtRecords((prev) => [...prev, caughtType]);
     }
 
-    // Trigger catch‐animation
+    // Trigger catch-animation
     setCatchAnimations((prev) => [
       ...prev,
       { id: fishId, startX: curX, startY: curY, colour, pattern },
     ]);
   };
 
-  // Remove a finished catch‐animation
+  // Remove a finished catch-animation
   const handleCatchAnimationEnd = (animId) => {
     setCatchAnimations((prev) => prev.filter((a) => a.id !== animId));
   };
@@ -249,7 +247,7 @@ export default function App() {
     let colour, pattern;
     const roll = Math.random();
 
-    // Super‐rare (each original cut × 2):
+    // Super-rare (each original cutoff × 2)
     if (roll < 0.00040) {
       colour = 'aurora';   pattern = 'solid';
     } else if (roll < 0.00080) {
@@ -265,7 +263,7 @@ export default function App() {
     } else if (roll < 0.00280) {
       colour = 'volcano';  pattern = 'spotted';
 
-    // Rare (each original cut × 2):
+    // Rare (each original cutoff × 2)
     } else if (roll < 0.00500) {
       colour = 'emerald';  pattern = 'striped';
     } else if (roll < 0.00900) {
@@ -281,7 +279,7 @@ export default function App() {
     } else if (roll < 0.02400) {
       colour = 'coral';    pattern = 'spotted';
     } else {
-      // common fallback
+      // fallback to a common fish
       colour  = COLOURS[Math.floor(Math.random() * COLOURS.length)];
       pattern = PATTERNS[Math.floor(Math.random() * PATTERNS.length)];
     }
@@ -332,7 +330,7 @@ export default function App() {
         return (
           <Fish
             key={fish.id}
-            id={fish.id}
+            id={fish.id}           // ← pass unique id here
             x={fish.x}
             y={fish.y}
             size={isSuper ? FISH_SIZE * 1.5 : FISH_SIZE}
@@ -351,7 +349,7 @@ export default function App() {
         <Hook x={cursorPos.x} y={cursorPos.y} jerking={isJerking} />
       )}
 
-      {/* Caught‐fish animations */}
+      {/* Caught-fish animations */}
       {catchAnimations.map((anim) => (
         <CatchAnimation
           key={anim.id}
@@ -362,6 +360,7 @@ export default function App() {
         >
           <Hook x={anim.startX} y={anim.startY} jerking={false} />
           <Fish
+            id={anim.id + 100000}   // give a distinct id for the caught fish animation
             x={0}
             y={0}
             size={FISH_SIZE}
