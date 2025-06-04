@@ -1,6 +1,9 @@
 /* src/components/StatsPopup.css */
 
-.caught-popup-overlay {
+/* ----------------------------------------
+   OVERLAY + CONTENT CONTAINER
+   ---------------------------------------- */
+.stats-popup-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -13,8 +16,8 @@
   z-index: 100;
 }
 
-.caught-popup-content {
-  position: relative; /* for close-icon */
+.stats-popup-content {
+  position: relative; /* for close-button */
   background: #ffffff;
   border-radius: 10px;
   width: 360px;
@@ -23,7 +26,10 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
-.popup-close-x {
+/* ----------------------------------------
+   CLOSE BUTTON “✕”
+   ---------------------------------------- */
+.close-button {
   position: absolute;
   top: 12px;
   right: 12px;
@@ -38,58 +44,44 @@
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  padding: 8px; /* increase tappable area */
 }
 
-.popup-close-x:hover {
+.close-button:hover {
   color: #000;
 }
 
-.caught-popup-content h2 {
+/* ----------------------------------------
+   HEADER
+   ---------------------------------------- */
+.stats-popup-content h2 {
   margin: 16px 20px 8px;
   font-size: 22px;
   color: #333;
 }
 
+/* ----------------------------------------
+   SCROLLABLE BODY
+   ---------------------------------------- */
 .popup-body {
   max-height: calc(90vh - 80px);
   overflow-y: auto;
   padding: 0 20px 20px;
 }
 
-.caught-popup-content p {
+.stats-popup-content p {
   font-size: 16px;
   margin: 12px 0;
 }
 
-.super-rare-label strong {
-  font-weight: bold;
-  color: #8B0000;
-}
-
-.rare-label strong {
-  font-weight: bold;
-  color: #C0392B;
-}
-
-.caught-item {
-  list-style: none;
-  display: flex;
-  align-items: center;
-  margin: 6px 0;
-}
-
-.mini-fish-container {
-  position: relative;
-  width: 40px;
-  height: 20px;
-  margin-right: 8px;
-}
-
-.common-group {
+/* ----------------------------------------
+   SECTION LABELS
+   ---------------------------------------- */
+.stats-section {
   margin-top: 16px;
 }
 
-.common-group h3 {
+.stats-section h3 {
   margin-bottom: 8px;
   font-size: 18px;
   color: #333;
@@ -97,36 +89,115 @@
   padding-bottom: 4px;
 }
 
-/* Responsive tweaks */
+.super-rare-label strong {
+  color: #8B0000;
+}
+
+.rare-label strong {
+  color: #C0392B;
+}
+
+.common-group {
+  margin-top: 16px;
+}
+
+.common-group h3 {
+  margin-top: 16px;
+}
+
+/* ----------------------------------------
+   EACH CAUGHT‐ITEM ENTRY
+   ---------------------------------------- */
+.stats-section ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.stats-section li {
+  display: flex;
+  align-items: center;
+  margin: 6px 0;
+}
+
+/* MiniFish container: 40×20 on desktop */
+.mini-fish-container {
+  position: relative;
+  width: 40px;
+  height: 20px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+/* Fish type text (capitalized) */
+.stat-fish-type {
+  flex-grow: 1;
+  text-transform: capitalize;
+  color: #333;
+  font-size: 16px;
+}
+
+/* Count number (bold) */
+.stat-count {
+  font-weight: bold;
+  margin-left: 8px;
+  font-size: 16px;
+}
+
+/* ----------------------------------------
+   NO‐FISH TEXT WHEN EMPTY
+   ---------------------------------------- */
+.no-fish-text {
+  text-align: center;
+  margin: 20px 0;
+  font-size: 16px;
+  color: #666;
+}
+
+/* ----------------------------------------
+   RESPONSIVE TWEAKS (MOBILE)
+   ---------------------------------------- */
 @media (max-width: 600px) {
-  .caught-popup-content {
+  /* Popup takes almost full width/height */
+  .stats-popup-content {
     width: 95%;
     max-height: 95%;
   }
 
-  .caught-popup-content h2 {
+  /* Slightly smaller header on mobile */
+  .stats-popup-content h2 {
     font-size: 20px;
     margin: 12px 16px 6px;
   }
 
+  /* Adjust scrollable body padding/height */
   .popup-body {
     padding: 0 16px 16px;
     max-height: calc(95vh - 64px);
   }
 
+  /* Shrink MiniFish icons */
   .mini-fish-container {
     width: 32px;
     height: 16px;
     margin-right: 6px;
   }
 
-  .caught-item {
+  /* Slightly smaller list‐item text */
+  .stat-fish-type,
+  .stat-count {
+    font-size: 14px;
+  }
+
+  /* Less vertical spacing between items */
+  .stats-section li {
     margin: 4px 0;
   }
 
-  .popup-close-x {
+  /* Make the close button easier to tap: bigger font & padding */
+  .close-button {
     font-size: 28px;
     top: 8px;
     right: 8px;
+    padding: 10px;
   }
 }
