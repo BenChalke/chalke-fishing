@@ -81,3 +81,30 @@ div > svg {
 div:hover > svg {
   transform: scale(1.05);
 }
+
+/* Prevent pointer cursor on fish (we use the hook) */
+.fish-svg {
+  cursor: none;
+}
+
+/* 1) Animate the tail around its base (20,50 in SVG's coordinates)
+   2) Loop infinitely (unless .dead disables it) */
+
+.fish-tail {
+  transform-origin: 20px 50px; /* hinge at the tail base */
+  animation-name: tail-wag;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+
+/* If the fish is dead, stop tail movement */
+.fish-tail.dead {
+  animation: none;
+}
+
+/* Tail‐wag keyframes: swing ±20° around hinge */
+@keyframes tail-wag {
+  0%   { transform: rotate(-20deg); }
+  50%  { transform: rotate(20deg); }
+  100% { transform: rotate(-20deg); }
+}

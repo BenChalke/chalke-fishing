@@ -15,6 +15,8 @@ import './Fish.css';
  *            'red','pink','silver','crimson','cyan'
  *  - pattern: one of 'solid','striped','spotted'
  *  - isMobile: boolean; if true, bind touch instead of click
+ *  - angle: number (radians) indicating movement direction
+ *  - speed: number (global speed) used to set tail‐wag frequency
  */
 export default function Fish({
   x,
@@ -25,9 +27,18 @@ export default function Fish({
   colour,
   pattern,
   isMobile,
+  angle = 0,
+  speed = 1.5,
 }) {
   const fishWidth = size;
   const fishHeight = size * 0.5;
+
+  // Flip horizontally depending on direction (angle)
+  const facing = Math.cos(angle) >= 0 ? 1 : -1;
+
+  // Tail‐wag duration: inverse to speed (faster speed = shorter duration).
+  // Minimum of 0.2s to avoid it going too fast.
+  const tailDuration = Math.max(0.2, 1.5 / speed);
 
   const wrapperStyle = {
     position: 'absolute',
@@ -36,6 +47,9 @@ export default function Fish({
     width: `${fishWidth}px`,
     height: `${fishHeight}px`,
     cursor: 'none',
+    // Flip horizontally based on facing:
+    transform: `scaleX(${facing})`,
+    transformOrigin: 'center center',
   };
 
   // Determine fill/stroke based on colour & isDead
@@ -163,9 +177,7 @@ export default function Fish({
   return (
     <div
       style={wrapperStyle}
-      {...(isMobile
-        ? { onTouchEnd: onClick }
-        : { onClick: onClick })}
+      {...(isMobile ? { onTouchEnd: onClick } : { onClick: onClick })}
     >
       <svg
         viewBox="0 0 200 100"
@@ -263,18 +275,23 @@ export default function Fish({
           </g>
         )}
 
-        {/* 8) Tail */}
-        <path
-          d="
-            M20 50
-            L0 30
-            L0 70
-            Z
-          "
-          fill={tailFill}
-          stroke={tailStroke}
-          strokeWidth="3"
-        />
+        {/* 8) Tail (wrapped in <g> to animate) */}
+        <g
+          className={`fish-tail ${isDead ? 'dead' : ''}`}
+          style={{ animationDuration: `${tailDuration}s` }}
+        >
+          <path
+            d="
+              M20 50
+              L0 30
+              L0 70
+              Z
+            "
+            fill={tailFill}
+            stroke={tailStroke}
+            strokeWidth="3"
+          />
+        </g>
 
         {/* 9) Top (dorsal) fin */}
         <path
