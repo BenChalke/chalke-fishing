@@ -12,7 +12,7 @@
 }
 
 /* ----------------------------------------
-   Hide the system cursor when we want to show the hook instead
+   Hide the system cursor when showing the hook instead
    ---------------------------------------- */
 .no-cursor {
   cursor: none;
@@ -26,42 +26,65 @@ body {
   touch-action: manipulation;
 }
 
-/* ---------- Settings Cog & Controls (top‐left) ---------- */
+/* ----------------------------------------
+   Settings Cog, Info & Controls (top‐left)
+   ---------------------------------------- */
 .top-left-ui {
   position: absolute;
   top: 12px;
   left: 12px;
   display: flex;
-  align-items: center;  /* horizontally align cog and controls */
-  gap: 8px;             /* equal spacing between cog and each button */
+  align-items: center;
+  gap: 8px;
   z-index: 50;
 }
 
-.settings-btn {
+.settings-btn,
+.info-btn {
   background: rgba(255, 255, 255, 0.8);
   border: none;
   border-radius: 6px;
-  padding: 4px;
+  width: 32px;
+  height: 32px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s ease;
+  transition: background 0.2s ease, transform 0.1s ease;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.settings-btn:hover {
+.settings-btn:hover,
+.info-btn:hover {
   background: rgba(255, 255, 255, 1);
 }
 
-.settings-btn:active {
+.settings-btn:active,
+.info-btn:active {
   transform: scale(0.95);
 }
 
 .settings-btn svg {
-  display: block;
-  width: 24px;
-  height: 24px;
-  color: #333;
+  width: 20px;
+  height: 20px;
+}
+
+/* Controls list (beneath the cog & info button) */
+.controls-container {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 50;
 }
 
 .control-button {
@@ -97,7 +120,9 @@ body {
   outline: none;
 }
 
-/* ---------- Score centered (top) ---------- */
+/* ----------------------------------------
+   Score Display (top‐center)
+   ---------------------------------------- */
 .top-center-ui {
   position: absolute;
   top: 12px;
@@ -119,7 +144,9 @@ body {
   pointer-events: none;
 }
 
-/* ---------- Speed & Fish-Caught Labels (top-right) ---------- */
+/* ----------------------------------------
+   Speed & Fish‐Caught Labels (always top‐right)
+   ---------------------------------------- */
 .speed-label {
   position: absolute;
   top: 12px;
@@ -142,29 +169,39 @@ body {
   z-index: 50;
 }
 
-/* ---------- Fish Caught Button (bottom-center) ---------- */
+/* ----------------------------------------
+   “See Fish Caught” Button (bottom‐center)
+   ---------------------------------------- */
 .bottom-center-ui {
   position: absolute;
-  bottom: calc(12px + env(safe-area-inset-bottom));
+  top: 48px; /* 12px (top offset) + ~24px (score box height) + 12px gap */
   left: 50%;
   transform: translateX(-50%);
   z-index: 50;
 }
 
 .caught-btn {
-  background: rgba(255, 255, 255, 0.8);
-  border: none;
+  background: #fffae6;        /* soft contrast from score box */
+  border: 2px solid #f2c94c;   /* gold‐tone border to indicate interactivity */
   border-radius: 6px;
-  padding: 6px 12px;
-  font-size: 16px;
-  font-weight: bold;
+  padding: 4px 10px;           /* slightly smaller padding */
+  font-size: 14px;             /* smaller font than score */
+  font-weight: 600;
   color: #333;
   cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   transition: background 0.2s ease, transform 0.1s ease;
+
+  -webkit-user-select: none; /* disable text highlighting */
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+
+  -webkit-tap-highlight-color: transparent;
 }
 
 .caught-btn:hover {
-  background: rgba(255, 255, 255, 1);
+  background: #fff5cc;
   transform: translateY(-2px);
 }
 
@@ -176,7 +213,9 @@ body {
   outline: none;
 }
 
-/* ---------- Floating “+X” notifications ---------- */
+/* ----------------------------------------
+   Floating “+X” Notifications
+   ---------------------------------------- */
 @keyframes float-up {
   from {
     opacity: 1;
@@ -200,7 +239,9 @@ body {
   z-index: 60;
 }
 
-/* Responsive adjustments (max-width: 600px) */
+/* ----------------------------------------
+   Responsive Adjustments (max-width: 600px)
+   ---------------------------------------- */
 @media (max-width: 600px) {
   .top-left-ui {
     top: 8px;
@@ -237,11 +278,14 @@ body {
     font-size: 16px;
     padding: 4px 10px;
   }
-  .caught-btn {
-    font-size: 14px;
-    padding: 5px 10px;
-  }
   .bottom-center-ui {
-    bottom: calc(8px + env(safe-area-inset-bottom));
+    top: 44px; /* slightly less if score box is smaller on mobile */
+  }
+  .caught-btn {
+    font-size: 12px;
+    padding: 3px 8px;
+  }
+  .score-notif {
+    font-size: 20px;
   }
 }

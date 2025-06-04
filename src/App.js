@@ -9,6 +9,7 @@ import CatchAnimation from './components/CatchAnimation';
 import Controls       from './components/Controls';
 import WelcomePopup   from './components/WelcomePopup';
 import StatsPopup     from './components/StatsPopup';
+import InfoPopup      from './components/InfoPopup';
 
 import {
   COLOURS,
@@ -25,6 +26,9 @@ const ENTRY_MULT       = 3;
 const MIN_SPEED = 0.5;
 const MAX_SPEED = 20.0;
 
+/**
+ * Generate a random on‐screen fish.
+ */
 function createRandomFish(id) {
   const w = window.innerWidth;
   const h = window.innerHeight;
@@ -79,6 +83,9 @@ function createRandomFish(id) {
   };
 }
 
+/**
+ * Generate an off‐screen fish that swims in quickly.
+ */
 function createOffscreenFish(id) {
   const w = window.innerWidth;
   const h = window.innerHeight;
@@ -151,6 +158,9 @@ function createOffscreenFish(id) {
   };
 }
 
+/**
+ * Generate the initial set of fish, all on‐screen.
+ */
 function createInitialFish() {
   const arr = [];
   for (let i = 0; i < FISH_COUNT; i++) {
@@ -183,6 +193,7 @@ export default function App() {
   });
   const [scoreNotifs, setScoreNotifs]        = useState([]);
   const [showCaughtPopup, setShowCaughtPopup] = useState(false);
+  const [showInfoPopup, setShowInfoPopup]     = useState(false);
   const [isMobile, setIsMobile]               = useState(false);
   const [showWelcome, setShowWelcome]         = useState(false);
   const [showControls, setShowControls]       = useState(false);
@@ -191,6 +202,7 @@ export default function App() {
   const nextId    = useRef(FISH_COUNT);
   const nextNotif = useRef(0);
 
+  // On mount: initialize fish, detect touch, check welcome popup
   useEffect(() => {
     setFishArray(createInitialFish());
     setIsMobile('ontouchstart' in window);
@@ -198,6 +210,7 @@ export default function App() {
     if (!seen) setShowWelcome(true);
   }, []);
 
+  // Persist caughtRecords & score to localStorage
   useEffect(() => {
     localStorage.setItem('caughtRecords', JSON.stringify(caughtRecords));
   }, [caughtRecords]);
@@ -206,6 +219,7 @@ export default function App() {
     localStorage.setItem('score', String(score));
   }, [score]);
 
+  // Fish-movement loop (every 30ms)
   useEffect(() => {
     const interval = setInterval(() => {
       setFishArray((prevFish) => {
@@ -229,6 +243,7 @@ export default function App() {
 
           const effSpeed = speed * speedMult;
 
+          // Entry behavior
           if (justSpawned) {
             const fishCX = x + FISH_SIZE / 2;
             const fishCY = y + fishHeight / 2;
@@ -266,6 +281,7 @@ export default function App() {
             };
           }
 
+          // Normal behavior
           let dx = Math.cos(angle) * effSpeed;
           let dy = Math.sin(angle) * effSpeed;
 
@@ -288,6 +304,7 @@ export default function App() {
           let newY = y + dy;
           let newAngle = angle;
 
+          // If fish goes fully off-screen, flip direction
           if (
             newX + FISH_SIZE < 0 ||
             newX > w ||
@@ -301,11 +318,13 @@ export default function App() {
             newY = y + by;
           }
 
+          // Bounce horizontally
           if (newX <= 0 || newX + FISH_SIZE >= w) {
             newAngle = Math.PI - newAngle;
             const bounceDX = Math.cos(newAngle) * speed;
             newX = x + bounceDX;
           }
+          // Bounce vertically
           if (newY <= 0 || newY + fishHeight >= h) {
             newAngle = -newAngle;
             const bounceDY = Math.sin(newAngle) * speed;
@@ -329,6 +348,7 @@ export default function App() {
     return () => clearInterval(interval);
   }, [speed, isMobile]);
 
+  // Track cursor on desktop
   useEffect(() => {
     const handleMouseMove = (e) => {
       const pos = { x: e.clientX, y: e.clientY };
@@ -339,6 +359,7 @@ export default function App() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
+  // On pointer down (desktop or touch), jerk the hook
   const handlePointerDown = (e) => {
     const clientX = e.clientX ?? e.touches?.[0]?.clientX;
     const clientY = e.clientY ?? e.touches?.[0]?.clientY;
@@ -350,6 +371,13 @@ export default function App() {
     setTimeout(() => setIsJerking(false), 300);
   };
 
+  /**
+   * On fish click:
+   * 1) Award points based on rarity
+   * 2) Remove that fish & spawn an off‐screen replacement
+   * 3) Add to caughtRecords & trigger catch‐animation
+   * 4) Show floating “+points” notification
+   */
   const handleFishClick = (fishId, e) => {
     e.stopPropagation();
     const fishObj = fishArray.find((f) => f.id === fishId);
@@ -364,6 +392,7 @@ export default function App() {
     }
     setScore((prev) => prev + points);
 
+    // Remove fish & spawn off-screen replacement
     setFishArray((prev) => {
       const filtered = prev.filter((f) => f.id !== fishId);
       const newFish  = createOffscreenFish(nextId.current);
@@ -371,6 +400,7 @@ export default function App() {
       return [...filtered, newFish];
     });
 
+    // Add to caughtRecords & trigger catch-animation
     const caughtType = `${colour} ${pattern}`;
     setCaughtRecords((prev) => [...prev, caughtType]);
 
@@ -380,23 +410,27 @@ export default function App() {
       { id: fishId, startX: curX, startY: curY, colour, pattern },
     ]);
 
+    // Create floating “+points” notification
     const notifId = nextNotif.current++;
     setScoreNotifs((prev) => [
       ...prev,
       { id: notifId, x: curX, y: curY, points },
     ]);
 
+    // Remove notification after 1 second
     setTimeout(() => {
       setScoreNotifs((prev) => prev.filter((n) => n.id !== notifId));
     }, 1000);
   };
 
+  // Remove a finished catch-animation
   const handleCatchAnimationEnd = (animId) => {
     setCatchAnimations((prev) => prev.filter((a) => a.id !== animId));
   };
 
   const isCatching = catchAnimations.length > 0;
 
+  // Reset fish (preserve score & stats)
   const handleReset = () => {
     setCatchAnimations([]);
     setFishArray(createInitialFish());
@@ -404,6 +438,7 @@ export default function App() {
     setSpeed(1.5);
   };
 
+  // Adjust speed
   const handleSpeedDown = () => {
     setSpeed((s) => Math.max(MIN_SPEED, parseFloat((s - 0.5).toFixed(2))));
   };
@@ -411,15 +446,18 @@ export default function App() {
     setSpeed((s) => Math.min(MAX_SPEED, parseFloat((s + 0.5).toFixed(2))));
   };
 
+  // Toggle stats popup
   const toggleCaughtPopup = () => {
     setShowCaughtPopup((prev) => !prev);
   };
 
+  // Close welcome popup
   const closeWelcome = () => {
     localStorage.setItem('seenWelcome', 'true');
     setShowWelcome(false);
   };
 
+  // Build tally for StatsPopup
   const tally = caughtRecords.reduce((acc, typeStr) => {
     acc[typeStr] = (acc[typeStr] || 0) + 1;
     return acc;
@@ -435,6 +473,7 @@ export default function App() {
 
       <Bubbles />
 
+      {/* Floating score notifications */}
       {scoreNotifs.map((notif) => (
         <span
           key={notif.id}
@@ -448,11 +487,11 @@ export default function App() {
         </span>
       ))}
 
-      {/* ───── Speed & Fish‐Caught (top-right, permanent) ───── */}
+      {/* Speed & Fish‐Caught Labels (top‐right) */}
       <div className="speed-label">Speed: {speed.toFixed(1)}</div>
       <div className="fish-count-label">Fish Caught: {caughtRecords.length}</div>
-      {/* ─────────────────────────────────────────────────────── */}
 
+      {/* Live fish */}
       {fishArray.map((fish) => {
         const isSuper = SUPER_COLOURS.includes(fish.colour);
         return (
@@ -472,10 +511,12 @@ export default function App() {
         );
       })}
 
+      {/* Hook as cursor on desktop */}
       {!isCatching && !isMobile && !showWelcome && (
         <Hook x={cursorPos.x} y={cursorPos.y} jerking={isJerking} />
       )}
 
+      {/* Caught‐fish animations */}
       {catchAnimations.map((anim) => (
         <CatchAnimation
           key={anim.id}
@@ -486,7 +527,7 @@ export default function App() {
         >
           <Hook x={anim.startX} y={anim.startY} jerking={false} />
           <Fish
-            id={anim.id + 100000}
+            id={anim.id + 100000}   // distinct ID for the caught/flying‐out fish
             x={0}
             y={0}
             size={FISH_SIZE}
@@ -500,7 +541,7 @@ export default function App() {
         </CatchAnimation>
       ))}
 
-      {/* ───── Settings Cog & Controls (top-left) ───── */}
+      {/* Settings Cog, Info & Controls (top-left) */}
       <div className="top-left-ui">
         <button
           className="settings-btn"
@@ -517,26 +558,30 @@ export default function App() {
             <path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm7.65 3.5a5.98 5.98 0 0 0-.18-1l2.03-1.57a.5.5 0 0 0 .11-.63l-1.92-3.32a.5.5 0 0 0-.61-.23l-2.39.96a6.05 6.05 0 0 0-1.73-1l-.36-2.54A.5.5 0 0 0 13.5 2h-3a.5.5 0 0 0-.5.44l-.36 2.54a6.05 6.05 0 0 0-1.73 1l-2.39-.96a.5.5 0 0 0-.61.23L3.4 9.37a.5.5 0 0 0 .11.63l2.03 1.57c-.04.33-.07.66-.07 1s.03.67.07 1l-2.03 1.57a.5.5 0 0 0-.11.63l1.92 3.32a.5.5 0 0 0 .61.23l2.39-.96c.53.42 1.12.75 1.73 1l.36 2.54a.5.5 0 0 0 .5.44h3a.5.5 0 0 0 .5-.44l.36-2.54c.61-.25 1.2-.58 1.73-1l2.39.96a.5.5 0 0 0 .61-.23l1.92-3.32a.5.5 0 0 0-.11-.63l-2.03-1.57c.15-.33.26-.67.33-1Zm-7.65 4.5a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z" />
           </svg>
         </button>
-
+        <button
+          className="info-btn"
+          onClick={() => setShowInfoPopup(true)}
+          aria-label="Show fish info"
+        >
+          ?
+        </button>
         {showControls && (
           <Controls
             onSpeedDown={handleSpeedDown}
             onSpeedUp={handleSpeedUp}
-            onAddFish={() => { /* existing add-fish logic */ }}
+            onAddFish={() => { /* you can re-enable “Add Fish” later */ }}
             onReset={handleReset}
             isMobile={isMobile}
           />
         )}
       </div>
-      {/* ──────────────────────────────────────────────── */}
 
-      {/* ───── Score centered (top) ───── */}
+      {/* Score (top-center) */}
       <div className="top-center-ui">
         <div className="score-display">Score: {score}</div>
       </div>
-      {/* ──────────────────────────────────────── */}
 
-      {/* ───── Fish Caught Button (bottom-center) ───── */}
+      {/* “See Fish Caught” button (bottom-center) */}
       <div className="bottom-center-ui">
         <button
           className="caught-btn"
@@ -545,7 +590,6 @@ export default function App() {
           See Fish Caught
         </button>
       </div>
-      {/* ──────────────────────────────────────────────── */}
 
       {showCaughtPopup && (
         <StatsPopup
@@ -553,6 +597,13 @@ export default function App() {
           tally={tally}
           isMobile={isMobile}
           onClose={toggleCaughtPopup}
+        />
+      )}
+
+      {showInfoPopup && (
+        <InfoPopup
+          isMobile={isMobile}
+          onClose={() => setShowInfoPopup(false)}
         />
       )}
     </div>
