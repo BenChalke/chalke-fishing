@@ -1,5 +1,8 @@
 /* src/components/InfoPopup.css */
 
+/* ----------------------------------------
+   OVERLAY (full‐screen, semi-transparent)
+   ---------------------------------------- */
 .info-popup-overlay {
   position: fixed;
   top: 0;
@@ -13,18 +16,25 @@
   z-index: 100;
 }
 
+/* ----------------------------------------
+   CONTENT CONTAINER (flex column, bounded height)
+   ---------------------------------------- */
 .info-popup-content {
-  position: relative; /* for close button */
+  position: relative;   /* for the close “✕” */
   background: #ffffff;
   border-radius: 10px;
   width: 400px;
   max-width: 90%;
-  max-height: 90%;
+  max-height: 90vh;     /* never exceed 90% of viewport */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;     /* clip children that overflow */
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  padding: 20px;
-  overflow-y: auto;
 }
 
+/* ----------------------------------------
+   CLOSE BUTTON “✕”
+   ---------------------------------------- */
 .popup-close-x {
   position: absolute;
   top: 12px;
@@ -40,19 +50,36 @@
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  padding: 8px; /* enlarge tappable area */
 }
 
 .popup-close-x:hover {
   color: #000;
 }
 
+/* ----------------------------------------
+   HEADER (non‐scrollable)
+   ---------------------------------------- */
 .info-popup-content h2 {
   margin: 16px 0;
   font-size: 22px;
   color: #333;
   text-align: center;
+  flex-shrink: 0;  /* do not shrink or scroll */
 }
 
+/* ----------------------------------------
+   BODY (scrollable area)
+   ---------------------------------------- */
+.info-popup-body {
+  flex: 1 1 auto;       /* fill the remaining vertical space */
+  overflow-y: auto;     /* scroll if content is taller */
+  padding: 0 20px 20px; /* inner padding */
+}
+
+/* ----------------------------------------
+   SECTION STYLING
+   ---------------------------------------- */
 .info-section {
   margin-top: 16px;
 }
@@ -66,7 +93,6 @@
 }
 
 .info-item {
-  list-style: none;
   display: flex;
   align-items: center;
   margin: 6px 0;
@@ -77,6 +103,7 @@
   width: 40px;
   height: 20px;
   margin-right: 8px;
+  flex-shrink: 0;
 }
 
 .info-text {
@@ -87,6 +114,7 @@
 .info-fish-name {
   font-weight: bold;
   color: #1e3a5f;
+  margin-right: 8px;
 }
 
 .info-notes {
@@ -96,36 +124,50 @@
   line-height: 1.4;
 }
 
+/* ----------------------------------------
+   MOBILE ADJUSTMENTS (≤600px)
+   ---------------------------------------- */
 @media (max-width: 600px) {
   .info-popup-content {
     width: 95%;
-    max-height: 95%;
-    padding: 16px;
+    max-height: 95vh;
   }
+
   .info-popup-content h2 {
     font-size: 20px;
     margin: 12px 0;
   }
+
+  .info-popup-body {
+    padding: 0 16px 16px;
+  }
+
   .info-section h3 {
     font-size: 16px;
     margin-bottom: 6px;
   }
+
   .info-item {
     margin: 4px 0;
   }
+
   .mini-fish-container {
     width: 32px;
     height: 16px;
     margin-right: 6px;
   }
+
   .info-text {
     font-size: 14px;
   }
+
   .popup-close-x {
     font-size: 28px;
     top: 8px;
     right: 8px;
+    padding: 10px;
   }
+
   .info-notes {
     font-size: 12px;
   }

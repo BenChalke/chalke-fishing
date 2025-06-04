@@ -35,80 +35,84 @@ export default function InfoPopup({ isMobile, onClose }) {
 
         <h2>Fish Information</h2>
 
-        <div className="info-section">
-          <h3><strong>Super Rare Fish</strong></h3>
-          <ul>
-            {SUPER_COLOURS.map((colour) => (
-              <li key={colour} className="info-item">
-                <div className="mini-fish-container">
-                  <Fish
-                    x={0}
-                    y={0}
-                    size={40}
-                    colour={colour}
-                    pattern="solid"
-                    isMobile={false}
-                  />
-                </div>
-                <span className="info-text">
-                  <span className="info-fish-name">{colour}</span> – 0.0016% chance of spawning
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
+        {/* Begin scrollable body */}
+        <div className="info-popup-body">
+          <div className="info-section">
+            <h3><strong>Super Rare Fish</strong></h3>
+            <ul>
+              {SUPER_COLOURS.map((colour) => (
+                <li key={colour} className="info-item">
+                  <div className="mini-fish-container">
+                    <Fish
+                      x={0}
+                      y={0}
+                      size={40}
+                      colour={colour}
+                      pattern="solid"
+                      isMobile={false}
+                    />
+                  </div>
+                  <span className="info-text">
+                    <span className="info-fish-name">{colour}</span> – 0.0016% chance of spawning
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-        <div className="info-section">
-          <h3><strong>Rare Fish</strong></h3>
-          <ul>
-            {RARE_COLOURS.map((colour) => (
-              <li key={colour} className="info-item">
-                <div className="mini-fish-container">
-                  <Fish
-                    x={0}
-                    y={0}
-                    size={40}
-                    colour={colour}
-                    pattern="solid"
-                    isMobile={false}
-                  />
-                </div>
-                <span className="info-text">
-                  <span className="info-fish-name">{colour}</span> – 0.005% chance of spawning
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
+          <div className="info-section">
+            <h3><strong>Rare Fish</strong></h3>
+            <ul>
+              {RARE_COLOURS.map((colour) => (
+                <li key={colour} className="info-item">
+                  <div className="mini-fish-container">
+                    <Fish
+                      x={0}
+                      y={0}
+                      size={40}
+                      colour={colour}
+                      pattern="solid"
+                      isMobile={false}
+                    />
+                  </div>
+                  <span className="info-text">
+                    <span className="info-fish-name">{colour}</span> – 0.005% chance of spawning
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-        <div className="info-section">
-          <h3>Common Fish</h3>
-          <ul>
-            {commonColours.map((colour) => (
-              <li key={colour} className="info-item">
-                <div className="mini-fish-container">
-                  <Fish
-                    x={0}
-                    y={0}
-                    size={40}
-                    colour={colour}
-                    pattern="solid"
-                    isMobile={false}
-                  />
-                </div>
-                <span className="info-text">
-                  <span className="info-fish-name">{colour}</span> – high chance of spawning
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
+          <div className="info-section">
+            <h3>Common Fish</h3>
+            <ul>
+              {commonColours.map((colour) => (
+                <li key={colour} className="info-item">
+                  <div className="mini-fish-container">
+                    <Fish
+                      x={0}
+                      y={0}
+                      size={40}
+                      colour={colour}
+                      pattern="solid"
+                      isMobile={false}
+                    />
+                  </div>
+                  <span className="info-text">
+                    <span className="info-fish-name">{colour}</span> – high chance of spawning
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-        <div className="info-notes">
-          <p>
-            Each fish also has one of three patterns: <em>solid</em>, <em>striped</em>, or <em>spotted</em>. Rarity is determined solely by colour.
-          </p>
+          <div className="info-notes">
+            <p>
+              Each fish also has one of three patterns: <em>solid</em>, <em>striped</em>, or <em>spotted</em>. Rarity is determined solely by colour.
+            </p>
+          </div>
         </div>
+        {/* End scrollable body */}
       </div>
     </div>
   );
