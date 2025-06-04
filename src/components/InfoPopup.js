@@ -51,7 +51,7 @@ export default function InfoPopup({ isMobile, onClose }) {
                   />
                 </div>
                 <span className="info-text">
-                  <span className="info-fish-name">{colour}</span> – Has a 0.0016% chance of spawning
+                  <span className="info-fish-name">{colour}</span> – 0.0016% chance of spawning
                 </span>
               </li>
             ))}
@@ -74,7 +74,7 @@ export default function InfoPopup({ isMobile, onClose }) {
                   />
                 </div>
                 <span className="info-text">
-                  <span className="info-fish-name">{colour}</span> – Has a 0.005% chance of spawning
+                  <span className="info-fish-name">{colour}</span> – 0.005% chance of spawning
                 </span>
               </li>
             ))}
@@ -97,7 +97,7 @@ export default function InfoPopup({ isMobile, onClose }) {
                   />
                 </div>
                 <span className="info-text">
-                  <span className="info-fish-name">{colour}</span> – Has a high chance of spawning
+                  <span className="info-fish-name">{colour}</span> – high chance of spawning
                 </span>
               </li>
             ))}

@@ -18,7 +18,7 @@ import {
   SUPER_COLOURS,
 } from './constants/fishConstants';
 
-const FISH_COUNT       = 10;
+const FISH_COUNT       = 15;
 const FISH_SIZE        = 120;
 const REPULSE_DISTANCE = 100;
 const ENTRY_MULT       = 3;
@@ -511,8 +511,8 @@ export default function App() {
         );
       })}
 
-      {/* Hook as cursor on desktop */}
-      {!isCatching && !isMobile && !showWelcome && (
+      {/* Hook as cursor (desktop) – keep shown even during catch animations */}
+      {!isMobile && !showWelcome && (
         <Hook x={cursorPos.x} y={cursorPos.y} jerking={isJerking} />
       )}
 
@@ -525,7 +525,7 @@ export default function App() {
           fishSize={FISH_SIZE}
           onAnimationEnd={() => handleCatchAnimationEnd(anim.id)}
         >
-          <Hook x={anim.startX} y={anim.startY} jerking={false} />
+          <Hook x={anim.startX} y={anim.startY} jerking={true}/>
           <Fish
             id={anim.id + 100000}   // distinct ID for the caught/flying‐out fish
             x={0}
