@@ -12,65 +12,72 @@ export default function Controls({
   onToggleStats,
   showControls,
   onToggleVisibility,
+  isMobile,               // new prop
 }) {
   return (
     <>
-      {/* Speed + fish count labels are always rendered */}
+      {/* Speed + fish count labels always visible */}
       <div className="speed-label">Speed: {speed.toFixed(1)}</div>
       <div className="fish-count-label">Fish Caught: {fishCount}</div>
 
-      {/* If controls hidden, show only “Show Controls” button */}
       {!showControls ? (
+        /* “Show Controls” button when hidden */
         <button
           className="toggle-button show-button"
-          onClick={onToggleVisibility}
-          onTouchEnd={onToggleVisibility}
+          {...(isMobile
+            ? { onTouchStart: onToggleVisibility }
+            : { onClick: onToggleVisibility })}
         >
           Show Controls
         </button>
       ) : (
-        /* Otherwise, render all buttons in a flex‐container + “Hide Controls” toggle */
+        /* Full set of buttons + “Hide Controls” when visible */
         <div className="button-container">
           <button
             className="control-button speed-down"
-            onClick={onSpeedDown}
-            onTouchEnd={onSpeedDown}
+            {...(isMobile
+              ? { onTouchStart: onSpeedDown }
+              : { onClick: onSpeedDown })}
           >
             Speed–
           </button>
           <button
             className="control-button speed-up"
-            onClick={onSpeedUp}
-            onTouchEnd={onSpeedUp}
+            {...(isMobile
+              ? { onTouchStart: onSpeedUp }
+              : { onClick: onSpeedUp })}
           >
             Speed+
           </button>
           <button
             className="control-button add-button"
-            onClick={onAddFish}
-            onTouchEnd={onAddFish}
+            {...(isMobile
+              ? { onTouchStart: onAddFish }
+              : { onClick: onAddFish })}
           >
             Add Fish
           </button>
           <button
             className="control-button reset-button"
-            onClick={onReset}
-            onTouchEnd={onReset}
+            {...(isMobile
+              ? { onTouchStart: onReset }
+              : { onClick: onReset })}
           >
             Reset Fish
           </button>
           <button
             className="control-button caught-button"
-            onClick={onToggleStats}
-            onTouchEnd={onToggleStats}
+            {...(isMobile
+              ? { onTouchStart: onToggleStats }
+              : { onClick: onToggleStats })}
           >
             Fish Caught
           </button>
-          {/* “Hide Controls” toggle placed last in the row/column */}
           <button
             className="toggle-button hide-button"
-            onClick={onToggleVisibility}
-            onTouchEnd={onToggleVisibility}
+            {...(isMobile
+              ? { onTouchStart: onToggleVisibility }
+              : { onClick: onToggleVisibility })}
           >
             Hide Controls
           </button>

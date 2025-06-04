@@ -42,6 +42,9 @@
   -ms-user-select: none;
   user-select: none;
 
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.1s ease;
 }
@@ -62,7 +65,7 @@
   z-index: 50;
 }
 
-/* The “Hide Controls” button simply lives inside .button-container */
+/* The “Hide Controls” button is placed inside .button-container */
 
 /* ----------------------------------------
    FLEX CONTAINER FOR ALL MAIN BUTTONS (DESKTOP)
@@ -92,8 +95,12 @@
   -ms-user-select: none;
   user-select: none;
 
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.1s ease;
+  z-index: 50;
 }
 
 .control-button:hover {
@@ -106,10 +113,10 @@
 }
 
 /* ----------------------------------------
-   MOBILE ADJUSTMENTS (max‐width: 600px)
+   MOBILE ADJUSTMENTS (max-width: 600px)
    ---------------------------------------- */
 @media (max-width: 600px) {
-  /* Move labels slightly down on mobile */
+  /* Labels move slightly down on mobile */
   .speed-label {
     top: 10px;
     right: 10px;
@@ -121,7 +128,7 @@
     font-size: 14px;
   }
 
-  /* Switch button-container to column, and push it up by 100px */
+  /* Switch .button-container to column, push up by 100px */
   .button-container {
     flex-direction: column;
     bottom: 100px;  /* 60px + 40px upward shift to clear URL bar */
@@ -129,14 +136,26 @@
     gap: 10px;      /* smaller vertical gap */
   }
 
+  /* Disable hover/active animations on mobile and remove transitions */
   .control-button {
     font-size: 14px;
     padding: 8px 12px;
-    width: 100px;   /* fixed width for uniformity */
+    width: 100px;         /* fixed width for uniformity */
     text-align: center;
+    transition: none;
+  }
+  .control-button:hover,
+  .control-button:active {
+    background-color: rgba(255, 255, 255, 0.9);
+    transform: none;
   }
 
-  /* Position “Show Controls” toggle at least 100px off the bottom on mobile */
+  /* Remove focus outline when tapped/focused */
+  .control-button:focus {
+    outline: none;
+  }
+
+  /* Position “Show Controls” toggle at least 100px off bottom */
   .show-button {
     bottom: 100px;
     right: 10px;

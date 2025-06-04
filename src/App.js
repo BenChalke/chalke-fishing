@@ -354,6 +354,7 @@ export default function App() {
         onReset={handleReset}
         onToggleStats={toggleCaughtPopup}
         showControls={showControls}
+        isMobile={isMobile}
         onToggleVisibility={() => setShowControls((prev) => !prev)}
      />
 
