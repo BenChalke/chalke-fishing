@@ -10,7 +10,6 @@ import Controls       from './components/Controls';
 import WelcomePopup   from './components/WelcomePopup';
 import StatsPopup     from './components/StatsPopup';
 
-// Import constants
 import {
   COLOURS,
   PATTERNS,
@@ -21,17 +20,11 @@ import {
 const FISH_COUNT       = 10;
 const FISH_SIZE        = 120;
 const REPULSE_DISTANCE = 100;
-const ENTRY_MULT       = 3;    // Entry‐phase speed multiplier
+const ENTRY_MULT       = 3;
 
-// Speed bounds
 const MIN_SPEED = 0.5;
 const MAX_SPEED = 20.0;
 
-/**
- * Generate a random on‐screen fish:
- *  • justSpawned: false
- *  • speedMult: 1
- */
 function createRandomFish(id) {
   const w = window.innerWidth;
   const h = window.innerHeight;
@@ -86,38 +79,26 @@ function createRandomFish(id) {
   };
 }
 
-/**
- * Generate an off‐screen fish that swims in quickly:
- *  • justSpawned: true
- *  • speedMult: ENTRY_MULT
- */
 function createOffscreenFish(id) {
   const w = window.innerWidth;
   const h = window.innerHeight;
   const fishHeight = FISH_SIZE * 0.5;
-
-  // Randomly pick one edge: 0 = left, 1 = right, 2 = top, 3 = bottom
   const edge = Math.floor(Math.random() * 4);
 
   let x, y, angle;
   if (edge === 0) {
-    // Left edge: start fully to the left
     x = -FISH_SIZE;
     y = Math.random() * (h - fishHeight);
-    // Angle toward the right: between –45° and +45°
     angle = (Math.random() * (Math.PI / 2)) - (Math.PI / 4);
   } else if (edge === 1) {
-    // Right edge: start fully to the right
     x = w;
     y = Math.random() * (h - fishHeight);
     angle = Math.PI + (Math.random() * (Math.PI / 2)) - (Math.PI / 4);
   } else if (edge === 2) {
-    // Top edge: start fully above
     x = Math.random() * (w - FISH_SIZE);
     y = -fishHeight;
     angle = (Math.PI / 4) + (Math.random() * (Math.PI / 2));
   } else {
-    // Bottom edge: start fully below
     x = Math.random() * (w - FISH_SIZE);
     y = h;
     angle = - (Math.PI / 4) - (Math.random() * (Math.PI / 2));
@@ -170,9 +151,6 @@ function createOffscreenFish(id) {
   };
 }
 
-/**
- * Generate the initial set of fish, all on‐screen.
- */
 function createInitialFish() {
   const arr = [];
   for (let i = 0; i < FISH_COUNT; i++) {
@@ -207,13 +185,12 @@ export default function App() {
   const [showCaughtPopup, setShowCaughtPopup] = useState(false);
   const [isMobile, setIsMobile]               = useState(false);
   const [showWelcome, setShowWelcome]         = useState(false);
-  const [showControls, setShowControls]       = useState(true);
+  const [showControls, setShowControls]       = useState(false);
 
   const cursorRef = useRef({ x: -1000, y: -1000 });
   const nextId    = useRef(FISH_COUNT);
   const nextNotif = useRef(0);
 
-  // On mount: initialize fish, detect touch, check welcome popup
   useEffect(() => {
     setFishArray(createInitialFish());
     setIsMobile('ontouchstart' in window);
@@ -221,7 +198,6 @@ export default function App() {
     if (!seen) setShowWelcome(true);
   }, []);
 
-  // Persist caughtRecords & score to localStorage
   useEffect(() => {
     localStorage.setItem('caughtRecords', JSON.stringify(caughtRecords));
   }, [caughtRecords]);
@@ -230,7 +206,6 @@ export default function App() {
     localStorage.setItem('score', String(score));
   }, [score]);
 
-  // Fish‐movement loop (ticks every 30ms)
   useEffect(() => {
     const interval = setInterval(() => {
       setFishArray((prevFish) => {
@@ -252,51 +227,38 @@ export default function App() {
             speedMult,
           } = fish;
 
-          // Effective speed = global speed × fish.speedMult (ENTRY_MULT for entry fish)
           const effSpeed = speed * speedMult;
 
-          // If fish is still in “entry” mode:
           if (justSpawned) {
-            // 1) Calculate fish center
             const fishCX = x + FISH_SIZE / 2;
             const fishCY = y + fishHeight / 2;
-
-            // 2) Compute angle that points directly to screen center
             const angleToCenter = Math.atan2(centerY - fishCY, centerX - fishCX);
-
-            // Move along that vector at entry speed
             const dx = Math.cos(angleToCenter) * effSpeed;
             const dy = Math.sin(angleToCenter) * effSpeed;
             const newX = x + dx;
             const newY = y + dy;
-
-            // 3) Check if fully inside bounds now
             const fullyInside =
               newX >= 0 &&
               newX + FISH_SIZE <= w &&
               newY >= 0 &&
               newY + fishHeight <= h;
-
-            // If now fully inside, end entry phase
             if (fullyInside) {
               return {
                 id,
                 x: newX,
                 y: newY,
-                angle: angleToCenter,      // keep whichever angle is current
+                angle: angleToCenter,
                 colour,
                 pattern,
                 justSpawned: false,
-                speedMult: 1,              // revert to normal speed
+                speedMult: 1,
               };
             }
-
-            // Otherwise remain in entry phase (still justSpawned: true)
             return {
               id,
               x: newX,
               y: newY,
-              angle: angleToCenter,      // always steer to center during entry
+              angle: angleToCenter,
               colour,
               pattern,
               justSpawned: true,
@@ -304,9 +266,6 @@ export default function App() {
             };
           }
 
-          // ——— Normal behavior (once justSpawned is false) ———
-
-          // 1) Compute repulsion if on desktop
           let dx = Math.cos(angle) * effSpeed;
           let dy = Math.sin(angle) * effSpeed;
 
@@ -329,16 +288,12 @@ export default function App() {
           let newY = y + dy;
           let newAngle = angle;
 
-          // 2) Bounce‐outside correction:
-          // If fish ends up fully off any edge, flip 180° immediately
-          // so it can’t remain stuck outside.
           if (
-            newX + FISH_SIZE < 0 ||    // fully left
-            newX > w ||                // fully right
-            newY + fishHeight < 0 ||   // fully above
-            newY > h                    // fully below
+            newX + FISH_SIZE < 0 ||
+            newX > w ||
+            newY + fishHeight < 0 ||
+            newY > h
           ) {
-            // Flip direction 180° and recalc single step
             newAngle = angle + Math.PI;
             const bx = Math.cos(newAngle) * speed;
             const by = Math.sin(newAngle) * speed;
@@ -346,14 +301,11 @@ export default function App() {
             newY = y + by;
           }
 
-          // 3) Bounce against walls (only if inside or partially inside):
-          // Bounce horizontally
           if (newX <= 0 || newX + FISH_SIZE >= w) {
             newAngle = Math.PI - newAngle;
             const bounceDX = Math.cos(newAngle) * speed;
             newX = x + bounceDX;
           }
-          // Bounce vertically
           if (newY <= 0 || newY + fishHeight >= h) {
             newAngle = -newAngle;
             const bounceDY = Math.sin(newAngle) * speed;
@@ -377,7 +329,6 @@ export default function App() {
     return () => clearInterval(interval);
   }, [speed, isMobile]);
 
-  // Track cursor on desktop
   useEffect(() => {
     const handleMouseMove = (e) => {
       const pos = { x: e.clientX, y: e.clientY };
@@ -388,7 +339,6 @@ export default function App() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  // On pointer down (desktop or touch), jerk the hook
   const handlePointerDown = (e) => {
     const clientX = e.clientX ?? e.touches?.[0]?.clientX;
     const clientY = e.clientY ?? e.touches?.[0]?.clientY;
@@ -400,21 +350,13 @@ export default function App() {
     setTimeout(() => setIsJerking(false), 300);
   };
 
-  /**
-   * On fish click:
-   * 1) Award points based on rarity
-   * 2) Remove that fish & spawn an off‐screen replacement (justSpawned: true, speedMult: ENTRY_MULT)
-   * 3) Add to caughtRecords & trigger catch‐animation
-   * 4) Show floating “+points” notification
-   */
   const handleFishClick = (fishId, e) => {
     e.stopPropagation();
     const fishObj = fishArray.find((f) => f.id === fishId);
     if (!fishObj) return;
     const { colour, pattern } = fishObj;
 
-    // 1) Compute points
-    let points = 10; // common base
+    let points = 10;
     if (SUPER_COLOURS.includes(colour)) {
       points = 200;
     } else if (RARE_COLOURS.includes(colour)) {
@@ -422,7 +364,6 @@ export default function App() {
     }
     setScore((prev) => prev + points);
 
-    // 2) Remove fish & spawn off‐screen replacement
     setFishArray((prev) => {
       const filtered = prev.filter((f) => f.id !== fishId);
       const newFish  = createOffscreenFish(nextId.current);
@@ -430,7 +371,6 @@ export default function App() {
       return [...filtered, newFish];
     });
 
-    // 3) Add to caughtRecords & trigger catch‐animation
     const caughtType = `${colour} ${pattern}`;
     setCaughtRecords((prev) => [...prev, caughtType]);
 
@@ -440,27 +380,23 @@ export default function App() {
       { id: fishId, startX: curX, startY: curY, colour, pattern },
     ]);
 
-    // 4) Create floating “+points” notification
     const notifId = nextNotif.current++;
     setScoreNotifs((prev) => [
       ...prev,
       { id: notifId, x: curX, y: curY, points },
     ]);
 
-    // Remove notification after 1 second
     setTimeout(() => {
       setScoreNotifs((prev) => prev.filter((n) => n.id !== notifId));
     }, 1000);
   };
 
-  // Remove a finished catch‐animation
   const handleCatchAnimationEnd = (animId) => {
     setCatchAnimations((prev) => prev.filter((a) => a.id !== animId));
   };
 
   const isCatching = catchAnimations.length > 0;
 
-  // Reset fish (preserve score & stats)
   const handleReset = () => {
     setCatchAnimations([]);
     setFishArray(createInitialFish());
@@ -468,7 +404,6 @@ export default function App() {
     setSpeed(1.5);
   };
 
-  // Adjust speed
   const handleSpeedDown = () => {
     setSpeed((s) => Math.max(MIN_SPEED, parseFloat((s - 0.5).toFixed(2))));
   };
@@ -476,18 +411,15 @@ export default function App() {
     setSpeed((s) => Math.min(MAX_SPEED, parseFloat((s + 0.5).toFixed(2))));
   };
 
-  // Toggle stats popup
   const toggleCaughtPopup = () => {
     setShowCaughtPopup((prev) => !prev);
   };
 
-  // Close welcome popup
   const closeWelcome = () => {
     localStorage.setItem('seenWelcome', 'true');
     setShowWelcome(false);
   };
 
-  // Build tally for StatsPopup
   const tally = caughtRecords.reduce((acc, typeStr) => {
     acc[typeStr] = (acc[typeStr] || 0) + 1;
     return acc;
@@ -503,7 +435,6 @@ export default function App() {
 
       <Bubbles />
 
-      {/* Floating score notifications */}
       {scoreNotifs.map((notif) => (
         <span
           key={notif.id}
@@ -517,15 +448,13 @@ export default function App() {
         </span>
       ))}
 
-      {/* Display current score in the top-left */}
-      <div className="score-display">
-        Score: {score}
-      </div>
+      {/* ───── Speed & Fish‐Caught (top-right, permanent) ───── */}
+      <div className="speed-label">Speed: {speed.toFixed(1)}</div>
+      <div className="fish-count-label">Fish Caught: {caughtRecords.length}</div>
+      {/* ─────────────────────────────────────────────────────── */}
 
-      {/* Live fish */}
       {fishArray.map((fish) => {
         const isSuper = SUPER_COLOURS.includes(fish.colour);
-        // Pass fish.speedMult × speed to Fish so tail animation matches
         return (
           <Fish
             key={fish.id}
@@ -543,12 +472,10 @@ export default function App() {
         );
       })}
 
-      {/* Hook as cursor on desktop */}
       {!isCatching && !isMobile && !showWelcome && (
         <Hook x={cursorPos.x} y={cursorPos.y} jerking={isJerking} />
       )}
 
-      {/* Caught‐fish animations */}
       {catchAnimations.map((anim) => (
         <CatchAnimation
           key={anim.id}
@@ -559,7 +486,7 @@ export default function App() {
         >
           <Hook x={anim.startX} y={anim.startY} jerking={false} />
           <Fish
-            id={anim.id + 100000}   // distinct ID for the caught/flying‐out fish
+            id={anim.id + 100000}
             x={0}
             y={0}
             size={FISH_SIZE}
@@ -573,20 +500,53 @@ export default function App() {
         </CatchAnimation>
       ))}
 
-      {/* Controls */}
-      <Controls
-        speed={speed}
-        fishCount={caughtRecords.length}
-        onSpeedDown={handleSpeedDown}
-        onSpeedUp={handleSpeedUp}
-        onReset={handleReset}
-        onToggleStats={toggleCaughtPopup}
-        showControls={showControls}
-        onToggleVisibility={() => setShowControls((prev) => !prev)}
-        isMobile={isMobile}
-      />
+      {/* ───── Settings Cog & Controls (top-left) ───── */}
+      <div className="top-left-ui">
+        <button
+          className="settings-btn"
+          onClick={() => setShowControls((prev) => !prev)}
+          aria-label={showControls ? 'Hide controls' : 'Show controls'}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="24"
+            height="24"
+            fill="currentColor"
+          >
+            <path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm7.65 3.5a5.98 5.98 0 0 0-.18-1l2.03-1.57a.5.5 0 0 0 .11-.63l-1.92-3.32a.5.5 0 0 0-.61-.23l-2.39.96a6.05 6.05 0 0 0-1.73-1l-.36-2.54A.5.5 0 0 0 13.5 2h-3a.5.5 0 0 0-.5.44l-.36 2.54a6.05 6.05 0 0 0-1.73 1l-2.39-.96a.5.5 0 0 0-.61.23L3.4 9.37a.5.5 0 0 0 .11.63l2.03 1.57c-.04.33-.07.66-.07 1s.03.67.07 1l-2.03 1.57a.5.5 0 0 0-.11.63l1.92 3.32a.5.5 0 0 0 .61.23l2.39-.96c.53.42 1.12.75 1.73 1l.36 2.54a.5.5 0 0 0 .5.44h3a.5.5 0 0 0 .5-.44l.36-2.54c.61-.25 1.2-.58 1.73-1l2.39.96a.5.5 0 0 0 .61-.23l1.92-3.32a.5.5 0 0 0-.11-.63l-2.03-1.57c.15-.33.26-.67.33-1Zm-7.65 4.5a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z" />
+          </svg>
+        </button>
 
-      {/* Stats popup */}
+        {showControls && (
+          <Controls
+            onSpeedDown={handleSpeedDown}
+            onSpeedUp={handleSpeedUp}
+            onAddFish={() => { /* existing add-fish logic */ }}
+            onReset={handleReset}
+            isMobile={isMobile}
+          />
+        )}
+      </div>
+      {/* ──────────────────────────────────────────────── */}
+
+      {/* ───── Score centered (top) ───── */}
+      <div className="top-center-ui">
+        <div className="score-display">Score: {score}</div>
+      </div>
+      {/* ──────────────────────────────────────── */}
+
+      {/* ───── Fish Caught Button (bottom-center) ───── */}
+      <div className="bottom-center-ui">
+        <button
+          className="caught-btn"
+          onClick={toggleCaughtPopup}
+        >
+          See Fish Caught
+        </button>
+      </div>
+      {/* ──────────────────────────────────────────────── */}
+
       {showCaughtPopup && (
         <StatsPopup
           caughtRecords={caughtRecords}
