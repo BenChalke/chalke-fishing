@@ -72,8 +72,9 @@
    ---------------------------------------- */
 .popup-body {
   flex: 1 1 auto;       /* fill remaining vertical space */
-  overflow-y: auto;     /* scroll if content is taller */
   padding: 0 20px 20px; /* inner padding */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* enable smooth/scrolling on iOS */      /* clip overflow */
 }
 
 .stats-popup-content p {
@@ -165,8 +166,8 @@
    ---------------------------------------- */
 @media (max-width: 600px) {
   .stats-popup-content {
-    width: 95%;
-    max-height: 95vh;
+    max-width: 90%;
+    max-height: calc(100vh - 150px);
   }
 
   .stats-popup-content h2 {
@@ -175,7 +176,7 @@
   }
 
   .popup-body {
-    padding: 0 16px 16px;
+    padding: 0 10px;
   }
 
   .mini-fish-container {

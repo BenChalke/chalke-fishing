@@ -75,6 +75,7 @@
   flex: 1 1 auto;       /* fill the remaining vertical space */
   overflow-y: auto;     /* scroll if content is taller */
   padding: 0 20px 20px; /* inner padding */
+  -webkit-overflow-scrolling: touch; /* enable smooth/scrolling on iOS */
 }
 
 /* ----------------------------------------
@@ -129,8 +130,8 @@
    ---------------------------------------- */
 @media (max-width: 600px) {
   .info-popup-content {
-    width: 95%;
-    max-height: 95vh;
+    max-width: 90%;
+    max-height: calc(100vh - 150px);
   }
 
   .info-popup-content h2 {
@@ -139,7 +140,7 @@
   }
 
   .info-popup-body {
-    padding: 0 16px 16px;
+    padding: 0 10px;
   }
 
   .info-section h3 {
