@@ -54,6 +54,7 @@
 @media (max-width: 600px) {
   .controls-container {
     top: 100px;
+    left: 0;
   }
   .control-button {
     padding: 6px 12px;
