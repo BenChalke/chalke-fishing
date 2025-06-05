@@ -3,14 +3,17 @@ import React, { useEffect, useState } from "react";
 import "./HighScoreScreen.css";
 import "./components/StatsPopup.css"; // reuse list‐formatting styles
 import Fish from "./components/Fish";
+import FishDisplay from "./components/FishDisplay";
 import { RARE_COLOURS, SUPER_COLOURS } from "./constants/fishConstants";
 
 export default function HighScoreScreen({ onBackToHome }) {
   const [highScore, setHighScore] = useState(0);
   const [highRecords, setHighRecords] = useState([]);
+  const [isMobile, setIsMobile] = useState(false);
 
   // On mount: read the single “ttHighScore” entry from localStorage
   useEffect(() => {
+    setIsMobile('ontouchstart' in window);
     try {
       const saved = localStorage.getItem("ttHighScore");
       if (saved) {
@@ -51,9 +54,20 @@ export default function HighScoreScreen({ onBackToHome }) {
 
   return (
     <div className="container">
+      <FishDisplay
+        fishArray={[]}           // empty array → FishDisplay renders only <Bubbles/>
+        isMobile={isMobile}
+        cursorPos={{ x: -1000, y: -1000 }}
+        isJerking={false}
+        isCatching={false}
+        catchAnimations={[]}
+        onFishClick={() => {}}
+        onCatchAnimationEnd={() => {}}
+        speed={1.5}
+      />
       {/* Back to Home button (top-left) */}
       <button className="back-home-btn" onClick={onBackToHome}>
-        ← Home
+        ←
       </button>
 
       <div className="highscore-header">

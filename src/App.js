@@ -6,7 +6,7 @@ import HighScoreScreen from "./HighScoreScreen";
 import FishField from "./components/FishField";
 import WelcomePopup from "./components/WelcomePopup";
 import "./App.css";
-import "./FishingGame.css";
+// import "./TimeTrialGame.css";
 
 export default function App() {
   const [mode, setMode] = useState("home");

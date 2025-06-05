@@ -1,0 +1,62 @@
+/* ----------------------------------------
+   Settings Cog, Info & Controls (top‐left)
+   ---------------------------------------- */
+.top-left-buttons-freeplay {
+  position: absolute;
+  top: 12px;
+  left: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 50;
+  flex-wrap: wrap;
+}
+
+.settings-btn,
+.info-btn, .back-home-btn-freeplay {
+  background: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 6px;
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  flex: 0 0 40px;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, transform 0.1s ease;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.settings-btn:hover,
+.info-btn:hover {
+  background: rgba(255, 255, 255, 1);
+}
+
+.settings-btn:active,
+.info-btn:active {
+  transform: scale(0.95);
+}
+
+.settings-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+
+/* ----------------------------------------
+   MOBILE ADJUSTMENTS (≤600px)
+   ---------------------------------------- */
+@media (max-width: 600px) {
+  .top-left-buttons-freeplay {
+    max-width: 100px;
+  }
+}
+

@@ -1,6 +1,7 @@
 // src/FreePlayGame.jsx
 import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
+import "./FreePlayGame.css";
 import Fish from "./components/Fish";
 import Hook from "./components/Hook";
 import Bubbles from "./components/Bubbles";
@@ -325,10 +326,50 @@ export default function FreePlayGame({ onBackToHome }) {
       onMouseDown={handlePointerDown}
       onTouchStart={handlePointerDown}
     >
-      {/* — BACK TO HOME BUTTON — */}
-      <button className="back-home-btn" onClick={onBackToHome}>
-        ← Home
-      </button>
+  
+      {/* — SETTINGS (cog), INFO, AND CONTROLS (top-left) — */}
+      <div className="top-left-buttons-freeplay">
+        {/* — BACK TO HOME BUTTON — */}
+        <button className="back-home-btn-freeplay" onClick={onBackToHome}>
+          ←
+        </button>
+
+        {/* Info button toggles the info popup */}
+        <button
+          className="info-btn"
+          onClick={() => setShowInfo(true)}
+          aria-label="Show fish information"
+        >
+          ?
+        </button>
+        {/* Cog-button toggles the controls menu */}
+        <button
+          className="settings-btn"
+          onClick={() => setShowControls((prev) => !prev)}
+          aria-label={showControls ? "Hide controls" : "Show controls"}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="20"
+            height="20"
+            fill="currentColor"
+          >
+            <path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm7.65 3.5a5.98 5.98 0 0 0-.18-1l2.03-1.57a.5.5 0 0 0 .11-.63l-1.92-3.32a.5.5 0 0 0-.61-.23l-2.39.96a6.05 6.05 0 0 0-1.73-1l-.36-2.54A.5.5 0 0 0 13.5 2h-3a.5.5 0 0 0-.5.44l-.36 2.54a6.05 6.05 0 0 0-1.73 1l-2.39-.96a.5.5 0 0 0-.61.23L3.4 9.37a.5.5 0 0 0 .11.63l2.03 1.57c-.04.33-.07.66-.07 1s.03.67.07 1l-2.03 1.57a.5.5 0 0 0-.11.63l1.92 3.32a.5.5 0 0 0 .61.23l2.39-.96c.53.42 1.12.75 1.73 1l.36 2.54a.5.5 0 0 0 .5.44h3a.5.5 0 0 0 .5-.44l.36-2.54c.61-.25 1.2-.58 1.73-1l2.39.96a.5.5 0 0 0 .61-.23l1.92-3.32a.5.5 0 0 0-.11-.63l-2.03-1.57c.15-.33.26-.67.33-1Zm-7.65 4.5a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z" />
+          </svg>
+        </button>
+
+        {/* Only render Controls if showControls is true */}
+        {showControls && (
+          <Controls
+            onSpeedDown={handleSpeedDown}
+            onSpeedUp={handleSpeedUp}
+            onAddFish={() => {/* you can re-enable “Add Fish” if desired */}}
+            onReset={handleReset}
+            isMobile={isMobile}
+          />
+        )}
+      </div>
 
       {/* — WELCOME POPUP (only once) — */}
       {showWelcome && <WelcomePopup onClose={closeWelcome} />}
@@ -350,7 +391,19 @@ export default function FreePlayGame({ onBackToHome }) {
         </span>
       ))}
 
-      {/* — SPEED & FISH‐CAUGHT LABELS (top‐right) — */}
+      {/* — SCORE DISPLAY (top-center) — */}
+      <div className="top-center-ui">
+        <div className="score-display">Score: {score}</div>
+      </div>
+
+      {/* — “See Fish Caught” button (bottom-center) — */}
+      <div className="bottom-right-ui">
+        <button className="caught-btn" onClick={toggleCaughtPopup}>
+          See Fish Caught
+        </button>
+      </div>
+
+      {/* — SPEED & FISH‐CAUGHT LABELS (top-right) — */}
       <div className="speed-label">Speed: {speed.toFixed(1)}</div>
       <div className="fish-count-label">Fish Caught: {caughtRecords.length}</div>
 
@@ -376,11 +429,11 @@ export default function FreePlayGame({ onBackToHome }) {
       })}
 
       {/* — HOOK AS CURSOR ON DESKTOP (only when not catching and welcome is closed) — */}
-      {!isCatching && !isMobile && !showWelcome && (
+      {!isMobile && !showWelcome && (
         <Hook x={cursorPos.x} y={cursorPos.y} jerking={isJerking} />
       )}
 
-      {/* — CAUGHT‐FISH ANIMATIONS — */}
+      {/* — CAUGHT-FISH ANIMATIONS — */}
       {catchAnimations.map((anim) => (
         <CatchAnimation
           key={anim.id}
@@ -404,47 +457,6 @@ export default function FreePlayGame({ onBackToHome }) {
           />
         </CatchAnimation>
       ))}
-
-      {/* — SETTINGS (cog), INFO, AND CONTROLS (top-left) — */}
-      <div className="top-left-ui">
-        {/* Cog‐button toggles the controls menu */}
-        <button
-          className="settings-btn"
-          onClick={() => setShowControls((prev) => !prev)}
-          aria-label={showControls ? "Hide controls" : "Show controls"}
-        >
-          {/* Simple cog icon; you can replace with any SVG if you like */}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            width="20"
-            height="20"
-            fill="currentColor"
-          >
-            <path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm7.65 3.5a5.98 5.98 0 0 0-.18-1l2.03-1.57a.5.5 0 0 0 .11-.63l-1.92-3.32a.5.5 0 0 0-.61-.23l-2.39.96a6.05 6.05 0 0 0-1.73-1l-.36-2.54A.5.5 0 0 0 13.5 2h-3a.5.5 0 0 0-.5.44l-.36 2.54a6.05 6.05 0 0 0-1.73 1l-2.39-.96a.5.5 0 0 0-.61.23L3.4 9.37a.5.5 0 0 0 .11.63l2.03 1.57c-.04.33-.07.66-.07 1s.03.67.07 1l-2.03 1.57a.5.5 0 0 0-.11.63l1.92 3.32a.5.5 0 0 0 .61.23l2.39-.96c.53.42 1.12.75 1.73 1l.36 2.54a.5.5 0 0 0 .5.44h3a.5.5 0 0 0 .5-.44l.36-2.54c.61-.25 1.2-.58 1.73-1l2.39.96a.5.5 0 0 0 .61-.23l1.92-3.32a.5.5 0 0 0-.11-.63l-2.03-1.57c.15-.33.26-.67.33-1Zm-7.65 4.5a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z" />
-          </svg>
-        </button>
-
-        {/* Info button toggles the info popup */}
-        <button
-          className="info-btn"
-          onClick={() => setShowInfo(true)}
-          aria-label="Show fish information"
-        >
-          ?
-        </button>
-
-        {/* Only render Controls if showControls is true */}
-        {showControls && (
-          <Controls
-            onSpeedDown={handleSpeedDown}
-            onSpeedUp={handleSpeedUp}
-            onAddFish={() => {/* you can re-enable “Add Fish” if desired */}}
-            onReset={handleReset}
-            isMobile={isMobile}
-          />
-        )}
-      </div>
 
       {/* — STATS POPUP (Fish Caught) — */}
       {showCaughtPopup && (

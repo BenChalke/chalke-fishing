@@ -1,15 +1,14 @@
-/* src/components/FishingGame.css */
+/* src/components/TimeTrialGame.css */
 
 /* ----------------------------------------
    Trial Countdown Overlay (3 → 2 → 1 → Start)
    ---------------------------------------- */
-.trial-countdown-overlay {
+.trial-countdown-container {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.8);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -30,16 +29,16 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.85);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 200;
 }
 .trial-gameover-content {
+  position: relative;
   background: #fff;
   border-radius: 10px;
-  padding: 20px;
+  padding-top: 20px;
   width: 320px;
   max-width: 90%;
   max-height: 90vh;
@@ -48,6 +47,12 @@
   overflow: hidden;
   box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   text-align: center;
+}
+.trial-gameover-content-inner {
+  flex: 1 1 auto;       /* fill the remaining vertical space */
+  overflow-y: auto;     /* scroll if content is taller */
+  padding: 0 20px 20px; /* inner padding */  
+  -webkit-overflow-scrolling: touch; /* enable smooth/scrolling on iOS */
 }
 .trial-gameover-content h2 {
   margin-bottom: 12px;
@@ -107,9 +112,8 @@
    ---------------------------------------- */
 .time-left-display {
   position: absolute;
-  top: 12px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 20px;
+  right: 12px;
   background: rgba(255,255,255,0.8);
   padding: 4px 12px;
   border-radius: 6px;
@@ -121,48 +125,39 @@
 }
 
 /* ----------------------------------------
-   “Back to Home” button (top-left)
+   CLOSE BUTTON “✕”
    ---------------------------------------- */
-.back-home-btn {
+.gameover-popup-close-x {
   position: absolute;
   top: 12px;
-  left: 12px;
-  background: rgba(50,50,50,0.8);
+  right: 12px;
+  background: transparent;
   border: none;
-  color: #fff;
-  font-size: 1rem;
-  padding: 6px 12px;
-  border-radius: 6px;
+  font-size: 24px;
+  line-height: 1;
+  color: #555;
   cursor: pointer;
-  z-index: 50;
+  z-index: 110;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
   user-select: none;
+  padding: 8px; /* enlarge tappable area */
 }
-.back-home-btn:hover {
-  background: rgba(70,70,70,0.9);
+
+.gameover-popup-close-x :hover {
+  color: #000;
 }
 
 /* ----------------------------------------
-   Score Display (top-center) – reused from App.css
+   MOBILE ADJUSTMENTS (≤600px)
    ---------------------------------------- */
-.score-display {
-  position: absolute;
-  top: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(255, 255, 255, 0.8);
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 18px;
-  font-weight: bold;
-  color: #333;
-  z-index: 50;
-  pointer-events: none;
-}
 @media (max-width: 600px) {
-  .score-display {
-    font-size: 16px;
-    padding: 4px 10px;
+  .time-left-display {
+    font-size: 1rem;
+    top: 12px;
+    right: 8px;
+    height: 40px;
+    padding: 10px 12px;
   }
 }
-
-/* NOTE: All other “FreePlay” CSS (App.css) is unchanged. */

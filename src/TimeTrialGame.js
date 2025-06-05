@@ -22,7 +22,7 @@ import {
   ENTRY_MULT,
 } from './utils/fishUtils';
 
-import './FishingGame.css';  // Contains countdown, gameover, time-left, back-home, etc.
+import './TimeTrialGame.css';  // Contains countdown, gameover, time-left, back-home, etc.
 
 const REPULSE_DISTANCE = 100;
 const MIN_SPEED = 0.5;
@@ -37,7 +37,7 @@ const TOTAL_TIME = 60;   // 60 seconds time trial
 export default function TimeTrialGame({ onBackToHome }) {
   // ——— PHASE & COUNTS ———
   const [phase, setPhase]                 = useState('countdown'); // 'countdown' → 'running' → 'gameover'
-  const [displayNumber, setDisplayNumber] = useState(3);           // for 3 → 2 → 1 → "Start!"
+  const [displayNumber, setDisplayNumber] = useState(3);           // for 3 → 2 → 1 → "Go!"
   const [timeLeft, setTimeLeft]           = useState(TOTAL_TIME);
 
   // ——— FISH & SCORE STATE ———
@@ -50,13 +50,16 @@ export default function TimeTrialGame({ onBackToHome }) {
   const [score, setScore]                 = useState(0);
   const [isMobile, setIsMobile]           = useState(false);
 
+  // ——— NEW: floating “+X” notifications ———
+  const [scoreNotifs, setScoreNotifs]     = useState([]);
+  const nextNotif = useRef(0);
+
   // ——— NEW: Controls toggle ———
   const [showControls, setShowControls]   = useState(false);
 
   // Refs for cursor & unique IDs
   const cursorRef = useRef({ x: -1000, y: -1000 });
   const nextId    = useRef(FISH_SIZE);
-  const nextNotif = useRef(0);
 
   // ——— ON MOUNT: initialize fishes & detect mobile ———
   useEffect(() => {
@@ -87,20 +90,22 @@ export default function TimeTrialGame({ onBackToHome }) {
     setTimeout(() => setIsJerking(false), 300);
   };
 
-  // ——— COUNTDOWN PHASE (3 → 2 → 1 → Start!) ———
+  // ——— COUNTDOWN PHASE (3 → 2 → 1 → Go!) ———
   useEffect(() => {
     if (phase !== 'countdown') return;
 
-    if (typeof displayNumber === 'number' && displayNumber > 1) {
+    // While displayNumber > 0, just count down one per second:
+    if (typeof displayNumber === 'number' && displayNumber > 0) {
       const timer = setTimeout(() => {
         setDisplayNumber((n) => n - 1);
       }, 1000);
       return () => clearTimeout(timer);
     }
 
-    if (displayNumber === 1) {
+    // Once displayNumber reaches 0, wait one more second, then show “Go!” and switch to running
+    if (displayNumber === 0) {
       const timer = setTimeout(() => {
-        setDisplayNumber('Start!');
+        setDisplayNumber('Go!');
         setPhase('running');
       }, 1000);
       return () => clearTimeout(timer);
@@ -268,6 +273,14 @@ export default function TimeTrialGame({ onBackToHome }) {
     }
     setScore((prev) => prev + points);
 
+    // 2) floating “+points” notification
+    const notifId = nextNotif.current++;
+    const { x: curX, y: curY } = cursorRef.current;
+    setScoreNotifs((prev) => [...prev, { id: notifId, x: curX, y: curY, points }]);
+    setTimeout(() => {
+      setScoreNotifs((prev) => prev.filter((n) => n.id !== notifId));
+    }, 1000);
+
     // Replace fish
     setFishArray((prev) => {
       const filtered = prev.filter((f) => f.id !== fishId);
@@ -278,7 +291,6 @@ export default function TimeTrialGame({ onBackToHome }) {
     // Record catch + animate
     const caughtType = `${colour} ${pattern}`;
     setCaughtRecords((prev) => [...prev, caughtType]);
-    const { x: curX, y: curY } = cursorRef.current;
     setCatchAnimations((prev) => [
       ...prev,
       { id: fishId, startX: curX, startY: curY, colour, pattern },
@@ -329,9 +341,22 @@ export default function TimeTrialGame({ onBackToHome }) {
   // COUNTDOWN OVERLAY
   if (phase === 'countdown') {
     return (
-      <div className="trial-countdown-overlay">
-        <div className="trial-countdown-number">
-          {displayNumber > 1 ? displayNumber : 'Start!'}
+      <div className="container">
+        <FishDisplay
+          fishArray={[]}           // empty array → FishDisplay renders only <Bubbles/>
+          isMobile={isMobile}
+          cursorPos={{ x: -1000, y: -1000 }}
+          isJerking={false}
+          isCatching={false}
+          catchAnimations={[]}
+          onFishClick={() => {}}
+          onCatchAnimationEnd={() => {}}
+          speed={1.5}
+        />
+        <div className="trial-countdown-container">
+          <div className="trial-countdown-number">
+            {displayNumber > 0 ? displayNumber : 'Go!'}
+          </div>
         </div>
       </div>
     );
@@ -357,31 +382,43 @@ export default function TimeTrialGame({ onBackToHome }) {
     });
 
     return (
-      <div className="container no-cursor">
-        {/* Back to Home */}
-        <button
-          className="back-home-btn"
-          onClick={onBackToHome}
-        >
-          ← Home
-        </button>
+    <div className="container">
+      <FishDisplay
+        fishArray={[]}           // empty array → FishDisplay renders only <Bubbles/>
+        isMobile={isMobile}
+        cursorPos={{ x: -1000, y: -1000 }}
+        isJerking={false}
+        isCatching={false}
+        catchAnimations={[]}
+        onFishClick={() => {}}
+        onCatchAnimationEnd={() => {}}
+        speed={1.5}
+      />
 
-        <div className="trial-gameover-overlay">
-          <div className="trial-gameover-content">
-            <h2>Game Over</h2>
-            <p>Your Score: {score}</p>
-
+      <div className="trial-gameover-overlay">
+        <div className="trial-gameover-content">
+          {/* ← close-“×” button in top-right */}
+          <button
+            className="gameover-popup-close-x"
+            onClick={onBackToHome}
+          >
+            ✕
+          </button>
+          <h2>Game Over</h2>
+          <p>Your Score: {score}</p>
+          <div className="trial-gameover-content-inner">
+            {/* Super Rare */}
             {superRareEntries.length > 0 && (
-              <div>
+              <div className="stats-section">
                 <h3><strong>Super Rare</strong></h3>
-                <ul className="trial-final-list">
+                <ul>
                   {superRareEntries
-                    .sort((a,b) => a[0].localeCompare(b[0]))
+                    .sort((a, b) => a[0].localeCompare(b[0]))
                     .map(([typeStr, count]) => {
                       const [colour, pattern] = typeStr.split(' ');
                       return (
-                        <li key={typeStr} className="trial-final-item">
-                          <div className="trial-mini-fish">
+                        <li key={typeStr} className="stats-item">
+                          <div className="mini-fish-container">
                             <Fish
                               x={0}
                               y={0}
@@ -390,13 +427,15 @@ export default function TimeTrialGame({ onBackToHome }) {
                               pattern={pattern}
                               angle={0}
                               speed={1}
-                              onClick={() => {}}
                               isDead={false}
                               isMobile={false}
                             />
                           </div>
-                          <span className="trial-final-text">
-                            {typeStr} – {count}
+                          <span className="stat-fish-type">
+                            {typeStr}
+                          </span>
+                          <span className="stat-count">
+                            {count}
                           </span>
                         </li>
                       );
@@ -405,17 +444,18 @@ export default function TimeTrialGame({ onBackToHome }) {
               </div>
             )}
 
+            {/* Rare */}
             {rareEntries.length > 0 && (
-              <div>
+              <div className="stats-section">
                 <h3><strong>Rare</strong></h3>
-                <ul className="trial-final-list">
+                <ul>
                   {rareEntries
-                    .sort((a,b) => a[0].localeCompare(b[0]))
+                    .sort((a, b) => a[0].localeCompare(b[0]))
                     .map(([typeStr, count]) => {
                       const [colour, pattern] = typeStr.split(' ');
                       return (
-                        <li key={typeStr} className="trial-final-item">
-                          <div className="trial-mini-fish">
+                        <li key={typeStr} className="stats-item">
+                          <div className="mini-fish-container">
                             <Fish
                               x={0}
                               y={0}
@@ -424,13 +464,15 @@ export default function TimeTrialGame({ onBackToHome }) {
                               pattern={pattern}
                               angle={0}
                               speed={1}
-                              onClick={() => {}}
                               isDead={false}
                               isMobile={false}
                             />
                           </div>
-                          <span className="trial-final-text">
-                            {typeStr} – {count}
+                          <span className="stat-fish-type">
+                            {typeStr}
+                          </span>
+                          <span className="stat-count">
+                            {count}
                           </span>
                         </li>
                       );
@@ -439,17 +481,18 @@ export default function TimeTrialGame({ onBackToHome }) {
               </div>
             )}
 
+            {/* Common */}
             {commonEntries.length > 0 && (
-              <div>
+              <div className="stats-section">
                 <h3>Common</h3>
-                <ul className="trial-final-list">
+                <ul>
                   {commonEntries
-                    .sort((a,b) => a[0].localeCompare(b[0]))
+                    .sort((a, b) => a[0].localeCompare(b[0]))
                     .map(([typeStr, count]) => {
                       const [colour, pattern] = typeStr.split(' ');
                       return (
-                        <li key={typeStr} className="trial-final-item">
-                          <div className="trial-mini-fish">
+                        <li key={typeStr} className="stats-item">
+                          <div className="mini-fish-container">
                             <Fish
                               x={0}
                               y={0}
@@ -458,13 +501,15 @@ export default function TimeTrialGame({ onBackToHome }) {
                               pattern={pattern}
                               angle={0}
                               speed={1}
-                              onClick={() => {}}
                               isDead={false}
                               isMobile={false}
                             />
                           </div>
-                          <span className="trial-final-text">
-                            {typeStr} – {count}
+                          <span className="stat-fish-type">
+                            {typeStr}
+                          </span>
+                          <span className="stat-count">
+                            {count}
                           </span>
                         </li>
                       );
@@ -478,17 +523,11 @@ export default function TimeTrialGame({ onBackToHome }) {
                 You didn’t catch any fish.
               </p>
             )}
-
-            <button
-              className="trial-home-btn"
-              onClick={onBackToHome}
-            >
-              Back to Home
-            </button>
           </div>
         </div>
       </div>
-    );
+    </div>
+  );
   }
 
   // RUNNING STATE UI
@@ -503,8 +542,22 @@ export default function TimeTrialGame({ onBackToHome }) {
         className="back-home-btn"
         onClick={onBackToHome}
       >
-        ← Home
+        Quit
       </button>
+
+      {/* — Floating “+X” notifications — */}
+      {scoreNotifs.map((notif) => (
+        <span
+          key={notif.id}
+          className="score-notif"
+          style={{
+            left: `${notif.x}px`,
+            top:  `${notif.y}px`,
+          }}
+        >
+          +{notif.points}
+        </span>
+      ))}
 
       <Bubbles />
 
@@ -534,7 +587,7 @@ export default function TimeTrialGame({ onBackToHome }) {
 
       {/* Time Left (top-center) */}
       <div className="time-left-display">
-        Time Left: {timeLeft}s
+        Time: {timeLeft}s
       </div>
 
       {/* Score (top-center) */}
@@ -557,35 +610,6 @@ export default function TimeTrialGame({ onBackToHome }) {
 
       {/* Hook as cursor (desktop) */}
       {!isMobile && <Hook x={cursorPos.x} y={cursorPos.y} jerking={isJerking} />}
-
-      {/* Settings Cog & Controls (top-left) */}
-      <div className="top-left-ui">
-        <button
-          className="settings-btn"
-          onClick={() => setShowControls((prev) => !prev)}
-          aria-label={showControls ? 'Hide controls' : 'Show controls'}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            width="20"
-            height="20"
-            fill="currentColor"
-          >
-            <path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm7.65 3.5a5.98 5.98 0 0 0-.18-1l2.03-1.57a.5.5 0 0 0 .11-.63l-1.92-3.32a.5.5 0 0 0-.61-.23l-2.39.96a6.05 6.05 0 0 0-1.73-1l-.36-2.54A.5.5 0 0 0 13.5 2h-3a.5.5 0 0 0-.5.44l-.36 2.54a6.05 6.05 0 0 0-1.73 1l-2.39-.96a.5.5 0 0 0-.61.23L3.4 9.37a.5.5 0 0 0 .11.63l2.03 1.57c-.04.33-.07.66-.07 1s.03.67.07 1l-2.03 1.57a.5.5 0 0 0-.11.63l1.92 3.32a.5.5 0 0 0 .61.23l2.39-.96c.53.42 1.12.75 1.73 1l.36 2.54a.5.5 0 0 0 .5.44h3a.5.5 0 0 0 .5-.44l.36-2.54c.61-.25 1.2-.58 1.73-1l2.39.96a.5.5 0 0 0 .61-.23l1.92-3.32a.5.5 0 0 0-.11-.63l-2.03-1.57c.15-.33.26-.67.33-1Zm-7.65 4.5a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z" />
-          </svg>
-        </button>
-
-        {showControls && (
-          <Controls
-            onSpeedDown={handleSpeedDown}
-            onSpeedUp={handleSpeedUp}
-            onAddFish={() => {}}
-            onReset={handleReset}
-            isMobile={isMobile}
-          />
-        )}
-      </div>
     </div>
   );
 }
