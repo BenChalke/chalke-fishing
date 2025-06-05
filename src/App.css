@@ -12,7 +12,7 @@
 }
 
 /* ----------------------------------------
-   Hide the system cursor when showing the hook instead
+   Hide the system cursor when showing the hook
    ---------------------------------------- */
 .no-cursor {
   cursor: none;
@@ -94,15 +94,12 @@ body {
   border: 2px solid #ccc;
   border-radius: 8px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.1s ease;
 }
@@ -191,12 +188,10 @@ body {
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   transition: background 0.2s ease, transform 0.1s ease;
-
   -webkit-user-select: none; /* disable text highlighting */
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -237,6 +232,27 @@ body {
   pointer-events: none;
   animation: float-up 1s ease-out forwards;
   z-index: 60;
+}
+
+/* ----------------------------------------
+   “Back to Home” button (used in both modes)
+   ---------------------------------------- */
+.back-home-btn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(50, 50, 50, 0.8);
+  border: none;
+  color: #fff;
+  font-size: 1rem;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  z-index: 50;
+  user-select: none;
+}
+.back-home-btn:hover {
+  background-color: rgba(70, 70, 70, 0.9);
 }
 
 /* ----------------------------------------
