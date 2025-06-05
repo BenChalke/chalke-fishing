@@ -1,15 +1,15 @@
-// src/components/HighScoreGame.js
+// src/components/HighScoreScreen.js
 
 import React, { useState, useEffect } from 'react';
-import StatsPopup from './StatsPopup';
-import Fish from './Fish';
+import StatsPopup from './components/StatsPopup';
+import Fish from './components/Fish';
 import {
   COLOURS,
   RARE_COLOURS,
   SUPER_COLOURS,
-} from '../constants/fishConstants';
+} from './constants/fishConstants';
 
-export default function HighScoreGame({ onBackToHome }) {
+export default function HighScoreScreen({ onBackToHome }) {
   const [highData, setHighData] = useState({ score: 0, records: [] });
   const [showPopup, setShowPopup] = useState(false);
 

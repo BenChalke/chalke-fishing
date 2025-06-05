@@ -1,118 +1,134 @@
-// src/components/FreePlayGame.js
-import React, { useState, useEffect, useRef } from 'react';
-import FishDisplay from './FishDisplay';    // the “view” portion
-import Controls    from './Controls';
-import Hook        from './Hook';
-import Bubbles     from './Bubbles';
-import CatchAnimation from './CatchAnimation';
-import WelcomePopup   from './WelcomePopup';
-import StatsPopup     from './StatsPopup';
-import InfoPopup      from './InfoPopup';
+// src/FreePlayGame.jsx
+import React, { useState, useEffect, useRef } from "react";
+import "./App.css";
+import Fish from "./components/Fish";
+import Hook from "./components/Hook";
+import Bubbles from "./components/Bubbles";
+import CatchAnimation from "./components/CatchAnimation";
+import Controls from "./components/Controls";
+import WelcomePopup from "./components/WelcomePopup";
+import StatsPopup from "./components/StatsPopup";
+import InfoPopup from "./components/InfoPopup";
 
-import { 
-  COLOURS, PATTERNS, RARE_COLOURS, SUPER_COLOURS 
-} from '../constants/fishConstants';
 import {
-  createInitialFish,
+  COLOURS,
+  PATTERNS,
+  RARE_COLOURS,
+  SUPER_COLOURS,
+} from "./constants/fishConstants";
+
+import {
+  createRandomFish,
   createOffscreenFish,
+  createInitialFish,
+  FISH_COUNT,
   FISH_SIZE,
   ENTRY_MULT,
-} from '../utils/fishUtils';
+} from "./utils/fishUtils";
 
 const REPULSE_DISTANCE = 100;
+
+// Speed bounds
 const MIN_SPEED = 0.5;
 const MAX_SPEED = 20.0;
 
 /**
- * FreePlayGame: the original unlimited “Fishing” mode.
- * Props:
- *  - onBackToHome: callback when user clicks “Back” (top-left).
+ * FreePlayGame is the “infinite fishing” mode.
+ * It takes a prop `onBackToHome` so the user can return to the home screen.
  */
 export default function FreePlayGame({ onBackToHome }) {
   // ——— STATE ———
-  const [fishArray, setFishArray]            = useState([]);
-  const [speed, setSpeed]                    = useState(1.5);
-  const [cursorPos, setCursorPos]            = useState({ x: -1000, y: -1000 });
-  const [isJerking, setIsJerking]            = useState(false);
+  const [fishArray, setFishArray] = useState([]);
+  const [speed, setSpeed] = useState(1.5);
+  const [cursorPos, setCursorPos] = useState({ x: -1000, y: -1000 });
+  const [isJerking, setIsJerking] = useState(false);
   const [catchAnimations, setCatchAnimations] = useState([]);
-  const [caughtRecords, setCaughtRecords]    = useState(() => {
+  const [caughtRecords, setCaughtRecords] = useState(() => {
     try {
-      const saved = localStorage.getItem('caughtRecords');
+      const saved = localStorage.getItem("caughtRecords");
       return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
     }
   });
-  const [score, setScore]                    = useState(() => {
+  const [score, setScore] = useState(() => {
     try {
-      const saved = localStorage.getItem('score');
+      const saved = localStorage.getItem("score");
       return saved ? Number(saved) : 0;
     } catch {
       return 0;
     }
   });
-  const [scoreNotifs, setScoreNotifs]        = useState([]);
+  const [scoreNotifs, setScoreNotifs] = useState([]);
   const [showCaughtPopup, setShowCaughtPopup] = useState(false);
-  const [showInfoPopup, setShowInfoPopup]     = useState(false);
-  const [showControls, setShowControls]       = useState(false);
-  const [isMobile, setIsMobile]               = useState(false);
-  const [showWelcome, setShowWelcome]         = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [showControls, setShowControls] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
+  // Refs for cursor tracking and unique IDs
   const cursorRef = useRef({ x: -1000, y: -1000 });
-  const nextId    = useRef(FISH_SIZE);  // initial ID offset
+  const nextId = useRef(FISH_COUNT);
   const nextNotif = useRef(0);
 
-  // ——— ON MOUNT ———
+  // ——— EFFECTS ———
+
+  // On mount: populate initial fish, detect touch, and check if we've seen the welcome popup
   useEffect(() => {
     setFishArray(createInitialFish());
-    setIsMobile('ontouchstart' in window);
-
-    // show welcome if not seen
-    const seen = localStorage.getItem('seenWelcome');
+    setIsMobile("ontouchstart" in window);
+    const seen = localStorage.getItem("seenWelcome");
     if (!seen) setShowWelcome(true);
   }, []);
 
-  // Persist caughtRecords & score
+  // Persist caughtRecords → localStorage
   useEffect(() => {
-    localStorage.setItem('caughtRecords', JSON.stringify(caughtRecords));
+    localStorage.setItem("caughtRecords", JSON.stringify(caughtRecords));
   }, [caughtRecords]);
+
+  // Persist score → localStorage
   useEffect(() => {
-    localStorage.setItem('score', String(score));
+    localStorage.setItem("score", String(score));
   }, [score]);
 
-  // ——— FISH MOVEMENT LOOP ———
+  // Fish‐movement loop (every 30ms)
   useEffect(() => {
     const interval = setInterval(() => {
       setFishArray((prevFish) => {
         const w = window.innerWidth;
         const h = window.innerHeight;
         const fishHeight = FISH_SIZE * 0.5;
-        const centerX = w / 2;
-        const centerY = h / 2;
-
         return prevFish.map((fish) => {
           let {
-            id, x, y, angle, colour, pattern,
-            justSpawned, speedMult,
+            id,
+            x,
+            y,
+            angle,
+            colour,
+            pattern,
+            justSpawned,
+            speedMult,
           } = fish;
 
+          // Effective speed = global speed × fish.speedMult
           const effSpeed = speed * speedMult;
 
-          // ENTRY PHASE: steer to center until fully inside
+          // — Entry behavior (justSpawned) —
           if (justSpawned) {
             const fishCX = x + FISH_SIZE / 2;
             const fishCY = y + fishHeight / 2;
-            const angleToCenter = Math.atan2(centerY - fishCY, centerX - fishCX);
+            // Steer toward center of screen
+            const angleToCenter = Math.atan2(h / 2 - fishCY, w / 2 - fishCX);
             const dx = Math.cos(angleToCenter) * effSpeed;
             const dy = Math.sin(angleToCenter) * effSpeed;
             const newX = x + dx;
             const newY = y + dy;
+            // Check if fully inside bounds now
             const fullyInside =
               newX >= 0 &&
               newX + FISH_SIZE <= w &&
               newY >= 0 &&
               newY + fishHeight <= h;
-
             if (fullyInside) {
               return {
                 id,
@@ -125,6 +141,7 @@ export default function FreePlayGame({ onBackToHome }) {
                 speedMult: 1,
               };
             }
+            // Otherwise remain in entry mode
             return {
               id,
               x: newX,
@@ -137,21 +154,20 @@ export default function FreePlayGame({ onBackToHome }) {
             };
           }
 
-          // NORMAL BEHAVIOR:
+          // — Normal “swim around” behavior —
           let dx = Math.cos(angle) * effSpeed;
           let dy = Math.sin(angle) * effSpeed;
-
-          // Repulsion on desktop if cursor is close
           if (!isMobile) {
             const fishCX = x + FISH_SIZE / 2;
             const fishCY = y + fishHeight / 2;
             const diffX = fishCX - cursorRef.current.x;
             const diffY = fishCY - cursorRef.current.y;
-            const dist  = Math.hypot(diffX, diffY);
+            const dist = Math.hypot(diffX, diffY);
+            // If mouse is too close, fish repels
             if (dist < REPULSE_DISTANCE) {
               const repelAngle = Math.atan2(diffY, diffX);
-              dx    = Math.cos(repelAngle) * effSpeed;
-              dy    = Math.sin(repelAngle) * effSpeed;
+              dx = Math.cos(repelAngle) * effSpeed;
+              dy = Math.sin(repelAngle) * effSpeed;
               angle = repelAngle;
             }
           }
@@ -160,7 +176,7 @@ export default function FreePlayGame({ onBackToHome }) {
           let newY = y + dy;
           let newAngle = angle;
 
-          // If fish goes fully off‐screen, flip direction 180°
+          // If fully off any edge, flip 180°
           if (
             newX + FISH_SIZE < 0 ||
             newX > w ||
@@ -168,23 +184,23 @@ export default function FreePlayGame({ onBackToHome }) {
             newY > h
           ) {
             newAngle = angle + Math.PI;
-            const bx = Math.cos(newAngle) * speed;
-            const by = Math.sin(newAngle) * speed;
-            newX = x + bx;
-            newY = y + by;
+            const bounceDx = Math.cos(newAngle) * speed;
+            const bounceDy = Math.sin(newAngle) * speed;
+            newX = x + bounceDx;
+            newY = y + bounceDy;
           }
 
-          // Bounce off vertical walls
+          // Bounce horizontally if hitting left/right walls
           if (newX <= 0 || newX + FISH_SIZE >= w) {
             newAngle = Math.PI - newAngle;
-            const bounceDX = Math.cos(newAngle) * speed;
-            newX = x + bounceDX;
+            const bounceDx = Math.cos(newAngle) * speed;
+            newX = x + bounceDx;
           }
-          // Bounce off horizontal walls
+          // Bounce vertically if hitting top/bottom walls
           if (newY <= 0 || newY + fishHeight >= h) {
             newAngle = -newAngle;
-            const bounceDY = Math.sin(newAngle) * speed;
-            newY = y + bounceDY;
+            const bounceDy = Math.sin(newAngle) * speed;
+            newY = y + bounceDy;
           }
 
           return {
@@ -200,22 +216,21 @@ export default function FreePlayGame({ onBackToHome }) {
         });
       });
     }, 30);
-
     return () => clearInterval(interval);
   }, [speed, isMobile]);
 
-  // ——— CURSOR TRACK (DESKTOP) ———
+  // Track cursor on desktop
   useEffect(() => {
     const handleMouseMove = (e) => {
       const pos = { x: e.clientX, y: e.clientY };
       cursorRef.current = pos;
       setCursorPos(pos);
     };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  // ——— HOOK JERK ON POINTER DOWN ———
+  // On pointer‐down, “jerk” the hook briefly
   const handlePointerDown = (e) => {
     const clientX = e.clientX ?? e.touches?.[0]?.clientX;
     const clientY = e.clientY ?? e.touches?.[0]?.clientY;
@@ -227,19 +242,12 @@ export default function FreePlayGame({ onBackToHome }) {
     setTimeout(() => setIsJerking(false), 300);
   };
 
-  /**
-   * On fish click:
-   * 1) Award points (common=10, rare=50, super=200)
-   * 2) Remove that fish & spawn off‐screen replacement
-   * 3) Add to caughtRecords & animate hook+fish
-   * 4) Show floating “+points” notification
-   */
+  // ——— FISH‐CLICK HANDLER ———
   const handleFishClick = (fishId, e) => {
     e.stopPropagation();
     const fishObj = fishArray.find((f) => f.id === fishId);
     if (!fishObj) return;
     const { colour, pattern } = fishObj;
-
     // 1) Compute points
     let points = 10;
     if (SUPER_COLOURS.includes(colour)) {
@@ -248,14 +256,13 @@ export default function FreePlayGame({ onBackToHome }) {
       points = 50;
     }
     setScore((prev) => prev + points);
-
-    // 2) Replace fish with offscreen spawn
+    // 2) Remove that fish & spawn an off‐screen replacement
     setFishArray((prev) => {
       const filtered = prev.filter((f) => f.id !== fishId);
-      const newFish  = createOffscreenFish(nextId.current++);
+      const newFish = createOffscreenFish(nextId.current);
+      nextId.current += 1;
       return [...filtered, newFish];
     });
-
     // 3) Add to caughtRecords & trigger catch animation
     const caughtType = `${colour} ${pattern}`;
     setCaughtRecords((prev) => [...prev, caughtType]);
@@ -264,43 +271,45 @@ export default function FreePlayGame({ onBackToHome }) {
       ...prev,
       { id: fishId, startX: curX, startY: curY, colour, pattern },
     ]);
-
-    // 4) Floating “+points” notif
+    // 4) Create floating “+points” notification
     const notifId = nextNotif.current++;
-    setScoreNotifs((prev) => [
-      ...prev,
-      { id: notifId, x: curX, y: curY, points },
-    ]);
+    setScoreNotifs((prev) => [...prev, { id: notifId, x: curX, y: curY, points }]);
     setTimeout(() => {
       setScoreNotifs((prev) => prev.filter((n) => n.id !== notifId));
     }, 1000);
   };
 
-  // Remove finished catch animation:
+  // Remove a finished catch animation
   const handleCatchAnimationEnd = (animId) => {
     setCatchAnimations((prev) => prev.filter((a) => a.id !== animId));
   };
 
   const isCatching = catchAnimations.length > 0;
 
-  // ——— CONTROLS CALLBACKS ———
+  // Reset fish (preserve score & stats)
   const handleReset = () => {
     setCatchAnimations([]);
     setFishArray(createInitialFish());
-    nextId.current = FISH_SIZE;
+    nextId.current = FISH_COUNT;
     setSpeed(1.5);
   };
+
+  // Adjust speed
   const handleSpeedDown = () => {
     setSpeed((s) => Math.max(MIN_SPEED, parseFloat((s - 0.5).toFixed(2))));
   };
   const handleSpeedUp = () => {
     setSpeed((s) => Math.min(MAX_SPEED, parseFloat((s + 0.5).toFixed(2))));
   };
-  const toggleCaughtPopup = () => setShowCaughtPopup((prev) => !prev);
+
+  // Toggle “Fish Caught” stats popup
+  const toggleCaughtPopup = () => {
+    setShowCaughtPopup((prev) => !prev);
+  };
 
   // Close welcome popup
   const closeWelcome = () => {
-    localStorage.setItem('seenWelcome', 'true');
+    localStorage.setItem("seenWelcome", "true");
     setShowWelcome(false);
   };
 
@@ -312,65 +321,99 @@ export default function FreePlayGame({ onBackToHome }) {
 
   return (
     <div
-      className={`container ${!showWelcome ? 'no-cursor' : ''}`}
+      className={`container ${!showWelcome ? "no-cursor" : ""}`}
       onMouseDown={handlePointerDown}
       onTouchStart={handlePointerDown}
     >
-      {/* BACK to HOME */}
-      <button
-        className="back-home-btn"
-        onClick={onBackToHome}
-      >
+      {/* — BACK TO HOME BUTTON — */}
+      <button className="back-home-btn" onClick={onBackToHome}>
         ← Home
       </button>
 
+      {/* — WELCOME POPUP (only once) — */}
       {showWelcome && <WelcomePopup onClose={closeWelcome} />}
 
+      {/* — BUBBLES IN BACKGROUND — */}
       <Bubbles />
 
-      {/* Floating score notifications */}
+      {/* — FLOATING “+X” NOTIFICATIONS — */}
       {scoreNotifs.map((notif) => (
         <span
           key={notif.id}
           className="score-notif"
           style={{
             left: `${notif.x}px`,
-            top:  `${notif.y}px`,
+            top: `${notif.y}px`,
           }}
         >
           +{notif.points}
         </span>
       ))}
 
-      {/* Speed & Fish‐Caught (top-right) */}
+      {/* — SPEED & FISH‐CAUGHT LABELS (top‐right) — */}
       <div className="speed-label">Speed: {speed.toFixed(1)}</div>
       <div className="fish-count-label">Fish Caught: {caughtRecords.length}</div>
 
-      {/* All live fish (FishDisplay wraps Bubbles + Fish + Hook + CatchAnimation) */}
-      <FishDisplay
-        fishArray={fishArray}
-        isMobile={isMobile}
-        cursorPos={cursorPos}
-        isJerking={isJerking}
-        isCatching={isCatching}
-        catchAnimations={catchAnimations}
-        onFishClick={handleFishClick}
-        onCatchAnimationEnd={handleCatchAnimationEnd}
-        speed={speed}
-      />
+      {/* — LIVE FISH SWIMMING AROUND — */}
+      {fishArray.map((fish) => {
+        const isSuper = SUPER_COLOURS.includes(fish.colour);
+        const size = isSuper ? FISH_SIZE * 1.5 : FISH_SIZE;
+        return (
+          <Fish
+            key={fish.id}
+            id={fish.id}
+            x={fish.x}
+            y={fish.y}
+            size={size}
+            colour={fish.colour}
+            pattern={fish.pattern}
+            angle={fish.angle}
+            speed={speed * fish.speedMult}
+            onClick={(e) => handleFishClick(fish.id, e)}
+            isMobile={isMobile}
+          />
+        );
+      })}
 
-      {/* Hook as cursor (desktop), even during catch animations */}
-      {!isMobile && !showWelcome && (
+      {/* — HOOK AS CURSOR ON DESKTOP (only when not catching and welcome is closed) — */}
+      {!isCatching && !isMobile && !showWelcome && (
         <Hook x={cursorPos.x} y={cursorPos.y} jerking={isJerking} />
       )}
 
-      {/* Settings Cog & Info Btn & Controls (top-left) */}
+      {/* — CAUGHT‐FISH ANIMATIONS — */}
+      {catchAnimations.map((anim) => (
+        <CatchAnimation
+          key={anim.id}
+          startX={anim.startX}
+          startY={anim.startY}
+          fishSize={FISH_SIZE}
+          onAnimationEnd={() => handleCatchAnimationEnd(anim.id)}
+        >
+          <Hook x={anim.startX} y={anim.startY} jerking={false} />
+          <Fish
+            id={anim.id + 100000}
+            x={0}
+            y={0}
+            size={FISH_SIZE}
+            colour={anim.colour}
+            pattern={anim.pattern}
+            angle={0}
+            speed={speed}
+            isDead={true}
+            isMobile={isMobile}
+          />
+        </CatchAnimation>
+      ))}
+
+      {/* — SETTINGS (cog), INFO, AND CONTROLS (top-left) — */}
       <div className="top-left-ui">
+        {/* Cog‐button toggles the controls menu */}
         <button
           className="settings-btn"
           onClick={() => setShowControls((prev) => !prev)}
-          aria-label={showControls ? 'Hide controls' : 'Show controls'}
+          aria-label={showControls ? "Hide controls" : "Show controls"}
         >
+          {/* Simple cog icon; you can replace with any SVG if you like */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -382,40 +425,28 @@ export default function FreePlayGame({ onBackToHome }) {
           </svg>
         </button>
 
+        {/* Info button toggles the info popup */}
         <button
           className="info-btn"
-          onClick={() => setShowInfoPopup(true)}
-          aria-label="Show fish info"
+          onClick={() => setShowInfo(true)}
+          aria-label="Show fish information"
         >
           ?
         </button>
 
+        {/* Only render Controls if showControls is true */}
         {showControls && (
           <Controls
             onSpeedDown={handleSpeedDown}
             onSpeedUp={handleSpeedUp}
-            onAddFish={() => { /* “Add Fish” disabled for now */ }}
+            onAddFish={() => {/* you can re-enable “Add Fish” if desired */}}
             onReset={handleReset}
             isMobile={isMobile}
           />
         )}
       </div>
 
-      {/* Score (top-center) */}
-      <div className="top-center-ui">
-        <div className="score-display">Score: {score}</div>
-      </div>
-
-      {/* “See Fish Caught” (bottom-center) */}
-      <div className="bottom-center-ui">
-        <button
-          className="caught-btn"
-          onClick={toggleCaughtPopup}
-        >
-          See Fish Caught
-        </button>
-      </div>
-
+      {/* — STATS POPUP (Fish Caught) — */}
       {showCaughtPopup && (
         <StatsPopup
           caughtRecords={caughtRecords}
@@ -425,12 +456,8 @@ export default function FreePlayGame({ onBackToHome }) {
         />
       )}
 
-      {showInfoPopup && (
-        <InfoPopup
-          isMobile={isMobile}
-          onClose={() => setShowInfoPopup(false)}
-        />
-      )}
+      {/* — INFO POPUP (Fish Rarity Info) — */}
+      {showInfo && <InfoPopup isMobile={isMobile} onClose={() => setShowInfo(false)} />}
     </div>
   );
 }

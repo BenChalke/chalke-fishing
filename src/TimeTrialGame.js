@@ -1,26 +1,26 @@
 // src/components/TimeTrialGame.js
 
 import React, { useState, useEffect, useRef } from 'react';
-import FishDisplay    from './FishDisplay';
-import Controls       from './Controls';
-import Hook           from './Hook';
-import Bubbles        from './Bubbles';
-import CatchAnimation from './CatchAnimation';
-import StatsPopup     from './StatsPopup';
-import Fish           from './Fish';
+import FishDisplay    from './components/FishDisplay';
+import Controls       from './components/Controls';
+import Hook           from './components/Hook';
+import Bubbles        from './components/Bubbles';
+import CatchAnimation from './components/CatchAnimation';
+import StatsPopup     from './components/StatsPopup';
+import Fish           from './components/Fish';
 
 import {
   COLOURS,
   RARE_COLOURS,
   SUPER_COLOURS,
-} from '../constants/fishConstants';
+} from './constants/fishConstants';
 
 import {
   createInitialFish,
   createOffscreenFish,
   FISH_SIZE,
   ENTRY_MULT,
-} from '../utils/fishUtils';
+} from './utils/fishUtils';
 
 import './FishingGame.css';  // Contains countdown, gameover, time-left, back-home, etc.
 
