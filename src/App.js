@@ -1,23 +1,44 @@
 // src/App.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import FreePlayGame from "./FreePlayGame";
-import TimeTrialGame from "./TimeTrialGame"; // ← you presumably already have this
-import HighScoreScreen from "./HighScoreScreen"; // ← (optional) for “High Score” mode
+import TimeTrialGame from "./TimeTrialGame";
+import HighScoreScreen from "./HighScoreScreen";
 import FishField from "./components/FishField";
+import WelcomePopup from "./components/WelcomePopup";
 import "./App.css";
-import "./FishingGame.css"; // ← add the new rules for .home-overlay, etc.
+import "./FishingGame.css";
 
 export default function App() {
   const [mode, setMode] = useState("home");
+  const [showWelcome, setShowWelcome] = useState(false);
+
+  // On mount, decide whether to display the welcome popup
+  useEffect(() => {
+    const seen = localStorage.getItem("seenWelcome");
+    if (!seen) {
+      setShowWelcome(true);
+    }
+  }, []);
+
+  const handleCloseWelcome = () => {
+    localStorage.setItem("seenWelcome", "true");
+    setShowWelcome(false);
+  };
 
   const goHome = () => setMode("home");
   const goFree = () => setMode("free");
   const goTimeTrial = () => setMode("timeTrial");
   const goHighScore = () => setMode("highScore");
 
+  // If the welcome popup should be shown, render it above everything else
+  if (showWelcome) {
+    return <WelcomePopup onClose={handleCloseWelcome} />;
+  }
+
+  // Otherwise, render the rest of the app
   if (mode === "home") {
     return (
-      <div className="container no-cursor">
+      <div className="container">
         {/* 1) Show 15 decorative fish + bubbles “behind” */}
         <FishField count={15} isInteractive={false} isMobile={false} />
 
