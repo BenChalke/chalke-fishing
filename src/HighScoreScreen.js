@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import "./HighScoreScreen.css";
 import "./components/StatsPopup.css"; // reuse list‐formatting styles
 import Fish from "./components/Fish";
-import FishDisplay from "./components/FishDisplay";
+import FishField from "./components/FishField";
 import { RARE_COLOURS, SUPER_COLOURS } from "./constants/fishConstants";
 
 export default function HighScoreScreen({ onBackToHome }) {
@@ -54,17 +54,7 @@ export default function HighScoreScreen({ onBackToHome }) {
 
   return (
     <div className="container">
-      <FishDisplay
-        fishArray={[]}           // empty array → FishDisplay renders only <Bubbles/>
-        isMobile={isMobile}
-        cursorPos={{ x: -1000, y: -1000 }}
-        isJerking={false}
-        isCatching={false}
-        catchAnimations={[]}
-        onFishClick={() => {}}
-        onCatchAnimationEnd={() => {}}
-        speed={1.5}
-      />
+      <FishField count={0} isInteractive={false} isMobile={isMobile} />
       {/* Back to Home button (top-left) */}
       <button className="back-home-btn" onClick={onBackToHome}>
         ←

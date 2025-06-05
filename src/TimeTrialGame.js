@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import FishDisplay    from './components/FishDisplay';
+import FishField    from './components/FishField';
 import Controls       from './components/Controls';
 import Hook           from './components/Hook';
 import Bubbles        from './components/Bubbles';
@@ -342,17 +343,7 @@ export default function TimeTrialGame({ onBackToHome }) {
   if (phase === 'countdown') {
     return (
       <div className="container">
-        <FishDisplay
-          fishArray={[]}           // empty array → FishDisplay renders only <Bubbles/>
-          isMobile={isMobile}
-          cursorPos={{ x: -1000, y: -1000 }}
-          isJerking={false}
-          isCatching={false}
-          catchAnimations={[]}
-          onFishClick={() => {}}
-          onCatchAnimationEnd={() => {}}
-          speed={1.5}
-        />
+        <FishField count={0} isInteractive={false} isMobile={isMobile} />
         <div className="trial-countdown-container">
           <div className="trial-countdown-number">
             {displayNumber > 0 ? displayNumber : 'Go!'}
@@ -383,17 +374,7 @@ export default function TimeTrialGame({ onBackToHome }) {
 
     return (
     <div className="container">
-      <FishDisplay
-        fishArray={[]}           // empty array → FishDisplay renders only <Bubbles/>
-        isMobile={isMobile}
-        cursorPos={{ x: -1000, y: -1000 }}
-        isJerking={false}
-        isCatching={false}
-        catchAnimations={[]}
-        onFishClick={() => {}}
-        onCatchAnimationEnd={() => {}}
-        speed={1.5}
-      />
+      <FishField count={0} isInteractive={false} isMobile={isMobile} />
 
       <div className="trial-gameover-overlay">
         <div className="trial-gameover-content">
