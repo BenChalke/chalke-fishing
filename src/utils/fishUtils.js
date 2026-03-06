@@ -3,13 +3,41 @@
 import {
   COLOURS,
   PATTERNS,
-  RARE_COLOURS,
-  SUPER_COLOURS,
 } from '../constants/fishConstants';
 
-export const FISH_COUNT = 15;       // starting count for free play
+export const FISH_COUNT = 22;       // fallback only — prefer viewportFishCount()
+
+/** Returns a fish count scaled to the viewport area (min 8, max 50). */
+export function viewportFishCount() {
+  return Math.max(8, Math.min(50, Math.round(window.innerWidth * window.innerHeight / 70000)));
+}
 export const FISH_SIZE = 120;       // base fish size
 export const ENTRY_MULT = 3;        // spawn‐entry speed multiplier
+
+/**
+ * Returns a random { colour, pattern } based on weighted rarity rolls.
+ */
+function rollFishColour() {
+  const roll = Math.random();
+  if (roll < 0.00040) return { colour: 'aurora',   pattern: 'solid'   };
+  if (roll < 0.00080) return { colour: 'midnight', pattern: 'solid'   };
+  if (roll < 0.00120) return { colour: 'obsidian', pattern: 'solid'   };
+  if (roll < 0.00160) return { colour: 'galactic', pattern: 'solid'   };
+  if (roll < 0.00200) return { colour: 'phantom',  pattern: 'solid'   };
+  if (roll < 0.00240) return { colour: 'rainbow',  pattern: 'striped' };
+  if (roll < 0.00280) return { colour: 'volcano',  pattern: 'spotted' };
+  if (roll < 0.00500) return { colour: 'emerald',  pattern: 'striped' };
+  if (roll < 0.00900) return { colour: 'sunset',   pattern: 'spotted' };
+  if (roll < 0.01200) return { colour: 'neon',     pattern: 'striped' };
+  if (roll < 0.01500) return { colour: 'golden',   pattern: 'solid'   };
+  if (roll < 0.01800) return { colour: 'aqua',     pattern: 'spotted' };
+  if (roll < 0.02100) return { colour: 'lavender', pattern: 'striped' };
+  if (roll < 0.02400) return { colour: 'coral',    pattern: 'spotted' };
+  return {
+    colour:  COLOURS[Math.floor(Math.random() * COLOURS.length)],
+    pattern: PATTERNS[Math.floor(Math.random() * PATTERNS.length)],
+  };
+}
 
 /**
  * Returns a random on‐screen fish (justSpawned: false, speedMult:1).
@@ -20,41 +48,7 @@ export function createRandomFish(id) {
   const angle = Math.random() * 2 * Math.PI;
   const x = Math.random() * (w - FISH_SIZE);
   const y = Math.random() * (h - FISH_SIZE / 2);
-
-  let colour, pattern;
-  const roll = Math.random();
-  if (roll < 0.00040) {
-    colour = 'aurora';   pattern = 'solid';
-  } else if (roll < 0.00080) {
-    colour = 'midnight'; pattern = 'solid';
-  } else if (roll < 0.00120) {
-    colour = 'obsidian'; pattern = 'solid';
-  } else if (roll < 0.00160) {
-    colour = 'galactic'; pattern = 'solid';
-  } else if (roll < 0.00200) {
-    colour = 'phantom';  pattern = 'solid';
-  } else if (roll < 0.00240) {
-    colour = 'rainbow';  pattern = 'striped';
-  } else if (roll < 0.00280) {
-    colour = 'volcano';  pattern = 'spotted';
-  } else if (roll < 0.00500) {
-    colour = 'emerald';  pattern = 'striped';
-  } else if (roll < 0.00900) {
-    colour = 'sunset';   pattern = 'spotted';
-  } else if (roll < 0.01200) {
-    colour = 'neon';     pattern = 'striped';
-  } else if (roll < 0.01500) {
-    colour = 'golden';   pattern = 'solid';
-  } else if (roll < 0.01800) {
-    colour = 'aqua';     pattern = 'spotted';
-  } else if (roll < 0.02100) {
-    colour = 'lavender'; pattern = 'striped';
-  } else if (roll < 0.02400) {
-    colour = 'coral';    pattern = 'spotted';
-  } else {
-    colour  = COLOURS[Math.floor(Math.random() * COLOURS.length)];
-    pattern = PATTERNS[Math.floor(Math.random() * PATTERNS.length)];
-  }
+  const { colour, pattern } = rollFishColour();
 
   return {
     id,
@@ -96,40 +90,7 @@ export function createOffscreenFish(id) {
     angle = - (Math.PI / 4) - (Math.random() * (Math.PI / 2));
   }
 
-  let colour, pattern;
-  const roll = Math.random();
-  if (roll < 0.00040) {
-    colour = 'aurora';   pattern = 'solid';
-  } else if (roll < 0.00080) {
-    colour = 'midnight'; pattern = 'solid';
-  } else if (roll < 0.00120) {
-    colour = 'obsidian'; pattern = 'solid';
-  } else if (roll < 0.00160) {
-    colour = 'galactic'; pattern = 'solid';
-  } else if (roll < 0.00200) {
-    colour = 'phantom';  pattern = 'solid';
-  } else if (roll < 0.00240) {
-    colour = 'rainbow';  pattern = 'striped';
-  } else if (roll < 0.00280) {
-    colour = 'volcano';  pattern = 'spotted';
-  } else if (roll < 0.00500) {
-    colour = 'emerald';  pattern = 'striped';
-  } else if (roll < 0.00900) {
-    colour = 'sunset';   pattern = 'spotted';
-  } else if (roll < 0.01200) {
-    colour = 'neon';     pattern = 'striped';
-  } else if (roll < 0.01500) {
-    colour = 'golden';   pattern = 'solid';
-  } else if (roll < 0.01800) {
-    colour = 'aqua';     pattern = 'spotted';
-  } else if (roll < 0.02100) {
-    colour = 'lavender'; pattern = 'striped';
-  } else if (roll < 0.02400) {
-    colour = 'coral';    pattern = 'spotted';
-  } else {
-    colour  = COLOURS[Math.floor(Math.random() * COLOURS.length)];
-    pattern = PATTERNS[Math.floor(Math.random() * PATTERNS.length)];
-  }
+  const { colour, pattern } = rollFishColour();
 
   return {
     id,
@@ -147,8 +108,9 @@ export function createOffscreenFish(id) {
  * Create the initial on‐screen fishes array (size FISH_COUNT).
  */
 export function createInitialFish() {
+  const count = viewportFishCount();
   const arr = [];
-  for (let i = 0; i < FISH_COUNT; i++) {
+  for (let i = 0; i < count; i++) {
     arr.push(createRandomFish(i));
   }
   return arr;

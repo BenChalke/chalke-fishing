@@ -9,7 +9,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 4, 12, 0.78);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -17,23 +17,27 @@
 }
 
 /* ----------------------------------------
-   CONTENT CONTAINER (flex column, bounded height)
+   CONTENT CONTAINER — glassmorphism
    ---------------------------------------- */
 .stats-popup-content {
-  position: relative; /* for close-button */
-  background: #ffffff;
-  border-radius: 10px;
+  position: relative;
+  background: rgba(0, 8, 20, 0.90);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(0, 212, 255, 0.20);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(0, 212, 255, 0.06);
+  border-radius: 12px;
   width: 360px;
   max-width: 90%;
-  max-height: 90vh;          /* never exceed 90% of viewport height */
+  max-height: 90vh;
   display: flex;
-  flex-direction: column;    /* stack <h2> over .popup-body */
-  overflow: hidden;          /* clip overflow */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  flex-direction: column;
+  overflow: hidden;
+  color: #c8e8f8;
 }
 
 /* ----------------------------------------
-   CLOSE “✕”
+   CLOSE "✕"
    ---------------------------------------- */
 .close-button {
   position: absolute;
@@ -43,43 +47,58 @@
   border: none;
   font-size: 24px;
   line-height: 1;
-  color: #555;
+  color: #80d8ee;
   cursor: pointer;
   z-index: 110;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  padding: 8px; /* increase tappable area on mobile */
+  padding: 8px;
+  transition: color 0.15s ease;
 }
 
 .close-button:hover {
-  color: #000;
+  color: #ffffff;
 }
 
 /* ----------------------------------------
-   HEADER (non‐scrollable)
+   HEADER
    ---------------------------------------- */
 .stats-popup-content h2 {
   margin: 16px 20px 8px;
   font-size: 22px;
-  color: #333;
-  flex-shrink: 0;  /* do not shrink or scroll */
+  color: #00d4ff;
+  text-shadow: 0 0 12px rgba(0, 212, 255, 0.4);
+  flex-shrink: 0;
 }
 
 /* ----------------------------------------
-   BODY (scrollable area)
+   BODY (scrollable)
    ---------------------------------------- */
 .popup-body {
-  flex: 1 1 auto;       /* fill remaining vertical space */
-  padding: 0 20px 20px; /* inner padding */
+  flex: 1 1 auto;
+  padding: 0 20px 20px;
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch; /* enable smooth/scrolling on iOS */      /* clip overflow */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Thin, subtle scrollbar */
+.popup-body::-webkit-scrollbar {
+  width: 4px;
+}
+.popup-body::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+}
+.popup-body::-webkit-scrollbar-thumb {
+  background: rgba(125, 212, 248, 0.28);
+  border-radius: 2px;
 }
 
 .stats-popup-content p {
   font-size: 16px;
   margin: 12px 0;
+  color: #9ec8e0;
 }
 
 /* ----------------------------------------
@@ -92,19 +111,22 @@
 .stats-section h3 {
   margin-bottom: 8px;
   font-size: 18px;
-  color: #333;
-  border-bottom: 1px solid #ddd;
-  padding-bottom: 4px;
+  color: #a0d8ef;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.20);
+  border-left: 3px solid rgba(0, 212, 255, 0.50);
+  padding: 2px 0 4px 8px;
 }
 
 .super-rare-label strong {
-  color: #8B0000;
+  color: #00FFFF;
   font-weight: bold;
+  text-shadow: 0 0 6px rgba(0, 255, 255, 0.5);
 }
 
 .rare-label strong {
-  color: #C0392B;
+  color: #FFD700;
   font-weight: bold;
+  text-shadow: 0 0 6px rgba(255, 215, 0, 0.5);
 }
 
 .common-group {
@@ -141,7 +163,7 @@
 .stat-fish-type {
   flex-grow: 1;
   text-transform: capitalize;
-  color: #333;
+  color: #b8ddf0;
   font-size: 16px;
 }
 
@@ -149,16 +171,17 @@
   font-weight: bold;
   margin-left: 8px;
   font-size: 16px;
+  color: #d0f0ff;
 }
 
 /* ----------------------------------------
-   “NO FISH” TEXT WHEN EMPTY
+   "NO FISH" TEXT WHEN EMPTY
    ---------------------------------------- */
 .no-fish-text {
   text-align: center;
   margin: 20px 0;
   font-size: 16px;
-  color: #666;
+  color: #6a9ab8;
 }
 
 /* ----------------------------------------

@@ -11,13 +11,17 @@
   height: 40px;
 }
 .highscore-header h2 {
-  background: rgba(255, 255, 255, 0.8);
-  padding: 10px 12px;
-  border-radius: 6px;
+  background: rgba(0, 10, 22, 0.84);
+  border: 1px solid rgba(0, 212, 255, 0.26);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding: 10px 18px;
+  border-radius: 10px;
   font-size: 1.2rem;
   font-weight: bold;
-  color: #333;
+  color: #ffffff;
   pointer-events: none;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 10px rgba(0, 212, 255, 0.07);
 }
 
 /* Main stats container, centered vertically & horizontally */
@@ -29,13 +33,123 @@
   width: 360px;
   max-width: 90%;
   max-height: calc(100vh - 150px);
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  background: rgba(0, 8, 20, 0.88);
+  border: 1px solid rgba(0, 212, 255, 0.18);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.65);
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch; /* enable smooth/scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
   padding: 0 10px;
   z-index: 50;
+}
+
+/* ----------------------------------------
+   TAB BAR (Local / Global)
+   ---------------------------------------- */
+.hs-tab-bar {
+  position: absolute;
+  top: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0;
+  z-index: 51;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 212, 255, 0.25);
+}
+.hs-tab {
+  padding: 7px 28px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: rgba(0, 10, 22, 0.82);
+  border: none;
+  color: rgba(0, 212, 255, 0.55);
+  letter-spacing: 0.05em;
+  transition: background 0.15s, color 0.15s;
+}
+.hs-tab:hover {
+  background: rgba(0, 22, 45, 0.90);
+  color: rgba(0, 212, 255, 0.85);
+}
+.hs-tab-active {
+  background: rgba(0, 212, 255, 0.15) !important;
+  color: #00d4ff !important;
+}
+
+/* Adjust stats-container top when tabs are visible */
+.hs-tab-bar ~ .stats-container {
+  top: 110px;
+  max-height: calc(100vh - 180px);
+}
+
+/* ----------------------------------------
+   GLOBAL LEADERBOARD LIST
+   ---------------------------------------- */
+.hs-global-list {
+  list-style: none;
+  padding: 12px 0;
+  margin: 0;
+}
+.hs-global-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.08);
+}
+.hs-global-row:last-child {
+  border-bottom: none;
+}
+.hs-rank {
+  font-size: 0.85rem;
+  color: rgba(0, 212, 255, 0.45);
+  width: 28px;
+  flex-shrink: 0;
+}
+.hs-name {
+  flex: 1;
+  font-size: 1rem;
+  color: #cce8f0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hs-pts {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #00d4ff;
+  white-space: nowrap;
+}
+.hs-error {
+  color: #ff8888 !important;
+}
+
+/* ----------------------------------------
+   FISH EXPAND BUTTON + TALLY
+   ---------------------------------------- */
+.hs-fish-btn {
+  background: none;
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  border-radius: 6px;
+  color: rgba(0, 212, 255, 0.7);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 2px 8px;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+.hs-fish-btn:hover {
+  background: rgba(0, 212, 255, 0.1);
+  color: #00d4ff;
+}
+
+.hs-fish-expand {
+  padding: 8px 16px 12px;
+  border-top: 1px solid rgba(0, 212, 255, 0.08);
 }
 
 /* ----------------------------------------

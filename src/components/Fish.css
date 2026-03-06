@@ -4,14 +4,7 @@
    1) BASE FISH STYLES
    ================================= */
 
-/*
-  (No global “.fish-wrapper” needed here because each <div> wrapper
-   already has inline styles from Fish.js for position/size/rotation.)
-*/
-
-/* Example if you have any other global fish SVG tweaks: */
 .fish-wrapper svg {
-  /* No overflow hidden—lets glows extend beyond the shape */
   overflow: visible;
 }
 
@@ -22,35 +15,63 @@
 /* 2.1) Gentle golden pulsing glow for rare fish */
 @keyframes pulse-gold {
   0%   { filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.6)); }
-  50%  { filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.9)); }
+  50%  { filter: drop-shadow(0 0 14px rgba(255, 215, 0, 0.95)); }
   100% { filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.6)); }
 }
 
-/* 2.2) Brighter cyan pulsing glow for super-rare fish */
+/* 2.2) Bright cyan pulsing glow for super-rare fish */
 @keyframes pulse-cyan {
   0%   { filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.7)); }
-  50%  { filter: drop-shadow(0 0 20px rgba(0, 255, 255, 1)); }
+  50%  { filter: drop-shadow(0 0 22px rgba(0, 255, 255, 1)); }
   100% { filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.7)); }
 }
 
-/* 2.3) Sparkle flicker (tiny circles scale/opacity) */
+/* 2.3) Sparkle flicker for super-fish pseudo-elements */
 @keyframes sparkle-flicker {
   0%, 100% { opacity: 0.8; transform: scale(1); }
-  50%      { opacity: 0.4; transform: scale(1.3); }
+  50%       { opacity: 0.3; transform: scale(1.4); }
+}
+
+/* 2.4) Aurora wave opacity shift */
+@keyframes aurora-shift {
+  0%, 100% { opacity: 0.35; }
+  50%       { opacity: 0.85; }
+}
+
+/* 2.5) Rainbow shimmer overlay */
+@keyframes rainbow-shimmer {
+  0%, 100% { opacity: 0.12; }
+  50%       { opacity: 0.40; }
+}
+
+/* 2.6) Galactic star pulse (scale + opacity) */
+@keyframes galactic-pulse {
+  0%, 100% { opacity: 0.25; transform: scale(0.7); }
+  50%       { opacity: 1.00; transform: scale(1.4); }
+}
+
+/* 2.7) Neon line flicker */
+@keyframes neon-flicker {
+  0%, 100% { opacity: 0.30; }
+  25%       { opacity: 0.92; }
+  75%       { opacity: 0.55; }
+}
+
+/* 2.8) Midnight star twinkle */
+@keyframes star-twinkle {
+  0%, 100% { opacity: 0.15; }
+  50%       { opacity: 0.95; }
 }
 
 /* =================================
    3) RARE FISH STYLING
    ================================= */
 
-/* (Applies to the <div className="rare-fish"> wrapper around the SVG) */
 .rare-fish {
-  /* Start with a subtle golden drop-shadow */
   filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.6));
   animation: pulse-gold 2s infinite ease-in-out;
 }
 
-/* Ensure the glow isn’t clipped */
 .rare-fish svg {
   overflow: visible;
 }
@@ -59,19 +80,17 @@
    4) SUPER-RARE FISH STYLING
    ================================= */
 
-/* (Applies to <div className="super-fish">) */
 .super-fish {
   filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.7));
   animation: pulse-cyan 1.5s infinite ease-in-out;
-  position: relative; /* so that pseudo-elements can be absolutely positioned inside */
+  position: relative;
 }
 
-/* Ensure the glow isn’t clipped */
 .super-fish svg {
   overflow: visible;
 }
 
-/* 4.1) Create three small “sparkle” circles via ::before and ::after */
+/* Sparkle pseudo-elements */
 .super-fish::before,
 .super-fish::after {
   content: '';
@@ -83,9 +102,6 @@
   animation: sparkle-flicker 1s infinite ease-in-out;
 }
 
-/* Positioning: we want one sparkle near the top-left of the fish, one near middle, one near bottom-right */
-
-/* Top-left sparkle */
 .super-fish::before {
   width: 6px;
   height: 6px;
@@ -93,18 +109,14 @@
   left: 25%;
 }
 
-/* Bottom-right sparkle */
 .super-fish::after {
   width: 8px;
   height: 8px;
   top: 60%;
   left: 60%;
+  animation-delay: 0.5s;
 }
 
-/* 4.2) And a third sparkle using an inner <span> (to avoid adding more pseudo-elements) */
-/* If you prefer, you can wrap your <svg> in another <div> or <span> inside .super-fish and apply animation to that. */
-/* But the simplest is: add a tiny child <span className="extra-sparkle"> inside the Fish wrapper in React. */
-/* For brevity, we’ll position another pseudo-element on the fish’s SVG itself: */
 .super-fish svg {
   position: relative;
 }
@@ -120,25 +132,54 @@
   border-radius: 50%;
   opacity: 0.7;
   animation: sparkle-flicker 1.2s infinite ease-in-out;
+  animation-delay: 0.8s;
 }
 
 /* =================================
-   5) TURN OFF GLOW WHEN FISH IS DEAD
+   5) SPECIAL EFFECT ELEMENT CLASSES
    ================================= */
 
-/* Assume that when isDead={true}, Fish.js renders a child element with class="fish-dead-overlay" */
-/* For example: <g className="fish-dead-overlay">…red “X” …</g> inside the SVG. */
+/* Aurora wavy arcs */
+.aurora-wave {
+  animation: aurora-shift 2s ease-in-out infinite;
+}
+.aurora-wave-2 {
+  animation: aurora-shift 2s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+/* Rainbow shimmer rect */
+.rainbow-shimmer {
+  animation: rainbow-shimmer 1.5s ease-in-out infinite;
+}
+
+/* Galactic animated stars */
+.galactic-star {
+  animation: galactic-pulse 1.5s ease-in-out infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+/* Neon glow lines */
+.neon-glow {
+  animation: neon-flicker 0.9s ease-in-out infinite;
+}
+
+/* Midnight twinkling stars */
+.midnight-stars circle {
+  animation: star-twinkle 2s ease-in-out infinite;
+}
+
+/* =================================
+   6) TURN OFF GLOW/ANIMATION WHEN FISH IS DEAD
+   ================================= */
+
 .rare-fish .fish-dead-overlay,
 .super-fish .fish-dead-overlay {
   filter: none !important;
   animation: none !important;
 }
 
-/* =================================
-   6) OPTIONAL: STYLES WHEN A FISH IS DEAD
-   ================================= */
-
-/* You can also fade out or gray out the fish when dead. For instance: */
 .rare-fish.fish-dead,
 .super-fish.fish-dead {
   opacity: 0.5;

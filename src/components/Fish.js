@@ -7,16 +7,13 @@ import { SUPER_COLOURS, RARE_COLOURS } from "../constants/fishConstants";
  * Fish component with separate colour + pattern.
  *
  * Props:
- *  - id:        unique identifier (used to generate a unique clipPath)
+ *  - id:        unique identifier (used to generate unique SVG IDs)
  *  - x:         left (px)
  *  - y:         top (px)
  *  - size:      width in px (height = size × 0.5)
  *  - onClick:   callback when fish is clicked
- *  - isDead:    boolean; if true, overlay a red “✕” on the eye
- *  - colour:    e.g. 'orange','blue','green','purple','yellow',
- *               'red','pink','silver','crimson','cyan',
- *               'emerald','sunset','neon','aurora','midnight','obsidian',
- *               'galactic','phantom','rainbow','volcano','golden','aqua','lavender','coral'
+ *  - isDead:    boolean; if true, overlay a red "✕" on the eye
+ *  - colour:    fish colour string
  *  - pattern:   one of 'solid','striped','spotted'
  *  - isMobile:  boolean; if true, bind touch instead of click
  *  - angle:     number (radians) indicating movement direction
@@ -44,14 +41,22 @@ export default function Fish({
   // Tail-wag duration: inverse to speed (minimum 0.2s)
   const tailDuration = Math.max(0.2, 1.5 / speed);
 
-  const wrapperStyle = {
-    position: 'absolute',
-    left:   `${x}px`,
-    top:    `${y}px`,
-    width:  `${fishWidth}px`,
-    height: `${fishHeight}px`,
-    cursor: 'none',
-    transform: `scaleX(${facing})`,
+  // Outer div handles position only (with CSS transition for smooth interpolation).
+  // Inner div handles the flip instantly so direction changes never animate.
+  const outerStyle = {
+    position:   'absolute',
+    left:       0,
+    top:        0,
+    width:      `${fishWidth}px`,
+    height:     `${fishHeight}px`,
+    cursor:     'none',
+    transform:  `translate3d(${x}px,${y}px,0)`,
+    transition: 'transform 30ms linear',
+  };
+  const innerStyle = {
+    width:           '100%',
+    height:          '100%',
+    transform:       `scaleX(${facing})`,
     transformOrigin: 'center center',
   };
 
@@ -114,7 +119,6 @@ export default function Fish({
       break;
 
     case 'spotted':
-      /* Teal base for spotted fish */
       bodyFill   = isDead ? '#5B7A7A' : '#20B2AA';
       bodyStroke = isDead ? '#3F5555' : '#1F8F85';
       tailFill   = isDead ? '#3F5555' : '#1F8F85';
@@ -325,15 +329,16 @@ export default function Fish({
       break;
   }
 
-  // Unique clipPath ID per fish instance
-  const clipId = `clip-body-${id}`;
+  // Unique IDs per fish instance
+  const clipId    = `clip-body-${id}`;
+  const scalePatId = `scale-pat-${id}`;
 
   return (
     <div
-      className={rarityClass}
-      style={wrapperStyle}
-      {...(isMobile ? { onTouchEnd: onClick } : { onClick: onClick })}
+      style={outerStyle}
+      onPointerDown={onClick}
     >
+    <div className={rarityClass} style={innerStyle}>
       <svg
         className="fish-svg"
         viewBox="0 0 200 100"
@@ -342,236 +347,230 @@ export default function Fish({
         width="100%"
         height="100%"
       >
-        {/* 1) Emerald gradient for 'emerald' */}
-        {colour === 'emerald' && !isDead && (
-          <defs>
-            <linearGradient
-              id="emerald-gradient"
-              x1="0%"
-              y1="0%"
-              x2="100%"
-              y2="100%"
-            >
-              <stop offset="0%" stopColor="#004d00" />
-              <stop offset="50%" stopColor="#00cc00" />
+        {/* ── DEFS: gradients, clipPath, scale pattern ── */}
+        <defs>
+          {/* Colour gradients */}
+          {colour === 'emerald' && !isDead && (
+            <linearGradient id="emerald-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%"   stopColor="#004d00" />
+              <stop offset="50%"  stopColor="#00cc00" />
               <stop offset="100%" stopColor="#99ff99" />
             </linearGradient>
-          </defs>
-        )}
-
-        {/* 2) Gold gradient for 'golden' */}
-        {colour === 'golden' && !isDead && (
-          <defs>
-            <linearGradient
-              id="gold-gradient"
-              x1="0%"
-              y1="0%"
-              x2="100%"
-              y2="100%"
-            >
-              <stop offset="0%" stopColor="#FFD700" />
-              <stop offset="50%" stopColor="#FFC107" />
+          )}
+          {colour === 'golden' && !isDead && (
+            <linearGradient id="gold-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%"   stopColor="#FFD700" />
+              <stop offset="50%"  stopColor="#FFC107" />
               <stop offset="100%" stopColor="#FF8F00" />
             </linearGradient>
-          </defs>
-        )}
-
-        {/* 3) Red gradient for 'red' fish */}
-        {colour === 'red' && !isDead && (
-          <defs>
+          )}
+          {colour === 'red' && !isDead && (
             <linearGradient id="red-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#FF8080" />
-              <stop offset="50%" stopColor="#FF0000" />
+              <stop offset="0%"   stopColor="#FF8080" />
+              <stop offset="50%"  stopColor="#FF0000" />
               <stop offset="100%" stopColor="#CC0000" />
             </linearGradient>
-          </defs>
-        )}
-
-        {/* 4) Crimson gradient for 'crimson' fish */}
-        {colour === 'crimson' && !isDead && (
-          <defs>
-            <linearGradient
-              id="crimson-gradient"
-              x1="0%"
-              y1="0%"
-              x2="100%"
-              y2="100%"
-            >
-              <stop offset="0%" stopColor="#FF4F69" />
-              <stop offset="50%" stopColor="#DC143C" />
+          )}
+          {colour === 'crimson' && !isDead && (
+            <linearGradient id="crimson-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%"   stopColor="#FF4F69" />
+              <stop offset="50%"  stopColor="#DC143C" />
               <stop offset="100%" stopColor="#A1122A" />
             </linearGradient>
-          </defs>
-        )}
-
-        {/* 5) Cyan gradient for 'cyan' fish */}
-        {colour === 'cyan' && !isDead && (
-          <defs>
+          )}
+          {colour === 'cyan' && !isDead && (
             <linearGradient id="cyan-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#80FFFF" />
-              <stop offset="50%" stopColor="#00CED1" />
+              <stop offset="0%"   stopColor="#80FFFF" />
+              <stop offset="50%"  stopColor="#00CED1" />
               <stop offset="100%" stopColor="#008C8F" />
             </linearGradient>
-          </defs>
-        )}
-
-        {/* 6) Neon gradient for 'neon' fish */}
-        {colour === 'neon' && !isDead && (
-          <defs>
+          )}
+          {colour === 'neon' && !isDead && (
             <linearGradient id="neon-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#39FF14" />
-              <stop offset="50%" stopColor="#00FF00" />
+              <stop offset="0%"   stopColor="#39FF14" />
+              <stop offset="50%"  stopColor="#00FF00" />
               <stop offset="100%" stopColor="#32CD32" />
             </linearGradient>
-          </defs>
-        )}
-
-        {/* 7) Aurora gradient for 'aurora' fish */}
-        {colour === 'aurora' && !isDead && (
-          <defs>
+          )}
+          {colour === 'aurora' && !isDead && (
             <linearGradient id="aurora-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#8A2BE2" />
-              <stop offset="50%" stopColor="#00FFFF" />
+              <stop offset="0%"   stopColor="#8A2BE2" />
+              <stop offset="50%"  stopColor="#00FFFF" />
               <stop offset="100%" stopColor="#4B0082" />
             </linearGradient>
-          </defs>
-        )}
-
-        {/* 8) Obsidian gradient for 'obsidian' fish */}
-        {colour === 'obsidian' && !isDead && (
-          <defs>
+          )}
+          {colour === 'obsidian' && !isDead && (
             <linearGradient id="obsidian-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#4B4B4B" />
-              <stop offset="50%" stopColor="#1C1C1C" />
+              <stop offset="0%"   stopColor="#4B4B4B" />
+              <stop offset="50%"  stopColor="#1C1C1C" />
               <stop offset="100%" stopColor="#000000" />
             </linearGradient>
-          </defs>
-        )}
-
-        {/* 9) Rainbow gradient for 'rainbow' fish */}
-        {colour === 'rainbow' && !isDead && (
-          <defs>
-            <linearGradient id="rainbow-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#FF0000" />   {/* red */}
-              <stop offset="20%" stopColor="#FF7F00" />  {/* orange */}
-              <stop offset="40%" stopColor="#FFFF00" />  {/* yellow */}
-              <stop offset="60%" stopColor="#00FF00" />  {/* green */}
-              <stop offset="80%" stopColor="#0000FF" />  {/* blue */}
-              <stop offset="100%" stopColor="#8B00FF" /> {/* purple */}
+          )}
+          {colour === 'rainbow' && !isDead && (
+            <linearGradient id="rainbow-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%"   stopColor="#FF0000" />
+              <stop offset="20%"  stopColor="#FF7F00" />
+              <stop offset="40%"  stopColor="#FFFF00" />
+              <stop offset="60%"  stopColor="#00FF00" />
+              <stop offset="80%"  stopColor="#0000FF" />
+              <stop offset="100%" stopColor="#8B00FF" />
             </linearGradient>
-          </defs>
-        )}
+          )}
 
-        {/* 10) ClipPath for fish body (for stripes/spots) */}
-        <defs>
+          {/* Metallic hook gradient (also used for fish fin highlights on some) */}
+
+          {/* Body clip path (new rounder head, tapered tail) */}
           <clipPath id={clipId} clipPathUnits="userSpaceOnUse">
-            <path
-              d="
-                M20 50
-                C20 20, 80 0, 120 20
-                C160 40, 160 60, 120 80
-                C80 100, 20 80, 20 50
-                Z
-              "
-            />
+            <path d="
+              M24 50
+              C22 22, 88 2, 150 22
+              C175 35, 174 65, 150 78
+              C88 98, 22 78, 24 50
+              Z
+            " />
           </clipPath>
+
+          {/* Subtle arc-scale texture pattern */}
+          <pattern id={scalePatId} x="0" y="0" width="22" height="16" patternUnits="userSpaceOnUse">
+            <path d="M0 8 C5 0, 17 0, 22 8"   fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.8" />
+            <path d="M-11 16 C-6 8, 6 8, 11 16" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.8" />
+          </pattern>
         </defs>
 
-        {/* 11) Fish body */}
-        <path
-          d="
-            M20 50
-            C20 20, 80 0, 120 20
-            C160 40, 160 60, 120 80
-            C80 100, 20 80, 20 50
-            Z
-          "
-          fill={bodyFill}
-          stroke={bodyStroke}
-          strokeWidth="4"
-        />
-
-        {/* 12) Stripes (if striped & alive), clipped by unique clipPath */}
-        {pattern === 'striped' && !isDead && (
-          <g clipPath={`url(#${clipId})`}>
-            <rect x="40"  y="0"  width="12" height="100" fill={bodyStroke} />
-            <rect x="80"  y="0"  width="12" height="100" fill={bodyStroke} />
-            <rect x="120" y="0"  width="12" height="100" fill={bodyStroke} />
-            <rect x="160" y="0"  width="12" height="100" fill={bodyStroke} />
-          </g>
-        )}
-
-        {/* 13) Spots (if spotted & alive), clipped by unique clipPath */}
-        {pattern === 'spotted' && !isDead && (
-          <g clipPath={`url(#${clipId})`} fill={bodyStroke}>
-            <circle cx="60"  cy="30"  r="8" />
-            <circle cx="100" cy="50"  r="6" />
-            <circle cx="140" cy="70"  r="10" />
-            <circle cx="120" cy="30"  r="7" />
-            <circle cx="80"  cy="70"  r="5" />
-          </g>
-        )}
-
-        {/* 14) Tail (wrapped in <g> for animation) */}
+        {/* ── FORKED TAIL (animated) ── */}
         <g
           className={`fish-tail ${isDead ? 'dead' : ''}`}
           style={{ animationDuration: `${tailDuration}s` }}
         >
           <path
             d="
-              M20 50
-              L0 30
-              L0 70
+              M24 50
+              C14 36, 2 22, 0 12
+              C4 28, 12 42, 24 50
+              C12 58, 4 72, 0 88
+              C2 78, 14 64, 24 50
               Z
             "
             fill={tailFill}
             stroke={tailStroke}
-            strokeWidth="3"
+            strokeWidth="2.5"
+            strokeLinejoin="round"
           />
         </g>
 
-        {/* 15) Top (dorsal) fin */}
+        {/* ── BODY ── */}
         <path
           d="
-            M60 20
-            C50 0, 80 10, 90 20
+            M24 50
+            C22 22, 88 2, 150 22
+            C175 35, 174 65, 150 78
+            C88 98, 22 78, 24 50
             Z
           "
-          fill={finFill}
-          stroke={finStroke}
-          strokeWidth="2"
+          fill={bodyFill}
+          stroke={bodyStroke}
+          strokeWidth="3.5"
         />
 
-        {/* 16) Bottom (pelvic) fin */}
-        <path
-          d="
-            M60 80
-            C50 100, 80 90, 90 80
-            Z
-          "
-          fill={finFill}
-          stroke={finStroke}
-          strokeWidth="2"
-        />
-
-        {/* 17) Eye */}
-        <circle cx="140" cy="35" r="8" fill={eyeFill} />
-        <circle
-          cx="140"
-          cy="35"
-          r="4"
-          fill={isDead ? '#444444' : '#000000'}
-        />
-
-        {/* 18) Red “✕” if dead */}
-        {isDead && (
-          <g className="fish-dead-overlay" stroke="#FF0000" strokeWidth="3">
-            <line x1="136" y1="31" x2="144" y2="39" />
-            <line x1="144" y1="31" x2="136" y2="39" />
+        {/* ── STRIPE pattern (clipped to body) ── */}
+        {pattern === 'striped' && !isDead && (
+          <g clipPath={`url(#${clipId})`}>
+            <rect x="45"  y="0" width="13" height="100" fill={bodyStroke} opacity="0.55" />
+            <rect x="82"  y="0" width="13" height="100" fill={bodyStroke} opacity="0.55" />
+            <rect x="119" y="0" width="13" height="100" fill={bodyStroke} opacity="0.55" />
           </g>
         )}
 
-        {/* 19) Sparkles on red fish */}
+        {/* ── SPOT pattern (clipped to body) ── */}
+        {pattern === 'spotted' && !isDead && (
+          <g clipPath={`url(#${clipId})`} fill={bodyStroke} opacity="0.6">
+            <circle cx="62"  cy="32" r="8" />
+            <circle cx="98"  cy="52" r="6" />
+            <circle cx="136" cy="68" r="9" />
+            <circle cx="118" cy="28" r="7" />
+            <circle cx="78"  cy="70" r="5" />
+          </g>
+        )}
+
+        {/* ── SCALE TEXTURE (clipped, very subtle) ── */}
+        {!isDead && (
+          <rect
+            x="24" y="0" width="150" height="100"
+            fill={`url(#${scalePatId})`}
+            clipPath={`url(#${clipId})`}
+            opacity="0.10"
+          />
+        )}
+
+        {/* ── BELLY SHEEN (3D roundness) ── */}
+        {!isDead && (
+          <ellipse
+            cx="100" cy="66"
+            rx="52" ry="11"
+            fill="rgba(255,255,255,0.09)"
+            clipPath={`url(#${clipId})`}
+          />
+        )}
+
+        {/* ── DORSAL FIN (top) ── */}
+        <path
+          d="M68 18 C58 0, 92 8, 102 18 Z"
+          fill={finFill}
+          stroke={finStroke}
+          strokeWidth="2"
+        />
+
+        {/* ── PELVIC FIN (bottom) ── */}
+        <path
+          d="M68 82 C58 100, 92 92, 102 82 Z"
+          fill={finFill}
+          stroke={finStroke}
+          strokeWidth="2"
+        />
+
+        {/* ── PECTORAL FIN (side, for 3D depth) ── */}
+        <path
+          d="M112 56 C100 70, 94 80, 104 76 C114 72, 120 62, 112 56 Z"
+          fill={finFill}
+          stroke={finStroke}
+          strokeWidth="1.5"
+          opacity="0.82"
+        />
+
+        {/* ── GILL SLIT ── */}
+        {!isDead && (
+          <path
+            d="M130 26 C125 40, 125 60, 130 74"
+            fill="none"
+            stroke={bodyStroke}
+            strokeWidth="2"
+            opacity="0.45"
+          />
+        )}
+
+        {/* ── LAYERED EYE ── */}
+        {/* Sclera */}
+        <circle cx="154" cy="34" r="9"   fill={eyeFill} />
+        {/* Iris */}
+        <circle cx="154" cy="34" r="6"   fill={isDead ? '#555555' : '#1a3a5c'} />
+        {/* Pupil */}
+        <circle cx="154" cy="34" r="3.5" fill={isDead ? '#333333' : '#000000'} />
+        {/* Highlight (alive only) */}
+        {!isDead && (
+          <circle cx="157" cy="31" r="1.6" fill="#ffffff" opacity="0.9" />
+        )}
+
+        {/* ── DEAD "✕" ── */}
+        {isDead && (
+          <g className="fish-dead-overlay" stroke="#FF0000" strokeWidth="3" strokeLinecap="round">
+            <line x1="149" y1="29" x2="159" y2="39" />
+            <line x1="159" y1="29" x2="149" y2="39" />
+          </g>
+        )}
+
+        {/* ── SPECIAL EFFECTS per colour (animated) ── */}
+
+        {/* Red: bright sparkles */}
         {colour === 'red' && !isDead && (
           <g>
             <circle cx="80"  cy="30" r="4" fill="#FFFFFF" opacity="0.8" />
@@ -580,7 +579,7 @@ export default function Fish({
           </g>
         )}
 
-        {/* 20) Sparkles on crimson fish */}
+        {/* Crimson: sparkles */}
         {colour === 'crimson' && !isDead && (
           <g>
             <circle cx="75"  cy="25" r="5" fill="#FFECEC" opacity="0.9" />
@@ -588,127 +587,128 @@ export default function Fish({
           </g>
         )}
 
-        {/* 21) Sparkles on cyan fish */}
+        {/* Cyan: glint */}
         {colour === 'cyan' && !isDead && (
           <g>
-            <circle cx="70"  cy="30" r="5"  fill="#E0FFFF" opacity="0.8" />
-            <circle cx="130" cy="50" r="4"  fill="#B0FFFF" opacity="0.6" />
+            <circle cx="70"  cy="30" r="5" fill="#E0FFFF" opacity="0.8" />
+            <circle cx="130" cy="50" r="4" fill="#B0FFFF" opacity="0.6" />
           </g>
         )}
 
-        {/* 22) Neon fish: electric glow lines */}
+        {/* Neon: animated electric glow lines */}
         {colour === 'neon' && !isDead && (
-          <g stroke="#39FF14" strokeWidth="2" opacity="0.7">
-            <polyline points="50,10 70,50 50,90" fill="none" />
-            <polyline points="90,10 110,50 90,90" fill="none" />
+          <g stroke="#39FF14" strokeWidth="2" fill="none" className="neon-glow">
+            <polyline points="52,10 72,50 52,90" />
+            <polyline points="92,10 112,50 92,90" />
           </g>
         )}
 
-        {/* 23) Aurora fish: swirling aurora arcs */}
+        {/* Aurora: animated wavy arcs */}
         {colour === 'aurora' && !isDead && (
           <g>
             <path
-              d="M30 40 C50 10, 150 10, 170 40"
-              stroke="#00FFFF"
-              strokeWidth="3"
-              fill="none"
-              opacity="0.6"
+              className="aurora-wave"
+              d="M32 38 C60 12, 120 12, 165 38"
+              stroke="#00FFFF" strokeWidth="2.5" fill="none"
             />
             <path
-              d="M30 60 C50 90, 150 90, 170 60"
-              stroke="#4B0082"
-              strokeWidth="3"
-              fill="none"
-              opacity="0.6"
+              className="aurora-wave aurora-wave-2"
+              d="M32 62 C60 88, 120 88, 165 62"
+              stroke="#8A2BE2" strokeWidth="2.5" fill="none"
             />
           </g>
         )}
 
-        {/* 24) Midnight fish: faint star dots */}
+        {/* Midnight: animated twinkling star dots */}
         {colour === 'midnight' && !isDead && (
-          <g fill="#FFFFFF" opacity="0.8">
-            <circle cx="60"  cy="20" r="2" />
-            <circle cx="80"  cy="40" r="1.5" />
-            <circle cx="120" cy="30" r="2" />
-            <circle cx="140" cy="60" r="1.5" />
+          <g className="midnight-stars" fill="#FFFFFF">
+            <circle cx="58"  cy="22" r="2"   style={{ animationDelay: '0s'   }} />
+            <circle cx="82"  cy="42" r="1.5" style={{ animationDelay: '0.3s' }} />
+            <circle cx="118" cy="28" r="2"   style={{ animationDelay: '0.7s' }} />
+            <circle cx="100" cy="64" r="1.5" style={{ animationDelay: '0.5s' }} />
+            <circle cx="52"  cy="56" r="1"   style={{ animationDelay: '0.2s' }} />
+            <circle cx="138" cy="72" r="1.5" style={{ animationDelay: '0.9s' }} />
           </g>
         )}
 
-        {/* 25) Obsidian fish: subtle “lava-crack” lines */}
+        {/* Obsidian: subtle lava-crack lines */}
         {colour === 'obsidian' && !isDead && (
-          <g stroke="#505050" strokeWidth="1" opacity="0.6">
-            <path d="M50 30 L70 50 L50 70" fill="none" />
-            <path d="M80 20 L100 40 L80 60" fill="none" />
+          <g stroke="#606060" strokeWidth="1" opacity="0.6">
+            <path d="M52 30 L72 50 L52 70" fill="none" />
+            <path d="M84 20 L104 40 L84 60" fill="none" />
           </g>
         )}
 
-        {/* 26) Galactic fish: cosmic starburst accents */}
+        {/* Galactic: animated cosmic star dots */}
         {colour === 'galactic' && !isDead && (
           <g>
-            <circle cx="60"  cy="50" r="3" fill="#FFFFFF" opacity="0.7" />
-            <circle cx="100" cy="30" r="5" fill="#FFD700" opacity="0.6" />
-            <circle cx="140" cy="60" r="3" fill="#FFFFFF" opacity="0.7" />
+            <circle cx="58"  cy="50" r="3" fill="#FFFFFF" className="galactic-star" style={{ animationDelay: '0s'   }} />
+            <circle cx="98"  cy="28" r="5" fill="#FFD700" className="galactic-star" style={{ animationDelay: '0.5s' }} />
+            <circle cx="132" cy="64" r="3" fill="#FFFFFF" className="galactic-star" style={{ animationDelay: '1.0s' }} />
+            <circle cx="78"  cy="68" r="2" fill="#E0E0FF" className="galactic-star" style={{ animationDelay: '0.3s' }} />
           </g>
         )}
 
-        {/* 27) Phantom fish: ghostly mist trails */}
+        {/* Phantom: ghostly mist trails */}
         {colour === 'phantom' && !isDead && (
-          <g stroke="#CCCCCC" strokeWidth="1" opacity="0.5">
-            <path d="M30 60 C50 80, 80 80, 100 60" fill="none" />
-            <path d="M50 40 C70 60, 110 60, 130 40" fill="none" />
+          <g stroke="#CCCCCC" strokeWidth="1.5" opacity="0.5" fill="none">
+            <path d="M32 60 C55 82, 90 82, 110 60" />
+            <path d="M52 38 C75 58, 112 58, 132 38" />
           </g>
         )}
 
-        {/* 28) Rainbow fish: prism sparkles */}
+        {/* Rainbow: animated shimmer overlay */}
         {colour === 'rainbow' && !isDead && (
-          <g>
-            <circle cx="80"  cy="20" r="4" fill="#FFFFFF" opacity="0.8" />
-            <circle cx="120" cy="70" r="3" fill="#FFFF00" opacity="0.7" />
-            <circle cx="100" cy="45" r="2" fill="#FF00FF" opacity="0.6" />
-          </g>
+          <rect
+            x="24" y="0" width="150" height="100"
+            fill="url(#rainbow-gradient)"
+            clipPath={`url(#${clipId})`}
+            className="rainbow-shimmer"
+          />
         )}
 
-        {/* 29) Volcano fish: molten lava flicker */}
+        {/* Volcano: molten glow dots */}
         {colour === 'volcano' && !isDead && (
           <g>
-            <circle cx="50"  cy="50" r="4" fill="#FF4500" opacity="0.7" />
-            <circle cx="150" cy="50" r="3" fill="#FFD700" opacity="0.6" />
+            <circle cx="52"  cy="50" r="4" fill="#FF4500" opacity="0.7" />
+            <circle cx="148" cy="50" r="3" fill="#FFD700" opacity="0.6" />
           </g>
         )}
 
-        {/* 30) Golden fish: metallic glint */}
+        {/* Golden: metallic glint */}
         {colour === 'golden' && !isDead && (
           <g>
             <circle cx="100" cy="40" r="5" fill="#FFFACD" opacity="0.8" />
-            <circle cx="140" cy="60" r="3" fill="#FFEFD5" opacity="0.6" />
+            <circle cx="140" cy="62" r="3" fill="#FFEFD5" opacity="0.6" />
           </g>
         )}
 
-        {/* 31) Aqua fish: bubble trail */}
+        {/* Aqua: bubble trail */}
         {colour === 'aqua' && !isDead && (
           <g fill="#E0FFFF" opacity="0.6">
-            <circle cx="40"  cy="50" r="3" />
-            <circle cx="30"  cy="60" r="2" />
-            <circle cx="20"  cy="70" r="2" />
+            <circle cx="42" cy="50" r="3" />
+            <circle cx="32" cy="60" r="2" />
+            <circle cx="22" cy="70" r="2" />
           </g>
         )}
 
-        {/* 32) Lavender fish: floral swirl */}
+        {/* Lavender: floral swirl */}
         {colour === 'lavender' && !isDead && (
-          <g stroke="#D8BFD8" strokeWidth="1" opacity="0.7">
-            <path d="M60 30 C70 20, 100 20, 110 30" fill="none" />
-            <path d="M60 70 C70 80, 100 80, 110 70" fill="none" />
+          <g stroke="#D8BFD8" strokeWidth="1.5" opacity="0.7" fill="none">
+            <path d="M62 28 C74 18, 104 18, 116 28" />
+            <path d="M62 72 C74 82, 104 82, 116 72" />
           </g>
         )}
 
-        {/* 33) Coral fish: coral-branch motif */}
+        {/* Coral: coral-branch motif */}
         {colour === 'coral' && !isDead && (
-          <g stroke="#FF7F50" strokeWidth="1" opacity="0.7">
-            <path d="M80 30 L90 40 L80 50" fill="none" />
-            <path d="M100 60 L110 70 L100 80" fill="none" />
+          <g stroke="#FF7F50" strokeWidth="1.5" opacity="0.7" fill="none">
+            <path d="M82 28 L92 40 L82 52" />
+            <path d="M102 60 L112 72 L102 82" />
           </g>
         )}
       </svg>
+    </div>
     </div>
   );
 }

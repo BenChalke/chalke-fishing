@@ -23,12 +23,6 @@ export default function Controls({
       >
         Speed +
       </button>
-      {/* <button
-        className="control-button add-button"
-        {...(isMobile ? { onTouchStart: onAddFish } : { onClick: onAddFish })}
-      >
-        Add Fish
-      </button> */}
       <button
         className="control-button reset-button"
         {...(isMobile ? { onTouchStart: onReset } : { onClick: onReset })}

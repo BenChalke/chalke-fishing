@@ -22,12 +22,11 @@ import {
   createRandomFish,
   createOffscreenFish,
   createInitialFish,
-  FISH_COUNT,
+  viewportFishCount,
   FISH_SIZE,
   ENTRY_MULT,
 } from "./utils/fishUtils";
 
-const REPULSE_DISTANCE = 100;
 
 // Speed bounds
 const MIN_SPEED = 0.5;
@@ -40,7 +39,7 @@ const MAX_SPEED = 20.0;
 export default function FreePlayGame({ onBackToHome }) {
   // ——— STATE ———
   const [fishArray, setFishArray] = useState([]);
-  const [speed, setSpeed] = useState(1.5);
+  const [speed, setSpeed] = useState(4.0);
   const [cursorPos, setCursorPos] = useState({ x: -1000, y: -1000 });
   const [isJerking, setIsJerking] = useState(false);
   const [catchAnimations, setCatchAnimations] = useState([]);
@@ -69,13 +68,17 @@ export default function FreePlayGame({ onBackToHome }) {
 
   // Refs for cursor tracking and unique IDs
   const cursorRef = useRef({ x: -1000, y: -1000 });
-  const nextId = useRef(FISH_COUNT);
+  const initialFishCount = useRef(0);
+  const nextId = useRef(0);
   const nextNotif = useRef(0);
 
   // ——— EFFECTS ———
 
   // On mount: populate initial fish, detect touch, and check if we've seen the welcome popup
   useEffect(() => {
+    const count = viewportFishCount();
+    initialFishCount.current = count;
+    nextId.current = count;
     setFishArray(createInitialFish());
     setIsMobile("ontouchstart" in window);
     const seen = localStorage.getItem("seenWelcome");
@@ -158,21 +161,6 @@ export default function FreePlayGame({ onBackToHome }) {
           // — Normal “swim around” behavior —
           let dx = Math.cos(angle) * effSpeed;
           let dy = Math.sin(angle) * effSpeed;
-          if (!isMobile) {
-            const fishCX = x + FISH_SIZE / 2;
-            const fishCY = y + fishHeight / 2;
-            const diffX = fishCX - cursorRef.current.x;
-            const diffY = fishCY - cursorRef.current.y;
-            const dist = Math.hypot(diffX, diffY);
-            // If mouse is too close, fish repels
-            if (dist < REPULSE_DISTANCE) {
-              const repelAngle = Math.atan2(diffY, diffX);
-              dx = Math.cos(repelAngle) * effSpeed;
-              dy = Math.sin(repelAngle) * effSpeed;
-              angle = repelAngle;
-            }
-          }
-
           let newX = x + dx;
           let newY = y + dy;
           let newAngle = angle;
@@ -272,9 +260,12 @@ export default function FreePlayGame({ onBackToHome }) {
       ...prev,
       { id: fishId, startX: curX, startY: curY, colour, pattern },
     ]);
-    // 4) Create floating “+points” notification
+    // 4) Create floating “+points” notification (color-coded by rarity)
     const notifId = nextNotif.current++;
-    setScoreNotifs((prev) => [...prev, { id: notifId, x: curX, y: curY, points }]);
+    let notifRarity = 'common';
+    if (SUPER_COLOURS.includes(colour)) notifRarity = 'super';
+    else if (RARE_COLOURS.includes(colour)) notifRarity = 'rare';
+    setScoreNotifs((prev) => [...prev, { id: notifId, x: curX, y: curY, points, rarity: notifRarity }]);
     setTimeout(() => {
       setScoreNotifs((prev) => prev.filter((n) => n.id !== notifId));
     }, 1000);
@@ -291,8 +282,8 @@ export default function FreePlayGame({ onBackToHome }) {
   const handleReset = () => {
     setCatchAnimations([]);
     setFishArray(createInitialFish());
-    nextId.current = FISH_COUNT;
-    setSpeed(1.5);
+    nextId.current = initialFishCount.current;
+    setSpeed(4.0);
   };
 
   // Adjust speed
@@ -323,8 +314,7 @@ export default function FreePlayGame({ onBackToHome }) {
   return (
     <div
       className={`container ${!showWelcome ? "no-cursor" : ""}`}
-      onMouseDown={handlePointerDown}
-      onTouchStart={handlePointerDown}
+      onPointerDown={handlePointerDown}
     >
   
       {/* — SETTINGS (cog), INFO, AND CONTROLS (top-left) — */}
@@ -374,6 +364,10 @@ export default function FreePlayGame({ onBackToHome }) {
       {/* — WELCOME POPUP (only once) — */}
       {showWelcome && <WelcomePopup onClose={closeWelcome} />}
 
+      {/* — ENVIRONMENT OVERLAYS — */}
+      <div className="light-rays" />
+      <div className="water-surface" />
+
       {/* — BUBBLES IN BACKGROUND — */}
       <Bubbles />
 
@@ -381,7 +375,7 @@ export default function FreePlayGame({ onBackToHome }) {
       {scoreNotifs.map((notif) => (
         <span
           key={notif.id}
-          className="score-notif"
+          className={`score-notif score-notif-${notif.rarity}`}
           style={{
             left: `${notif.x}px`,
             top: `${notif.y}px`,

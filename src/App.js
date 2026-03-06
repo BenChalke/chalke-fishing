@@ -6,10 +6,10 @@ import HighScoreScreen from "./HighScoreScreen";
 import FishField from "./components/FishField";
 import WelcomePopup from "./components/WelcomePopup";
 import "./App.css";
-// import "./TimeTrialGame.css";
 
 export default function App() {
   const [mode, setMode] = useState("home");
+  const [ttKey, setTtKey] = useState(0);
   const [showWelcome, setShowWelcome] = useState(false);
 
   // On mount, decide whether to display the welcome popup
@@ -39,16 +39,22 @@ export default function App() {
   if (mode === "home") {
     return (
       <div className="container">
-        {/* 1) Show 15 decorative fish + bubbles “behind” */}
+        {/* Environment overlays */}
+        <div className="light-rays" />
+        <div className="water-surface" />
+        {/* <div className="seabed" /> */}
+
+        {/* 1) Show 15 decorative fish + bubbles "behind" */}
         <FishField count={15} isInteractive={false} isMobile={false} />
 
         {/* 2) Semi-transparent overlay panel */}
         <div className="home-overlay">
           <h1>Chalke Fishing</h1>
+          <p className="home-subtitle">Cast your line. Catch them all.</p>
           <div className="home-buttons">
-            <button onClick={goFree}>Fishing</button>
-            <button onClick={goTimeTrial}>Time Trial</button>
-            <button onClick={goHighScore}>High Score</button>
+            <button onClick={goFree}>🎣 Fishing</button>
+            <button onClick={goTimeTrial}>⏱ Time Trial</button>
+            <button onClick={goHighScore}>🏆 High Score</button>
           </div>
         </div>
       </div>
@@ -60,7 +66,12 @@ export default function App() {
   }
 
   if (mode === "timeTrial") {
-    return <TimeTrialGame onBackToHome={goHome} />;
+    return <TimeTrialGame
+      key={ttKey}
+      onBackToHome={goHome}
+      onPlayAgain={() => setTtKey((k) => k + 1)}
+      onGoHighScore={goHighScore}
+    />;
   }
 
   if (mode === "highScore") {

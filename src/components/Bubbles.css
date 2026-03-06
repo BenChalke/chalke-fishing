@@ -3,24 +3,43 @@
 .bubble {
   position: absolute;
   bottom: 0;
-  background-color: rgba(255, 255, 255, 0.7);
+  /* Realistic bubble: transparent center with edge glint */
+  background: radial-gradient(
+    circle at 35% 35%,
+    rgba(255, 255, 255, 0.60) 0%,
+    rgba(255, 255, 255, 0.05) 55%,
+    transparent 70%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.38);
   border-radius: 50%;
-  /* Start fully opaque, then fade out as it rises */
-  animation: rise 4s linear forwards;
-  pointer-events: none; /* Let clicks pass through */
+  animation: rise var(--duration, 4s) linear forwards;
+  pointer-events: none;
 }
 
-/* Keyframes for rising + fading */
+/* Inner highlight dot at top-left */
+.bubble::before {
+  content: '';
+  position: absolute;
+  top: 14%;
+  left: 18%;
+  width: 24%;
+  height: 24%;
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 50%;
+}
+
+/* Rising with horizontal drift via CSS custom properties */
 @keyframes rise {
   0% {
-    transform: translateY(0);
-    opacity: 0.8;
+    transform: translateY(0) translateX(0);
+    opacity: 0.85;
   }
-  70% {
-    opacity: 0.4;
+  50% {
+    transform: translateY(-55vh) translateX(calc(var(--drift, 0px) * 0.5));
+    opacity: 0.55;
   }
   100% {
-    transform: translateY(-110vh);
+    transform: translateY(-110vh) translateX(var(--drift, 0px));
     opacity: 0;
   }
 }

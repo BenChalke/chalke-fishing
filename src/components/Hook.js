@@ -4,45 +4,43 @@ import './Hook.css';
 
 /**
  * Hook component: renders
- *  1) a vertical line (“string”) from the top of the viewport down to the hook
+ *  1) a vertical line ("string") from the top of the viewport down to the hook
  *  2) the hook SVG itself, positioned at (x, y)
  *
  * Props:
  *  - x: clientX coordinate (cursor)
  *  - y: clientY coordinate (cursor)
- *  - jerking: boolean  // if true, play a quick “jerk” animation on the hook
+ *  - jerking: boolean  // if true, play a quick "jerk" animation on the hook
  */
 export default function Hook({ x, y, jerking }) {
-  // Hook dimensions in px
   const HOOK_WIDTH  = 64;
   const HOOK_HEIGHT = 64;
 
-  // Position the hook SVG so its tip is at (x, y)
   const hookLeft = x - HOOK_WIDTH  / 2;
   const hookTop  = y - HOOK_HEIGHT / 2;
 
-  // Style for the vertical line (string)
+  // Fishing line: slightly blue-tinted to blend with water, semi-transparent
   const lineStyle = {
-    position: 'absolute',
-    left: `${x}px`,
-    top: `0px`,
-    width: '2px',
-    height: `${y}px`,
-    backgroundColor: '#333333',
-    zIndex: 150,             // above popup (100), below hook (200)
-    pointerEvents: 'none',
+    position:        'absolute',
+    left:            `${x}px`,
+    top:             '0px',
+    width:           '1.5px',
+    height:          `${y}px`,
+    backgroundColor: '#4a6a8a',
+    opacity:         0.7,
+    zIndex:          150,
+    pointerEvents:   'none',
   };
 
-  // Style for the hook itself
   const hookStyle = {
-    position: 'absolute',
-    left: `${hookLeft}px`,
-    top: `${hookTop}px`,
-    width: `${HOOK_WIDTH}px`,
-    height: `${HOOK_HEIGHT}px`,
+    position:   'absolute',
+    left:       `${hookLeft}px`,
+    top:        `${hookTop}px`,
+    width:      `${HOOK_WIDTH}px`,
+    height:     `${HOOK_HEIGHT}px`,
     pointerEvents: 'none',
-    zIndex: 200,             // topmost
-    transform: jerking ? 'scale(1.2)' : 'scale(1)',
+    zIndex:     200,
+    transform:  jerking ? 'scale(1.2)' : 'scale(1)',
     transition: jerking ? 'transform 0.2s ease' : 'transform 0.1s ease',
   };
 
@@ -59,7 +57,15 @@ export default function Hook({ x, y, jerking }) {
           width="64"
           height="64"
         >
-          {/* The hook shape */}
+          <defs>
+            <linearGradient id="hook-metal" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%"   stopColor="#D0D0D0" />
+              <stop offset="50%"  stopColor="#AAAAAA" />
+              <stop offset="100%" stopColor="#888888" />
+            </linearGradient>
+          </defs>
+
+          {/* Hook shape with metallic gradient stroke */}
           <path
             d="
               M16 0
@@ -69,15 +75,15 @@ export default function Hook({ x, y, jerking }) {
               C24 24, 26 20, 22 16
             "
             fill="none"
-            stroke="#333333"
+            stroke="url(#hook-metal)"
             strokeWidth="3"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
-          {/* Small accent on the hook */}
+          {/* Barb accent */}
           <path
             d="M12 24 L14 26"
-            stroke="#333333"
+            stroke="url(#hook-metal)"
             strokeWidth="2"
             strokeLinecap="round"
           />

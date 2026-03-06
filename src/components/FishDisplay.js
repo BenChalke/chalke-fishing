@@ -25,18 +25,21 @@ export default function FishDisplay({
 
       {/* 2) Render all live fish; pass angle & speed */}
       {fishArray.map((fish) => {
-        const isSuper = ['crimson', 'cyan'].includes(fish.colour);
+        const isSuper   = ['crimson', 'cyan'].includes(fish.colour);
+        const fishSize  = isSuper      ? FISH_SIZE * 1.5
+                        : fish.speedFish ? FISH_SIZE * 1.1
+                        : FISH_SIZE;
         return (
           <Fish
             key={fish.id}
             id={fish.id}
             x={fish.x}
             y={fish.y}
-            size={isSuper ? FISH_SIZE * 1.5 : FISH_SIZE}
+            size={fishSize}
             colour={fish.colour}
             pattern={fish.pattern}
-            angle={fish.angle}      // <— pass angle so Fish can flip
-            speed={speed}           // <— pass speed so Fish can wag tail faster/slower
+            angle={fish.angle}
+            speed={speed}
             onClick={(e) => onFishClick(fish.id, e)}
             isMobile={isMobile}
           />
@@ -44,7 +47,7 @@ export default function FishDisplay({
       })}
 
       {/* 3) Hook as cursor (desktop only) */}
-      {!isCatching && !isMobile && (
+      {!isMobile && (
         <Hook x={cursorPos.x} y={cursorPos.y} jerking={isJerking} />
       )}
 

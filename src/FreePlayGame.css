@@ -14,20 +14,20 @@
 
 .settings-btn,
 .info-btn, .back-home-btn-freeplay {
-  background: rgba(255, 255, 255, 0.8);
-  border: none;
-  border-radius: 6px;
+  background: rgba(0, 10, 22, 0.80);
+  border: 1px solid rgba(0, 212, 255, 0.32);
+  border-radius: 8px;
   width: 40px;
   height: 40px;
   font-size: 20px;
   font-weight: bold;
-  color: #333;
+  color: #00d4ff;
   cursor: pointer;
   display: flex;
   flex: 0 0 40px;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s ease, transform 0.1s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
@@ -36,12 +36,15 @@
 }
 
 .settings-btn:hover,
-.info-btn:hover {
-  background: rgba(255, 255, 255, 1);
+.info-btn:hover,
+.back-home-btn-freeplay:hover {
+  background: rgba(0, 22, 45, 0.92);
+  border-color: rgba(0, 212, 255, 0.58);
 }
 
 .settings-btn:active,
-.info-btn:active {
+.info-btn:active,
+.back-home-btn-freeplay:active {
   transform: scale(0.95);
 }
 

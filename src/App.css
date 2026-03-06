@@ -1,14 +1,72 @@
 /* src/App.css */
 
 /* ----------------------------------------
-   Main container: full‐screen gradient “underwater”
+   Main container: full‐screen rich underwater gradient
    ---------------------------------------- */
 .container {
   position: relative;
-  width: 100vw;
-  height: 100vh;
-  background: linear-gradient(to bottom, #0e2f44, #051924);
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    #030d1a 0%,
+    #061524 15%,
+    #0a2038 35%,
+    #071828 65%,
+    #040f20 85%,
+    #020a14 100%
+  );
   overflow: hidden;
+  touch-action: manipulation;
+}
+
+
+/* ----------------------------------------
+   Light rays (pure CSS, no JS)
+   ---------------------------------------- */
+.light-rays {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: repeating-linear-gradient(
+    108deg,
+    transparent 0%,
+    transparent 7%,
+    rgba(0, 200, 255, 0.018) 8%,
+    rgba(0, 200, 255, 0.018) 11%,
+    transparent 12%
+  );
+  animation: shimmer-rays 8s ease-in-out infinite;
+}
+
+@keyframes shimmer-rays {
+  0%, 100% { opacity: 0.3; }
+  50%       { opacity: 0.8; }
+}
+
+/* ----------------------------------------
+   Surface shimmer at top
+   ---------------------------------------- */
+.water-surface {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.10) 0%,
+    transparent 100%
+  );
+  animation: surface-shimmer 3s ease-in-out infinite;
+  z-index: 3;
+  pointer-events: none;
+}
+
+@keyframes surface-shimmer {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1; }
 }
 
 /* ----------------------------------------
@@ -26,49 +84,8 @@ body {
   touch-action: manipulation;
 }
 
-/* Controls list (beneath the cog & info button) */
-/* .controls-container {
-  position: absolute;
-  top: 40px;
-  left: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  z-index: 50;
-}
-
-.control-button {
-  padding: 8px 14px;
-  font-size: 16px;
-  background-color: rgba(255, 255, 255, 0.9);
-  border: 2px solid #ccc;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-}
-
-.control-button:hover {
-  background-color: rgba(255, 255, 255, 1);
-  transform: translateY(-2px);
-}
-
-.control-button:active {
-  transform: translateY(0) scale(0.96);
-}
-
-.control-button:focus {
-  outline: none;
-} */
-
 /* ----------------------------------------
-   Score Display (top‐center)
+   Score Display (top‐center) — glassmorphism pill
    ---------------------------------------- */
 .top-center-ui {
   position: absolute;
@@ -81,31 +98,21 @@ body {
   z-index: 50;
 }
 
-/* .top-center-ui .score-display {
-  background: rgba(255, 255, 255, 0.8);
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 18px;
-  font-weight: bold;
-  color: #333;
-  pointer-events: none;
-} */
-
 .top-center-ui .score-display {
   position: absolute;
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(255, 255, 255, 0.8);
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 18px;
+  background: rgba(0, 10, 22, 0.82);
+  border: 1px solid rgba(0, 212, 255, 0.28);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.5), 0 0 10px rgba(0, 212, 255, 0.06);
+  padding: 8px 22px;
+  border-radius: 20px;
+  font-size: 1.6rem;
   font-weight: bold;
-  color: #333;
+  color: #ffffff;
   z-index: 50;
   pointer-events: none;
-
-  /* prevent wrapping and allow the box to grow as wide as needed */
   white-space: nowrap;
 }
 
@@ -116,10 +123,10 @@ body {
   position: absolute;
   top: 12px;
   right: 12px;
-  color: #ffffff;
+  color: #00d4ff;
   font-size: 1.5rem;
   font-weight: bold;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
   z-index: 50;
 }
 
@@ -127,35 +134,35 @@ body {
   position: absolute;
   top: 40px;
   right: 12px;
-  color: #ffffff;
+  color: #00d4ff;
   font-size: 1.5rem;
   font-weight: bold;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
   z-index: 50;
 }
 
 /* ----------------------------------------
-   “See Fish Caught” Button (bottom‐center)
+   "See Fish Caught" Button (bottom‐right)
    ---------------------------------------- */
 .bottom-right-ui {
   position: absolute;
-  top: 85px; /* 12px (top offset) + ~24px (score box height) + 12px gap */
+  top: 85px;
   right: 8px;
   z-index: 50;
 }
 
 .caught-btn {
-  background: #fffae6;        /* soft contrast from score box */
-  border: none;
-  border-radius: 6px;
-  padding: 10px 12px;           /* slightly smaller padding */
-  font-size: 14px;             /* smaller font than score */
+  background: rgba(0, 10, 22, 0.78);
+  border: 1px solid rgba(0, 212, 255, 0.30);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
   font-weight: 600;
-  color: #333;
+  color: #00d4ff;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  transition: background 0.2s ease, transform 0.1s ease;
-  -webkit-user-select: none; /* disable text highlighting */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+  -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
@@ -163,7 +170,8 @@ body {
 }
 
 .caught-btn:hover {
-  background: #fff5cc;
+  background: rgba(0, 22, 45, 0.92);
+  border-color: rgba(0, 212, 255, 0.58);
   transform: translateY(-2px);
 }
 
@@ -176,7 +184,7 @@ body {
 }
 
 /* ----------------------------------------
-   Floating “+X” Notifications
+   Floating "+X" Notifications
    ---------------------------------------- */
 @keyframes float-up {
   from {
@@ -185,50 +193,64 @@ body {
   }
   to {
     opacity: 0;
-    transform: translateY(-25px);
+    transform: translateY(-30px);
   }
 }
 
 .score-notif {
   position: absolute;
   transform: translate(-50%, -50%);
-  font-size: 32px;       /* desktop size */
+  font-size: 32px;
   font-weight: bold;
-  color: #00aa00;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  color: #55dd55;
+  text-shadow: 0 0 8px rgba(85, 221, 85, 0.5), 1px 1px 2px rgba(0, 0, 0, 0.6);
   pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
   animation: float-up 1s ease-out forwards;
   z-index: 60;
 }
 
+.score-notif-rare {
+  color: #FFD700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.7), 1px 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.score-notif-super {
+  color: #00FFFF;
+  text-shadow: 0 0 12px rgba(0, 255, 255, 0.8), 1px 1px 2px rgba(0, 0, 0, 0.6);
+}
+
 /* ----------------------------------------
-   “Back to Home” button (used in both modes)
+   "Back to Home" button
    ---------------------------------------- */
 .back-home-btn {
   position: absolute;
   top: 12px;
   left: 8px;
-  background-color: rgba(255, 255, 255, 0.9);
-  border: none;
-  color: #555;
+  background: rgba(0, 10, 22, 0.78);
+  border: 1px solid rgba(0, 212, 255, 0.30);
+  color: #00d4ff;
   font-size: 1rem;
+  font-weight: 600;
   padding: 6px 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   z-index: 50;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .back-home-btn:hover {
-  background: rgba(70, 70, 70, 0.9);
+  background: rgba(0, 22, 45, 0.92);
+  border-color: rgba(0, 212, 255, 0.58);
 }
 
 /* ----------------------------------------
    Responsive Adjustments (max-width: 600px)
    ---------------------------------------- */
 @media (max-width: 600px) {
-  
   .speed-label {
     top: 12px;
     right: 8px;
@@ -243,12 +265,11 @@ body {
     top: 12px;
   }
   .top-center-ui .score-display {
-    font-size: 1rem;
-    padding: 10px 12px;
-    height: 40px;
+    font-size: 1.3rem;
+    padding: 8px 16px;
   }
   .bottom-right-ui {
-    top: 60px; /* slightly less if score box is smaller on mobile */
+    top: 60px;
   }
   .caught-btn {
     font-size: 12px;
@@ -265,60 +286,82 @@ body {
 }
 
 /* ----------------------------------------
-   HOME Overlaid Panel
+   HOME Overlaid Panel — Glassmorphism
    ---------------------------------------- */
 .home-overlay {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: rgba(255, 255, 255, 0.85);
-  padding: 24px 32px;
-  border-radius: 12px;
+  background: rgba(0, 10, 22, 0.88);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.65), 0 0 28px rgba(0, 212, 255, 0.05),
+              inset 0 1px 0 rgba(0, 212, 255, 0.10);
+  padding: 36px 48px;
+  border-radius: 20px;
   text-align: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  z-index: 100; /* float above fish + bubbles */
+  z-index: 100;
 }
 
 .home-overlay h1 {
-  margin: 0 0 16px;
-  font-size: 2.5rem;
-  color: #0e2f44; /* dark underwater hue */
+  margin: 0 0 6px;
+  font-size: 3rem;
+  letter-spacing: 0.02em;
+  background: linear-gradient(135deg, #00d4ff 0%, #00ffcc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 18px rgba(0, 212, 255, 0.55));
+}
+
+.home-subtitle {
+  color: rgba(0, 212, 255, 0.50);
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+  margin-top: 2px;
 }
 
 .home-buttons {
   display: flex;
-  gap: 16px;
+  gap: 14px;
   justify-content: center;
 }
 
 .home-buttons button {
-  padding: 10px 20px;
+  padding: 13px 28px;
   font-size: 1rem;
-  font-weight: bold;
-  background: #0e2f44;
-  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: linear-gradient(135deg, #00d4ff, #00ffcc);
+  color: #001a22;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.1s ease;
+  transition: filter 0.2s, transform 0.12s;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 4px 20px rgba(0, 212, 255, 0.35);
 }
 
 .home-buttons button:hover {
-  background: #174a69;
+  filter: brightness(1.12);
+  transform: translateY(-2px);
 }
 
 .home-buttons button:active {
   transform: scale(0.96);
+  filter: brightness(0.9);
 }
 
-/* Mobile tweak: smaller overlay on narrow screens */
+/* Mobile tweak */
 @media (max-width: 600px) {
   .home-overlay {
     width: 90%;
-    padding: 16px 20px;
+    padding: 20px 22px;
   }
   .home-overlay h1 {
     font-size: 2rem;
@@ -326,5 +369,8 @@ body {
   .home-buttons {
     flex-direction: column;
     gap: 12px;
+  }
+  .home-buttons button {
+    padding: 13px 20px;
   }
 }

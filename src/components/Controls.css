@@ -15,9 +15,11 @@
 .control-button {
   padding: 8px 14px;
   font-size: 16px;
-  background-color: rgba(255, 255, 255, 0.9);
-  border: 2px solid #ccc;
-  border-radius: 8px;
+  background: rgba(0, 10, 22, 0.80);
+  border: 1px solid rgba(0, 212, 255, 0.28);
+  border-radius: 7px;
+  color: #00d4ff;
+  font-weight: 600;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 
   -webkit-user-select: none;
@@ -29,20 +31,20 @@
   -webkit-tap-highlight-color: transparent;
 
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
 
-  /* New: ensure the label never wraps and button is wide enough */
   white-space: nowrap;
-  min-width: 120px; /* increase as needed */
+  min-width: 120px;
 }
 
 .control-button:hover {
-  background-color: rgba(255, 255, 255, 1);
+  background: rgba(0, 25, 55, 0.92);
+  border-color: rgba(0, 212, 255, 0.55);
   transform: translateY(-2px);
 }
 
 .control-button:active {
-  transform: translateY(0) scale(0.96);
+  transform: scale(0.95);
 }
 
 /* Prevent focus outline on mobile tap */
@@ -62,7 +64,6 @@
   }
   .control-button:hover,
   .control-button:active {
-    background-color: rgba(255, 255, 255, 0.9);
     transform: none;
   }
 }

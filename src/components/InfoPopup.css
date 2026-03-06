@@ -1,7 +1,7 @@
 /* src/components/InfoPopup.css */
 
 /* ----------------------------------------
-   OVERLAY (full‐screen, semi-transparent)
+   OVERLAY
    ---------------------------------------- */
 .info-popup-overlay {
   position: fixed;
@@ -9,7 +9,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 4, 12, 0.78);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -17,23 +17,27 @@
 }
 
 /* ----------------------------------------
-   CONTENT CONTAINER (flex column, bounded height)
+   CONTENT CONTAINER — glassmorphism
    ---------------------------------------- */
 .info-popup-content {
-  position: relative;   /* for the close “✕” */
-  background: #ffffff;
-  border-radius: 10px;
+  position: relative;
+  background: rgba(0, 8, 20, 0.90);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(0, 212, 255, 0.20);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(0, 212, 255, 0.06);
+  border-radius: 12px;
   width: 400px;
   max-width: 90%;
-  max-height: 90vh;     /* never exceed 90% of viewport */
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;     /* clip children that overflow */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  color: #c8e8f8;
 }
 
 /* ----------------------------------------
-   CLOSE BUTTON “✕”
+   CLOSE BUTTON "✕"
    ---------------------------------------- */
 .popup-close-x {
   position: absolute;
@@ -43,39 +47,53 @@
   border: none;
   font-size: 24px;
   line-height: 1;
-  color: #555;
+  color: #80d8ee;
   cursor: pointer;
   z-index: 110;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  padding: 8px; /* enlarge tappable area */
+  padding: 8px;
+  transition: color 0.15s ease;
 }
 
 .popup-close-x:hover {
-  color: #000;
+  color: #ffffff;
 }
 
 /* ----------------------------------------
-   HEADER (non‐scrollable)
+   HEADER
    ---------------------------------------- */
 .info-popup-content h2 {
   margin: 16px 0;
   font-size: 22px;
-  color: #333;
+  color: #00d4ff;
+  text-shadow: 0 0 12px rgba(0, 212, 255, 0.4);
   text-align: center;
-  flex-shrink: 0;  /* do not shrink or scroll */
+  flex-shrink: 0;
 }
 
 /* ----------------------------------------
-   BODY (scrollable area)
+   BODY (scrollable)
    ---------------------------------------- */
 .info-popup-body {
-  flex: 1 1 auto;       /* fill the remaining vertical space */
-  overflow-y: auto;     /* scroll if content is taller */
-  padding: 0 20px 20px; /* inner padding */
-  -webkit-overflow-scrolling: touch; /* enable smooth/scrolling on iOS */
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 0 20px 20px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Thin, subtle scrollbar */
+.info-popup-body::-webkit-scrollbar {
+  width: 4px;
+}
+.info-popup-body::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+}
+.info-popup-body::-webkit-scrollbar-thumb {
+  background: rgba(125, 212, 248, 0.28);
+  border-radius: 2px;
 }
 
 /* ----------------------------------------
@@ -88,9 +106,10 @@
 .info-section h3 {
   margin-bottom: 8px;
   font-size: 18px;
-  color: #333;
-  border-bottom: 1px solid #ddd;
-  padding-bottom: 4px;
+  color: #a0d8ef;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.20);
+  border-left: 3px solid rgba(0, 212, 255, 0.50);
+  padding: 2px 0 4px 8px;
 }
 
 .info-item {
@@ -109,20 +128,20 @@
 
 .info-text {
   font-size: 16px;
-  color: #444;
+  color: #b0d4ea;
 }
 
 .info-fish-name {
   font-weight: bold;
-  color: #1e3a5f;
+  color: #80d8ee;
   margin-right: 8px;
 }
 
 .info-notes {
   margin-top: 16px;
   font-size: 14px;
-  color: #555;
-  line-height: 1.4;
+  color: rgba(160, 220, 240, 0.75);
+  line-height: 1.5;
 }
 
 /* ----------------------------------------

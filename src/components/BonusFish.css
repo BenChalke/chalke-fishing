@@ -1,0 +1,57 @@
+/* src/components/BonusFish.css */
+
+.bonus-fish {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ── Per-type glow animations (applied to the SVG child) ── */
+
+@keyframes frenzy-glow {
+  0%, 100% { filter: drop-shadow(0 0 6px #FF4500) drop-shadow(0 0 12px #FF2200); }
+  50%       { filter: drop-shadow(0 0 20px #FF4500) drop-shadow(0 0 40px #FF2200) drop-shadow(0 0 8px #FFAA00); }
+}
+.bonus-fish-frenzy svg {
+  animation: frenzy-glow 0.7s ease-in-out infinite;
+}
+
+@keyframes timebonus-glow {
+  0%, 100% { filter: drop-shadow(0 0 6px #FFD700) drop-shadow(0 0 12px #FFA500); }
+  50%       { filter: drop-shadow(0 0 20px #FFD700) drop-shadow(0 0 40px #FFA500) drop-shadow(0 0 8px #FFFFFF); }
+}
+.bonus-fish-timebonus svg {
+  animation: timebonus-glow 0.8s ease-in-out infinite;
+}
+
+@keyframes multiplier-glow {
+  0%, 100% { filter: drop-shadow(0 0 6px #00CED1) drop-shadow(0 0 12px #009AA0); }
+  50%       { filter: drop-shadow(0 0 22px #00CED1) drop-shadow(0 0 44px #009AA0) drop-shadow(0 0 10px #AAFFFF); }
+}
+.bonus-fish-multiplier svg {
+  animation: multiplier-glow 0.8s ease-in-out infinite;
+}
+
+@keyframes slowmo-glow {
+  0%, 100% { filter: drop-shadow(0 0 6px #87CEEB) drop-shadow(0 0 12px #4A9BBF); }
+  50%       { filter: drop-shadow(0 0 20px #87CEEB) drop-shadow(0 0 40px #4A9BBF) drop-shadow(0 0 8px #CCF0FF); }
+}
+.bonus-fish-slowmo svg {
+  animation: slowmo-glow 0.9s ease-in-out infinite;
+}
+
+@keyframes bad-glow {
+  0%, 100% { filter: drop-shadow(0 0 8px #CC0000) drop-shadow(0 0 16px #880000); }
+  50%       { filter: drop-shadow(0 0 24px #FF0000) drop-shadow(0 0 48px #CC0000) drop-shadow(0 0 10px #FF4444); }
+}
+.bonus-fish-bad svg {
+  animation: bad-glow 0.5s ease-in-out infinite;
+}
+
+/* ── Expiring state: opacity flicker warning ── */
+@keyframes bonus-flicker {
+  0%, 100% { opacity: 1;   }
+  50%       { opacity: 0.2; }
+}
+.bonus-fish-expiring {
+  animation: bonus-flicker 0.3s ease-in-out infinite;
+}
