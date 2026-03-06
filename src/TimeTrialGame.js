@@ -109,27 +109,20 @@ function moveSingleFish(fish, speed, cursor, isMobile, slowmoEndTs, frenzyEndTs 
     const nx = x + Math.cos(at) * effSpeed;
     const ny = y + Math.sin(at) * effSpeed;
     const inside = nx >= 0 && nx + fishSize <= w && ny >= 0 && ny + fishHeight <= h;
-    return { ...fish, x: nx, y: ny, angle: at, justSpawned: !inside,
+    const entryAngle = inside ? at + (Math.random() - 0.5) * (Math.PI * 0.75) : at;
+    return { ...fish, x: nx, y: ny, angle: entryAngle, justSpawned: !inside,
              speedMult: inside ? (fish.postEntrySpeedMult ?? 1) : ENTRY_MULT };
   }
 
   // ── NORMAL ──
-  let dx  = Math.cos(angle) * effSpeed;
-  let dy  = Math.sin(angle) * effSpeed;
-  let ang = angle;
-
-  let nx = x + dx;
-  let ny = y + dy;
+  const nx = x + Math.cos(angle) * effSpeed;
+  const ny = y + Math.sin(angle) * effSpeed;
 
   if (nx + fishSize < 0 || nx > w || ny + fishHeight < 0 || ny > h) {
-    ang += Math.PI;
-    nx = x + Math.cos(ang) * speed;
-    ny = y + Math.sin(ang) * speed;
+    return { ...fish, x: nx, y: ny, remove: true };
   }
-  if (nx <= 0 || nx + fishSize >= w) { ang = Math.PI - ang; nx = x + Math.cos(ang) * speed; }
-  if (ny <= 0 || ny + fishHeight >= h) { ang = -ang; ny = y + Math.sin(ang) * speed; }
 
-  return { ...fish, x: nx, y: ny, angle: ang };
+  return { ...fish, x: nx, y: ny };
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -299,8 +292,12 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
         let result = prev.map((f) =>
           moveSingleFish(f, speedRef.current, cursorRef.current, mobile, slowmoEndRef.current, frenzyEndRef.current)
         );
-        // 2. Remove fish that swam off-screen
+        // 2. Count naturally-exited fish and remove all off-screen fish
+        const exitedCount = result.filter((f) => f.remove && !f.swimOff).length;
         result = result.filter((f) => !f.remove);
+        for (let i = 0; i < exitedCount; i++) {
+          result.push(createMaybeFastFish(nextId.current++));
+        }
 
         // 3. Frenzy cleanup: point excess fish to nearest edge and let them swim out
         if (doCleanup) {

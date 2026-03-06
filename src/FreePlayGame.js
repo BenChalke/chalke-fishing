@@ -102,7 +102,7 @@ export default function FreePlayGame({ onBackToHome }) {
         const w = window.innerWidth;
         const h = window.innerHeight;
         const fishHeight = FISH_SIZE * 0.5;
-        return prevFish.map((fish) => {
+        const moved = prevFish.map((fish) => {
           let {
             id,
             x,
@@ -138,7 +138,7 @@ export default function FreePlayGame({ onBackToHome }) {
                 id,
                 x: newX,
                 y: newY,
-                angle: angleToCenter,
+                angle: angleToCenter + (Math.random() - 0.5) * (Math.PI * 0.75),
                 colour,
                 pattern,
                 justSpawned: false,
@@ -159,50 +159,30 @@ export default function FreePlayGame({ onBackToHome }) {
           }
 
           // — Normal “swim around” behavior —
-          let dx = Math.cos(angle) * effSpeed;
-          let dy = Math.sin(angle) * effSpeed;
-          let newX = x + dx;
-          let newY = y + dy;
-          let newAngle = angle;
+          const newX = x + Math.cos(angle) * effSpeed;
+          const newY = y + Math.sin(angle) * effSpeed;
 
-          // If fully off any edge, flip 180°
-          if (
-            newX + FISH_SIZE < 0 ||
-            newX > w ||
-            newY + fishHeight < 0 ||
-            newY > h
-          ) {
-            newAngle = angle + Math.PI;
-            const bounceDx = Math.cos(newAngle) * speed;
-            const bounceDy = Math.sin(newAngle) * speed;
-            newX = x + bounceDx;
-            newY = y + bounceDy;
-          }
-
-          // Bounce horizontally if hitting left/right walls
-          if (newX <= 0 || newX + FISH_SIZE >= w) {
-            newAngle = Math.PI - newAngle;
-            const bounceDx = Math.cos(newAngle) * speed;
-            newX = x + bounceDx;
-          }
-          // Bounce vertically if hitting top/bottom walls
-          if (newY <= 0 || newY + fishHeight >= h) {
-            newAngle = -newAngle;
-            const bounceDy = Math.sin(newAngle) * speed;
-            newY = y + bounceDy;
+          if (newX + FISH_SIZE < 0 || newX > w || newY + fishHeight < 0 || newY > h) {
+            return { id, x: newX, y: newY, angle, colour, pattern, justSpawned: false, speedMult: 1, remove: true };
           }
 
           return {
             id,
             x: newX,
             y: newY,
-            angle: newAngle,
+            angle,
             colour,
             pattern,
             justSpawned: false,
             speedMult: 1,
           };
         });
+        const exited = moved.filter((f) => f.remove).length;
+        const result = moved.filter((f) => !f.remove);
+        for (let i = 0; i < exited; i++) {
+          result.push(createOffscreenFish(nextId.current++));
+        }
+        return result;
       });
     }, 30);
     return () => clearInterval(interval);
