@@ -44,8 +44,8 @@ async function handleGet(event) {
       Limit:                     10,
     }));
 
-    const scores = (result.Items ?? []).map(({ playerName, score, createdAt, records }) => ({
-      playerName, score, createdAt, records: records ?? [],
+    const scores = (result.Items ?? []).map(({ playerName, score, pointsScore, createdAt, records }) => ({
+      playerName, score, pointsScore: pointsScore ?? null, createdAt, records: records ?? {},
     }));
 
     return {
@@ -67,7 +67,7 @@ async function handlePost(event) {
     return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON' }) };
   }
 
-  const { playerName, score, sessionId, timestamp, signature, gameMode, records } = body;
+  const { playerName, score, sessionId, timestamp, signature, gameMode, records, pointsScore } = body;
 
   if (
     typeof score     !== 'number' ||
@@ -112,6 +112,7 @@ async function handlePost(event) {
         id:         sessionId,
         gsiPk,
         score,
+        ...(Number.isInteger(pointsScore) && pointsScore >= 0 ? { pointsScore } : {}),
         playerName: cleanName,
         createdAt:  new Date().toISOString(),
         records:    cleanRecords,

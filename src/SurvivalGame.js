@@ -15,8 +15,17 @@ import {
   ENTRY_MULT,
 } from './utils/fishUtils';
 
+import { leaderboardEnabled, submitScore } from './utils/leaderboard';
 import './SurvivalGame.css';
 import './components/StatsPopup.css';
+
+function generateUUID() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
 
 // ── Tuning ────────────────────────────────────────────────────────────────────
 const BASE_SPEED              = 3.5;
@@ -148,6 +157,13 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
   const [gameOverView, setGameOverView]       = useState('summary');
   const [menuVisible, setMenuVisible]         = useState(false);
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
+
+  // ── Leaderboard submit ──
+  const [playerName, setPlayerName]         = useState('');
+  const [submitting, setSubmitting]         = useState(false);
+  const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const [submitError, setSubmitError]       = useState('');
+  const sessionToken                        = useRef(generateUUID());
 
   // ── Power-ups ──
   const [bonusFish, setBonusFish]           = useState([]);
@@ -569,6 +585,28 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
   const handleCatchAnimationEnd = (animId) =>
     setCatchAnimations((prev) => prev.filter((a) => a.id !== animId));
 
+  // ── Submit to global leaderboard ──
+  const handleSubmitScore = async () => {
+    if (submitting || scoreSubmitted) return;
+    setSubmitting(true);
+    setSubmitError('');
+    try {
+      await submitScore({
+        playerName,
+        score: timeSurvived,   // ranking metric: seconds survived
+        sessionId: sessionToken.current,
+        gameMode: 'survival',
+        records: caughtRecords,
+        pointsScore: score,    // fish points, for display
+      });
+      setScoreSubmitted(true);
+    } catch (err) {
+      setSubmitError(err.message ?? 'Submission failed');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   // ── Game over: save high score ──
   useEffect(() => {
     if (phase !== 'gameover') return;
@@ -641,6 +679,26 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
                     <span className="survival-stat-label">POINTS</span>
                   </div>
                 </div>
+                {menuVisible && leaderboardEnabled && (
+                  <div className="gameover-submit">
+                    <input
+                      className="gameover-name-input"
+                      placeholder="Your name"
+                      maxLength={20}
+                      value={playerName}
+                      onChange={(e) => setPlayerName(e.target.value)}
+                      disabled={scoreSubmitted}
+                    />
+                    <button
+                      className="gameover-action-btn gameover-action-primary"
+                      onClick={handleSubmitScore}
+                      disabled={scoreSubmitted || submitting}
+                    >
+                      {submitting ? 'Submitting…' : scoreSubmitted ? '✓ Submitted!' : 'Submit Score'}
+                    </button>
+                    {submitError && <p className="gameover-submit-error">{submitError}</p>}
+                  </div>
+                )}
                 {menuVisible && (
                   <div className="gameover-actions">
                     <button className="gameover-action-btn" onClick={() => setGameOverView('catches')}>

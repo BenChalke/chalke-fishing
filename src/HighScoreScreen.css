@@ -86,6 +86,31 @@
   max-height: calc(100vh - 180px);
 }
 
+/* Secondary tab bar (Local / Global) — sits below the primary game-mode bar */
+.hs-tab-bar-secondary {
+  top: 108px;
+}
+
+/* When both tab bars are present, push container further down */
+.hs-tab-bar-secondary ~ .stats-container,
+.hs-tab-bar ~ .hs-tab-bar-secondary ~ .stats-container {
+  top: 155px;
+  max-height: calc(100vh - 225px);
+}
+
+/* Smaller tab variant used in secondary bar */
+.hs-tab-sm {
+  padding: 5px 20px;
+  font-size: 0.8rem;
+}
+
+/* Sub-score label (e.g. fish points under survival time) */
+.hs-sub-pts {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: rgba(0, 212, 255, 0.6);
+}
+
 /* ----------------------------------------
    GLOBAL LEADERBOARD LIST
    ---------------------------------------- */

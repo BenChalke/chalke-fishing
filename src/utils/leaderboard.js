@@ -16,14 +16,15 @@ async function hmacSign(message) {
   return Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-export async function submitScore({ playerName, score, sessionId, gameMode, records = [] }) {
+export async function submitScore({ playerName, score, sessionId, gameMode, records = {}, pointsScore }) {
   const timestamp = Date.now();
   const signature = await hmacSign(`${sessionId}:${score}:${timestamp}`);
 
   const res = await fetch(`${API_URL}/scores`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ playerName, score, sessionId, timestamp, signature, gameMode, records }),
+    body: JSON.stringify({ playerName, score, sessionId, timestamp, signature, gameMode, records,
+      ...(pointsScore != null ? { pointsScore } : {}) }),
   });
 
   if (!res.ok) {
