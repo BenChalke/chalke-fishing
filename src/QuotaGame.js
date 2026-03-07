@@ -236,7 +236,8 @@ export default function QuotaGame({ onBackToHome, onPlayAgain, onGoHighScore }) 
     if (seeds.length > 0) setFishArray((prev) => [...prev, ...seeds]);
   };
 
-  const dismissLevelCard = () => {
+  const dismissLevelCard = (e) => {
+    e.stopPropagation();
     setShowLevelCard(false);
     pausedRef.current = false;
     injectGuaranteedFish(levelRef.current);

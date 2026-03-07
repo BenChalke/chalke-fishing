@@ -121,8 +121,11 @@ export default function TargetScoreGame({ onBackToHome, onPlayAgain, onGoHighSco
   const [timeLeft, setTimeLeft]         = useState(getLevelTime(1));
   const [score, setScore]               = useState(0);         // total accumulated score
   const [levelStartScore, setLevelStartScore] = useState(0);  // score at start of current level
-  const [levelUpFlash, setLevelUpFlash] = useState(false);
-  const [fishArray, setFishArray]       = useState([]);
+  const [levelUpFlash, setLevelUpFlash]           = useState(false);
+  const [showLevelCard, setShowLevelCard]           = useState(false);
+  const [showLevelComplete, setShowLevelComplete]   = useState(false);
+  const [completedLevel, setCompletedLevel]         = useState(null);
+  const [fishArray, setFishArray]                   = useState([]);
   const [speed, setSpeed]               = useState(getLevelSpeed(1));
   const [cursorPos, setCursorPos]       = useState({ x: -1000, y: -1000 });
   const [isJerking, setIsJerking]       = useState(false);
@@ -164,9 +167,10 @@ export default function TargetScoreGame({ onBackToHome, onPlayAgain, onGoHighSco
   const badFishTimerRef     = useRef(null);
   const fishRespawnTimerRef = useRef(null);
   const comboRef            = useRef(0);
-  const scoreRef            = useRef(0);        // mirrors total score state
+  const scoreRef            = useRef(0);
   const levelRef            = useRef(1);
   const levelStartScoreRef  = useRef(0);
+  const pausedRef           = useRef(true);
 
   useEffect(() => { speedRef.current = speed; }, [speed]);
 
@@ -200,7 +204,7 @@ export default function TargetScoreGame({ onBackToHome, onPlayAgain, onGoHighSco
     setIsJerking(true);
     setTimeout(() => setIsJerking(false), 300);
     const inFrenzy = frenzyEndRef.current > 0 && Date.now() < frenzyEndRef.current;
-    if (phase === 'running' && comboRef.current > 0 && !inFrenzy) {
+    if (phase === 'running' && !pausedRef.current && comboRef.current > 0 && !inFrenzy) {
       comboRef.current = 0;
       setComboCount(0);
       const id = nextNotif.current++;
@@ -229,7 +233,8 @@ export default function TargetScoreGame({ onBackToHome, onPlayAgain, onGoHighSco
   };
 
   const triggerLevelUp = (newTotalScore) => {
-    const newLevel = levelRef.current + 1;
+    const finishedLevel = levelRef.current;
+    const newLevel = finishedLevel + 1;
     levelRef.current = newLevel;
     levelStartScoreRef.current = newTotalScore;
     setLevel(newLevel);
@@ -240,9 +245,26 @@ export default function TargetScoreGame({ onBackToHome, onPlayAgain, onGoHighSco
     setTimeLeft(getLevelTime(newLevel));
     setLevelUpFlash(true);
     setTimeout(() => setLevelUpFlash(false), 800);
-    const id = nextNotif.current++;
-    setPowerUpNotifs((prev) => [...prev, { id, type: 'levelup', label: `LEVEL ${newLevel}!`, x: window.innerWidth / 2, y: window.innerHeight / 3 }]);
-    setTimeout(() => setPowerUpNotifs((prev) => prev.filter((n) => n.id !== id)), 2000);
+    pausedRef.current = true;
+    setCompletedLevel(finishedLevel);
+    setShowLevelComplete(true);
+    setTimeout(() => {
+      setShowLevelComplete(false);
+      setShowLevelCard(true);
+    }, 2000);
+  };
+
+  // Show level card when game first starts
+  useEffect(() => {
+    if (phase !== 'running') return;
+    pausedRef.current = true;
+    setShowLevelCard(true);
+  }, [phase]); // eslint-disable-line
+
+  const dismissLevelCard = (e) => {
+    e.stopPropagation();
+    setShowLevelCard(false);
+    pausedRef.current = false;
   };
 
   useEffect(() => {
@@ -340,6 +362,7 @@ export default function TargetScoreGame({ onBackToHome, onPlayAgain, onGoHighSco
         slowmo:     Math.max(0, Math.round((slowmoEndRef.current    - now) / 1000)),
       });
       setTimeLeft((t) => {
+        if (pausedRef.current) return t;
         if (t <= 1) {
           clearInterval(fishInterval);
           clearInterval(timeInterval);
@@ -668,6 +691,36 @@ export default function TargetScoreGame({ onBackToHome, onPlayAgain, onGoHighSco
 
       {levelUpFlash && <div className="ts-levelup-flash" />}
 
+      {showLevelComplete && completedLevel && (
+        <div className="quota-level-complete">
+          <div className="quota-level-complete-inner">
+            <div className="quota-level-complete-check">✓</div>
+            <div className="quota-level-complete-title">Level {completedLevel} Complete!</div>
+            <p className="quota-level-complete-sub">Get ready for Level {completedLevel + 1}…</p>
+          </div>
+        </div>
+      )}
+
+      {showLevelCard && (
+        <div className="quota-level-card" onPointerDown={dismissLevelCard}>
+          <div className="quota-level-card-inner">
+            <div className="quota-level-card-title">Level {level}</div>
+            <p className="quota-level-card-subtitle">Target to reach</p>
+            <ul className="quota-level-card-list">
+              <li className="quota-card-row">
+                <span className="quota-card-icon">🎯</span>
+                <span>{getLevelTarget(level).toLocaleString()} points</span>
+              </li>
+              <li className="quota-card-row">
+                <span className="quota-card-icon">⏱</span>
+                <span>{getLevelTime(level)}s on the clock</span>
+              </li>
+            </ul>
+            <p className="quota-level-card-tap">Tap to start</p>
+          </div>
+        </div>
+      )}
+
       {effectsDisplay.frenzy     > 0 && <div className="powerup-vignette powerup-vignette-frenzy" />}
       {effectsDisplay.multiplier > 0 && <div className="powerup-vignette powerup-vignette-multiplier" />}
       {effectsDisplay.slowmo     > 0 && <div className="powerup-vignette powerup-vignette-slowmo" />}
@@ -708,6 +761,7 @@ export default function TargetScoreGame({ onBackToHome, onPlayAgain, onGoHighSco
           onClick={(e) => handleBonusFishClick(bf.id, e)}
           isMobile={isMobile}
           isExpiring={Date.now() - bf.spawnedAt > BONUS_FISH_LIFESPAN - 2000}
+          labelText={bf.type === 'timebonus' ? `+${TIME_BONUS_SECS}s` : undefined}
         />
       ))}
 

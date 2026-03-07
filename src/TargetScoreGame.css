@@ -110,6 +110,148 @@
   to   { color: rgba(255, 85, 85, 0.45); }
 }
 
+/* ── Level complete screen ── */
+.quota-level-complete {
+  position: fixed;
+  inset: 0;
+  z-index: 210;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 5, 15, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  pointer-events: all;
+  animation: quota-card-in 0.3s ease-out;
+}
+
+.quota-level-complete-inner {
+  background: rgba(0, 15, 30, 0.92);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  border-radius: 16px;
+  padding: 32px 40px;
+  max-width: 320px;
+  width: 85vw;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7), 0 0 40px rgba(34, 197, 94, 0.1);
+  text-align: center;
+}
+
+.quota-level-complete-check {
+  font-size: 3rem;
+  color: #22c55e;
+  text-shadow: 0 0 30px rgba(34, 197, 94, 0.8);
+  margin-bottom: 8px;
+  animation: quota-complete-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes quota-complete-pop {
+  from { transform: scale(0.3); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+.quota-level-complete-title {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #22c55e;
+  text-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
+  margin-bottom: 8px;
+}
+
+.quota-level-complete-sub {
+  font-size: 0.85rem;
+  color: rgba(180, 210, 230, 0.6);
+  margin: 0;
+  letter-spacing: 0.06em;
+}
+
+/* ── Level intro card ── */
+.quota-level-card {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 5, 15, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: quota-card-in 0.3s ease-out;
+  cursor: pointer;
+}
+
+@keyframes quota-card-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.quota-level-card-inner {
+  background: rgba(0, 10, 25, 0.92);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 16px;
+  padding: 28px 32px;
+  max-width: 340px;
+  width: 90vw;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7), 0 0 30px rgba(0, 212, 255, 0.08);
+  text-align: center;
+}
+
+.quota-level-card-title {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #00d4ff;
+  text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+  margin-bottom: 4px;
+}
+
+.quota-level-card-subtitle {
+  font-size: 0.82rem;
+  color: rgba(180, 210, 230, 0.7);
+  margin: 0 0 16px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.quota-level-card-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+
+.quota-card-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(200, 230, 240, 0.9);
+  background: rgba(0, 212, 255, 0.06);
+  border: 1px solid rgba(0, 212, 255, 0.15);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.quota-card-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.quota-level-card-tap {
+  font-size: 0.75rem;
+  color: rgba(180, 210, 230, 0.4);
+  margin: 0;
+  letter-spacing: 0.08em;
+  animation: quota-tap-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes quota-tap-pulse {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 0.9; }
+}
+
 /* ── Level-up flash ── */
 .ts-levelup-flash {
   position: fixed;
