@@ -89,6 +89,16 @@ export default function InstructionsScreen({ onBackToHome }) {
                 <span className="instr-icon">🏆</span>
                 <p>Your best score is saved locally and to the global leaderboard if you submit your name after the game.</p>
               </div>
+              <hr className="instr-divider" />
+              <p className="instr-subheading">Combo Chain</p>
+              <div className="instr-row">
+                <span className="instr-icon">🔥</span>
+                <p>Catch fish consecutively to build a <strong>combo multiplier</strong> — x2 at 3 catches, x3 at 5, x4 at 8, x5 at 12.</p>
+              </div>
+              <div className="instr-row">
+                <span className="instr-icon">✗</span>
+                <p>Clicking <strong>empty water</strong> resets your combo — but misses during Frenzy don't count against you.</p>
+              </div>
             </div>
           )}
 

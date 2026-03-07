@@ -12,43 +12,61 @@ export default function App() {
   const [mode, setMode] = useState("home");
   const [ttKey, setTtKey] = useState(0);
   const [survivalKey, setSurvivalKey] = useState(0);
+  const [showModes, setShowModes] = useState(false);
 
-  const goHome = () => setMode("home");
+  const goHome = () => { setMode("home"); setShowModes(false); };
   const goFree = () => setMode("free");
   const goTimeTrial = () => setMode("timeTrial");
   const goSurvival = () => setMode("survival");
   const goHighScore = () => setMode("highScore");
   const goInstructions = () => setMode("instructions");
 
-  // Otherwise, render the rest of the app
   if (mode === "home") {
     return (
       <div className="container">
-        {/* Environment overlays */}
         <div className="light-rays" />
         <div className="water-surface" />
-        {/* <div className="seabed" /> */}
-
-        {/* 1) Show 15 decorative fish + bubbles "behind" */}
         <FishField count={15} isInteractive={false} isMobile={false} />
 
-        {/* 2) Semi-transparent overlay panel */}
         <div className="home-overlay">
           <h1>Chalke Fishing</h1>
           <p className="home-subtitle">Cast your line. Catch them all.</p>
-          <div className="home-buttons">
-            <div className="home-primary-block">
-              <button className="home-btn-primary" onClick={goTimeTrial}>⏱ Time Trial</button>
-              <p className="home-btn-desc">60 seconds — how many can you catch?</p>
+
+          {!showModes ? (
+            /* ── LANDING STATE ── */
+            <div className="home-landing">
+              <button className="home-btn-play" onClick={() => setShowModes(true)}>
+                ▶ Play
+              </button>
+              <div className="home-util-row">
+                <button className="home-util-btn" onClick={goHighScore}>🏆 High Scores</button>
+                <button className="home-util-btn" onClick={goInstructions}>? How to Play</button>
+              </div>
             </div>
-            <div className="home-secondary-row">
-              <button className="home-btn-secondary" onClick={goSurvival}>☠ Survival</button>
-              <button className="home-btn-secondary" onClick={goFree}>🎣 Free Fishing</button>
-              <button className="home-btn-secondary" onClick={goHighScore}>🏆 High Scores</button>
+          ) : (
+            /* ── MODE SELECTION STATE ── */
+            <div className="home-modes">
+              <p className="home-modes-label">Choose a mode</p>
+              <div className="home-mode-cards">
+                <button className="home-mode-card home-mode-card-primary" onClick={goTimeTrial}>
+                  <span className="home-mode-icon">⏱</span>
+                  <span className="home-mode-name">Time Trial</span>
+                  <span className="home-mode-desc">60 seconds — catch as many as you can</span>
+                </button>
+                <button className="home-mode-card" onClick={goSurvival}>
+                  <span className="home-mode-icon">☠</span>
+                  <span className="home-mode-name">Survival</span>
+                  <span className="home-mode-desc">Don't click the skull fish. How long can you last?</span>
+                </button>
+                <button className="home-mode-card home-mode-card-casual" onClick={goFree}>
+                  <span className="home-mode-icon">🎣</span>
+                  <span className="home-mode-name">Free Fishing</span>
+                  <span className="home-mode-desc">No timer, no pressure. Just explore.</span>
+                </button>
+              </div>
+              <button className="home-back-link" onClick={() => setShowModes(false)}>← Back</button>
             </div>
-            <p className="home-free-desc">Free Fishing is just for fun — no timer, no pressure</p>
-            <button className="home-how-to-play" onClick={goInstructions}>? How to Play</button>
-          </div>
+          )}
         </div>
       </div>
     );

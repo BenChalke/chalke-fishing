@@ -234,6 +234,8 @@ body {
   font-size: 1rem;
   font-weight: 600;
   padding: 6px 12px;
+  min-height: 44px;
+  min-width: 60px;
   border-radius: 8px;
   cursor: pointer;
   z-index: 50;
@@ -325,132 +327,168 @@ body {
   margin-top: 2px;
 }
 
-.home-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  align-items: center;
-}
-
-/* Primary block: Time Trial */
-.home-primary-block {
+/* ── Landing state ── */
+.home-landing {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  width: 100%;
+  gap: 16px;
 }
 
-.home-btn-primary {
-  width: 100%;
-  padding: 16px 28px;
-  font-size: 1.15rem;
+.home-btn-play {
+  padding: 18px 56px;
+  font-size: 1.4rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   background: linear-gradient(135deg, #00d4ff, #00ffcc);
   color: #001a22;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
   transition: filter 0.2s, transform 0.12s;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  box-shadow: 0 4px 22px rgba(0, 212, 255, 0.45);
+  box-shadow: 0 6px 28px rgba(0, 212, 255, 0.45);
 }
 
-.home-btn-primary:hover {
-  filter: brightness(1.12);
-  transform: translateY(-2px);
-}
+.home-btn-play:hover  { filter: brightness(1.12); transform: translateY(-2px); }
+.home-btn-play:active { transform: scale(0.96); filter: brightness(0.9); }
 
-.home-btn-primary:active {
-  transform: scale(0.96);
-  filter: brightness(0.9);
-}
-
-.home-btn-desc {
-  margin: 0;
-  font-size: 0.78rem;
-  color: rgba(0, 212, 255, 0.55);
-  letter-spacing: 0.05em;
-}
-
-/* Secondary row: Free Fishing + High Scores */
-.home-secondary-row {
+.home-util-row {
   display: flex;
   gap: 10px;
-  width: 100%;
 }
 
-.home-btn-secondary {
-  flex: 1;
-  padding: 10px 14px;
-  font-size: 0.88rem;
+.home-util-btn {
+  padding: 8px 16px;
+  font-size: 0.84rem;
   font-weight: 600;
-  letter-spacing: 0.03em;
   background: rgba(0, 212, 255, 0.08);
-  color: rgba(0, 212, 255, 0.85);
-  border: 1px solid rgba(0, 212, 255, 0.28);
+  color: rgba(0, 212, 255, 0.75);
+  border: 1px solid rgba(0, 212, 255, 0.25);
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.2s, border-color 0.2s, transform 0.12s;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.home-btn-secondary:hover {
-  background: rgba(0, 212, 255, 0.16);
-  border-color: rgba(0, 212, 255, 0.50);
-  transform: translateY(-1px);
-}
-
-.home-btn-secondary:active {
-  transform: scale(0.96);
-}
-
-.home-free-desc {
-  margin: 0;
-  font-size: 0.72rem;
-  color: rgba(0, 212, 255, 0.35);
-  letter-spacing: 0.04em;
-}
-
-.home-how-to-play {
-  margin-top: 6px;
-  background: rgba(0, 212, 255, 0.08);
-  border: 1px solid rgba(0, 212, 255, 0.28);
-  color: rgba(0, 212, 255, 0.80);
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 7px 18px;
-  border-radius: 8px;
   transition: background 0.2s, border-color 0.2s, color 0.2s;
-  -webkit-tap-highlight-color: transparent;
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.home-how-to-play:hover {
+.home-util-btn:hover {
   background: rgba(0, 212, 255, 0.16);
-  border-color: rgba(0, 212, 255, 0.50);
+  border-color: rgba(0, 212, 255, 0.48);
   color: #00d4ff;
 }
 
-/* Mobile tweak */
+/* ── Mode selection state ── */
+.home-modes {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.home-modes-label {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(0, 212, 255, 0.40);
+}
+
+.home-mode-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.home-mode-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(0, 212, 255, 0.06);
+  border: 1px solid rgba(0, 212, 255, 0.20);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.18s, border-color 0.18s, transform 0.12s;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.home-mode-card:hover {
+  background: rgba(0, 212, 255, 0.13);
+  border-color: rgba(0, 212, 255, 0.42);
+  transform: translateY(-1px);
+}
+
+.home-mode-card:active { transform: scale(0.97); }
+
+.home-mode-card-primary {
+  background: rgba(0, 212, 255, 0.12);
+  border-color: rgba(0, 212, 255, 0.38);
+  box-shadow: 0 4px 18px rgba(0, 212, 255, 0.12);
+}
+
+.home-mode-card-casual {
+  border-color: rgba(0, 212, 255, 0.14);
+  opacity: 0.85;
+}
+
+.home-mode-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  width: 28px;
+  text-align: center;
+}
+
+.home-mode-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  flex-shrink: 0;
+  min-width: 90px;
+}
+
+.home-mode-desc {
+  font-size: 0.78rem;
+  color: rgba(0, 212, 255, 0.50);
+  line-height: 1.3;
+}
+
+.home-back-link {
+  background: rgba(0, 212, 255, 0.06);
+  border: 1px solid rgba(0, 212, 255, 0.20);
+  border-radius: 8px;
+  color: rgba(0, 212, 255, 0.65);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 10px 20px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.home-back-link:hover {
+  background: rgba(0, 212, 255, 0.12);
+  border-color: rgba(0, 212, 255, 0.40);
+  color: #00d4ff;
+}
+
+/* Mobile */
 @media (max-width: 600px) {
   .home-overlay {
-    width: 90%;
-    padding: 20px 22px;
+    width: 92%;
+    padding: 22px 18px;
   }
-  .home-overlay h1 {
-    font-size: 2rem;
-  }
-  .home-btn-primary {
-    font-size: 1rem;
-    padding: 14px 20px;
-  }
-  .home-btn-secondary {
-    font-size: 0.82rem;
-    padding: 9px 10px;
-  }
+  .home-overlay h1 { font-size: 2rem; }
+  .home-btn-play { font-size: 1.2rem; padding: 15px 44px; }
+  .home-mode-name { min-width: 80px; }
+  .home-mode-desc { font-size: 0.73rem; }
 }

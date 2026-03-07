@@ -57,6 +57,19 @@ const BAD_FISH_TURN_MIN     = 1500; // ms min between random direction changes
 const BAD_FISH_TURN_MAX     = 3000; // ms max between random direction changes
 const FISH_SCATTER_SPEED    = 12;  // speedMult for scattered fish (gets off screen fast)
 
+const COMBO_THRESHOLDS = [
+  { min: 12, mult: 5 },
+  { min: 8,  mult: 4 },
+  { min: 5,  mult: 3 },
+  { min: 3,  mult: 2 },
+];
+function getComboMult(combo) {
+  for (const { min, mult } of COMBO_THRESHOLDS) {
+    if (combo >= min) return mult;
+  }
+  return 1;
+}
+
 // ── Pure helpers (no React, no closures) ─────────────────────────────────────
 
 /** Angle (radians) pointing from (x,y) toward the nearest screen edge. */
@@ -144,6 +157,8 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
   const [isMobile, setIsMobile]           = useState(false);
   const [scoreNotifs, setScoreNotifs]     = useState([]);
 
+  const [comboCount, setComboCount]           = useState(0);
+
   // ── Game over view ──
   const [gameOverView, setGameOverView] = useState('summary'); // 'summary' | 'catches'
   const [menuVisible, setMenuVisible]     = useState(false);
@@ -182,6 +197,7 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
   const fishRespawnTimerRef = useRef(null);
   const rafRef              = useRef(null);
   const lastTickRef         = useRef(0);
+  const comboRef            = useRef(0);
 
   // Keep speedRef in sync
   useEffect(() => { speedRef.current = speed; }, [speed]);
@@ -224,6 +240,19 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
     setCursorPos({ x: clientX, y: clientY });
     setIsJerking(true);
     setTimeout(() => setIsJerking(false), 300);
+
+    // Empty water click — reset combo (not during frenzy)
+    const inFrenzy = frenzyEndRef.current > 0 && Date.now() < frenzyEndRef.current;
+    if (phase === 'running' && comboRef.current > 0 && !inFrenzy) {
+      comboRef.current = 0;
+      setComboCount(0);
+      const id = nextNotif.current++;
+      setPowerUpNotifs((prev) => [...prev, {
+        id, type: 'combo-reset', label: 'MISS!',
+        x: clientX, y: clientY,
+      }]);
+      setTimeout(() => setPowerUpNotifs((prev) => prev.filter((n) => n.id !== id)), 900);
+    }
   };
 
   // ── Countdown ──
@@ -389,6 +418,7 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
           clearTimeout(fishRespawnTimerRef.current);
           badFishRef.current = [];
           setBadFish([]);
+          comboRef.current = 0;
           setPhase('gameover');
           return 0;
         }
@@ -515,10 +545,15 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
     if (!fishObj) return;
     const { colour, pattern } = fishObj;
 
+    const newCombo = comboRef.current + 1;
+    comboRef.current = newCombo;
+    setComboCount(newCombo);
+
     let points = 10;
     if (SUPER_COLOURS.includes(colour))     points = 200;
     else if (RARE_COLOURS.includes(colour)) points = 50;
     if (fishObj.speedFish) points = Math.floor(points * 3);
+    points = Math.round(points * getComboMult(newCombo));
     if (Date.now() < multiplierEndRef.current) points *= 2;
 
     setScore((prev) => prev + points);
@@ -796,7 +831,18 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
       </div>
 
       {/* Power-up HUD */}
+      {comboCount >= 3 && (
+        <div className={`combo-bg-watermark combo-bg-x${getComboMult(comboCount)}`}>
+          x{getComboMult(comboCount)}
+        </div>
+      )}
+
       <div className="power-up-hud">
+        {comboCount >= 3 && (
+          <div className={`pup-pill pup-combo pup-combo-x${getComboMult(comboCount)}`}>
+            🔥 x{getComboMult(comboCount)} ({comboCount})
+          </div>
+        )}
         {effectsDisplay.frenzy     > 0 && <div className="pup-pill pup-frenzy">💥 FRENZY {effectsDisplay.frenzy}s</div>}
         {effectsDisplay.multiplier > 0 && <div className="pup-pill pup-multiplier">⚡ x2 {effectsDisplay.multiplier}s</div>}
         {effectsDisplay.slowmo     > 0 && <div className="pup-pill pup-slowmo">❄ SLOW {effectsDisplay.slowmo}s</div>}

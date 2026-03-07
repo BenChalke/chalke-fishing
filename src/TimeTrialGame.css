@@ -33,13 +33,15 @@
   justify-content: center;
 }
 .quit-confirm-btn {
-  padding: 10px 24px;
+  padding: 12px 24px;
+  min-height: 44px;
   border-radius: 8px;
   border: none;
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
   transition: opacity 0.15s;
+  -webkit-tap-highlight-color: transparent;
 }
 .quit-confirm-btn:hover { opacity: 0.85; }
 .quit-confirm-yes {
@@ -167,11 +169,13 @@
 }
 .gameover-action-btn {
   padding: 12px 20px;
+  min-height: 48px;
   font-size: 1rem;
   font-weight: 700;
   border-radius: 8px;
   cursor: pointer;
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
   transition: filter 0.2s, transform 0.12s;
   background: rgba(0, 10, 22, 0.80);
   border: 1px solid rgba(0, 212, 255, 0.32);
@@ -232,29 +236,43 @@
 
 .gameover-home-link {
   margin-top: 14px;
-  background: none;
-  border: none;
-  color: rgba(0, 212, 255, 0.45);
-  font-size: 0.85rem;
+  background: rgba(0, 212, 255, 0.05);
+  border: 1px solid rgba(0, 212, 255, 0.18);
+  border-radius: 8px;
+  color: rgba(0, 212, 255, 0.60);
+  font-size: 0.88rem;
+  font-weight: 600;
   cursor: pointer;
-  text-decoration: underline;
-  padding: 4px;
+  padding: 10px 20px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  -webkit-tap-highlight-color: transparent;
 }
 .gameover-home-link:hover {
-  color: rgba(0, 212, 255, 0.75);
+  background: rgba(0, 212, 255, 0.12);
+  border-color: rgba(0, 212, 255, 0.40);
+  color: #00d4ff;
 }
 .gameover-back-btn {
   align-self: flex-start;
-  background: transparent;
+  background: rgba(0, 212, 255, 0.06);
   border: 1px solid rgba(0, 212, 255, 0.25);
   color: #80d8ee;
-  border-radius: 6px;
-  padding: 6px 12px;
+  border-radius: 8px;
+  padding: 10px 16px;
+  min-height: 44px;
   font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
   margin-bottom: 10px;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
 }
 .gameover-back-btn:hover {
+  background: rgba(0, 212, 255, 0.12);
   color: #ffffff;
   border-color: rgba(0, 212, 255, 0.50);
 }
@@ -486,6 +504,41 @@
 .pup-notif-multiplier { color: #00CED1; }
 .pup-notif-slowmo     { color: #87CEEB; }
 .pup-notif-bad        { color: #FF4444; }
+
+/* ----------------------------------------
+   COMBO CHAIN
+   ---------------------------------------- */
+.combo-bg-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 22rem;
+  font-weight: 900;
+  pointer-events: none;
+  user-select: none;
+  z-index: 2;
+  line-height: 1;
+  color: rgba(255, 140, 0, 0.06);
+  transition: color 0.4s;
+}
+.combo-bg-x3 { color: rgba(255, 85,  0,   0.07); }
+.combo-bg-x4 { color: rgba(255, 30,  0,   0.07); }
+.combo-bg-x5 { color: rgba(220, 0,   200, 0.07); }
+
+.pup-combo {
+  border-color: #ff8c00;
+  color: #ffcc66;
+  text-shadow: 0 0 8px #ff8c00;
+}
+.pup-combo-x3 { border-color: #ff5500; color: #ffaa44; text-shadow: 0 0 10px #ff5500; }
+.pup-combo-x4 { border-color: #ff2200; color: #ff8866; text-shadow: 0 0 12px #ff2200; }
+.pup-combo-x5 { border-color: #ff00cc; color: #ff88ee; text-shadow: 0 0 14px #ff00cc; }
+
+.pup-notif-combo-reset {
+  color: rgba(255, 255, 255, 0.70);
+  font-size: 1.2rem !important;
+}
 
 /* ----------------------------------------
    MOBILE ADJUSTMENTS (≤600px)
