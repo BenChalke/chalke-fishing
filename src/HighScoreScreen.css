@@ -184,6 +184,24 @@
   .stats-container {
     padding: 0 10px;
     max-height: calc(100vh - 150px);
-    /* “-webkit-overflow-scrolling: touch” is already inherited above */
+  }
+
+  /* Prevent game-mode tabs overflowing on narrow screens */
+  .hs-tab-bar {
+    max-width: 94vw;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .hs-tab {
+    padding: 7px 14px;
+    font-size: 0.78rem;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .hs-tab-sm {
+    padding: 5px 12px;
+    font-size: 0.75rem;
   }
 }

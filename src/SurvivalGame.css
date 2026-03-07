@@ -19,40 +19,112 @@
 }
 
 /* ----------------------------------------
-   Timer — same pill as time-left-display
+   Survival top HUD bar
    ---------------------------------------- */
-.survival-timer {
-  color: #ffffff;
+.survival-top-hud {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(10, 0, 0, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 60, 60, 0.25);
 }
 
-/* ----------------------------------------
-   Bad fish skull counter (top-left area)
-   ---------------------------------------- */
-.survival-bad-count {
-  position: absolute;
-  top: 80px;
-  right: 12px;
-  background: rgba(140, 0, 0, 0.55);
-  border: 1px solid rgba(255, 60, 60, 0.40);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  padding: 6px 14px;
-  border-radius: 10px;
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: #ff8888;
-  z-index: 50;
-  pointer-events: none;
-  text-shadow: 0 0 8px rgba(255, 60, 60, 0.6);
+/* Push score display below the survival HUD */
+.survival-top-hud ~ .top-center-ui {
+  top: 52px;
 }
-
 @media (max-width: 600px) {
-  .survival-bad-count {
-    top: 64px;
-    right: 8px;
-    font-size: 0.95rem;
-    padding: 4px 10px;
+  .survival-top-hud ~ .top-center-ui {
+    top: 46px;
   }
+}
+
+.sq-quit-btn {
+  background: rgba(10, 0, 0, 0.6);
+  border: 1px solid rgba(255, 60, 60, 0.35);
+  color: rgba(255, 120, 120, 0.85);
+  padding: 4px 10px;
+  border-radius: 7px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 30px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.sq-time {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #ffaaaa;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 44px;
+  text-align: center;
+}
+
+.sq-bar {
+  flex: 1;
+  position: relative;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 60, 60, 0.3);
+  border-radius: 9px;
+  overflow: hidden;
+}
+
+.sq-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, rgba(0, 212, 255, 0.85), rgba(0, 180, 220, 0.65));
+  border-radius: 9px;
+  transition: width 0.95s linear, background 0.3s;
+}
+
+.sq-fill.sq-warning {
+  background: linear-gradient(90deg, rgba(255, 160, 0, 0.9), rgba(255, 140, 0, 0.7));
+}
+
+.sq-fill.sq-urgent {
+  background: linear-gradient(90deg, rgba(255, 40, 40, 0.95), rgba(220, 0, 0, 0.8));
+  animation: quota-pulse 0.45s ease-in-out infinite;
+}
+
+.sq-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+  letter-spacing: 0.04em;
+}
+
+.sq-text.sq-urgent-text {
+  animation: quota-pulse 0.45s ease-in-out infinite;
+}
+
+.sq-skulls {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #ff8888;
+  white-space: nowrap;
+  flex-shrink: 0;
+  text-shadow: 0 0 8px rgba(255, 60, 60, 0.6);
 }
 
 /* ----------------------------------------
@@ -152,63 +224,9 @@
   }
 }
 
-/* ----------------------------------------
-   Catch quota bar — full-width top strip
-   ---------------------------------------- */
-.catch-quota-top {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 55;
-  pointer-events: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.catch-quota-top-track {
-  width: 100%;
-  height: 8px;
-  background: rgba(255, 255, 255, 0.07);
-  overflow: hidden;
-}
-
-.catch-quota-top-fill {
-  height: 100%;
-  background: rgba(0, 212, 255, 0.70);
-  transition: width 0.95s linear, background 0.3s;
-}
-
-.catch-quota-top-label {
-  margin-top: 4px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(0, 212, 255, 0.55);
-  transition: color 0.3s;
-}
-
 @keyframes quota-pulse {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.45; }
-}
-
-.catch-quota-warning {
-  background: rgba(255, 160, 0, 0.80) !important;
-}
-.catch-quota-warning-text {
-  color: rgba(255, 165, 0, 0.85) !important;
-}
-
-.catch-quota-urgent {
-  background: rgba(255, 40, 40, 0.90) !important;
-  animation: quota-pulse 0.45s ease-in-out infinite;
-}
-.catch-quota-urgent-text {
-  color: rgba(255, 70, 70, 0.95) !important;
-  animation: quota-pulse 0.45s ease-in-out infinite;
 }
 
 /* ----------------------------------------

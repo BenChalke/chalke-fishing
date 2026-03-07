@@ -751,7 +751,25 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
 
   return (
     <div className="container no-cursor" onPointerDown={handlePointerDown}>
-      <button className="back-home-btn" onClick={() => setShowQuitConfirm(true)}>Quit</button>
+      {/* Top HUD: Quit + Time survived + Catch quota bar + Skull count */}
+      <div className="survival-top-hud">
+        <button className="sq-quit-btn" onClick={() => setShowQuitConfirm(true)}>Quit</button>
+        <div className="sq-time">
+          {Math.floor(timeSurvived / 60) > 0
+            ? `${Math.floor(timeSurvived / 60)}m ${timeSurvived % 60}s`
+            : `${timeSurvived}s`}
+        </div>
+        <div className="sq-bar">
+          <div
+            className={`sq-fill ${quotaUrgent ? 'sq-urgent' : quotaWarning ? 'sq-warning' : ''}`}
+            style={{ width: `${quotaPct}%` }}
+          />
+          <span className={`sq-text ${quotaUrgent ? 'sq-urgent-text' : ''}`}>
+            {quotaUrgent ? `CATCH! ${catchTimer}s` : `${catchTimer}s`}
+          </span>
+        </div>
+        <div className="sq-skulls">☠ {allBadFish.length}</div>
+      </div>
 
       {showQuitConfirm && (
         <div className="quit-confirm-overlay">
@@ -810,31 +828,8 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
           onClick={(e) => handleBadFishClick(bdf.id, e)} isMobile={isMobile} isExpiring={false} />
       ))}
 
-      <div className="time-left-display survival-timer">
-        {Math.floor(timeSurvived / 60) > 0
-          ? `${Math.floor(timeSurvived / 60)}m ${timeSurvived % 60}s`
-          : `${timeSurvived}s`}
-      </div>
-
       <div className="top-center-ui">
         <div className="score-display">Score: {score}</div>
-      </div>
-
-      <div className="survival-bad-count">
-        ☠ {allBadFish.length}
-      </div>
-
-      {/* Catch quota bar — top of screen */}
-      <div className="catch-quota-top">
-        <div className="catch-quota-top-track">
-          <div
-            className={`catch-quota-top-fill ${quotaUrgent ? 'catch-quota-urgent' : quotaWarning ? 'catch-quota-warning' : ''}`}
-            style={{ width: `${quotaPct}%` }}
-          />
-        </div>
-        <div className={`catch-quota-top-label ${quotaUrgent ? 'catch-quota-urgent-text' : quotaWarning ? 'catch-quota-warning-text' : ''}`}>
-          {quotaUrgent ? `CATCH! ${catchTimer}s` : `${catchTimer}s`}
-        </div>
       </div>
 
       {/* Combo multiplier background watermark */}

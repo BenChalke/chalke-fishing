@@ -654,8 +654,6 @@ export default function TargetScoreGame({ onBackToHome, onPlayAgain, onGoHighSco
 
   return (
     <div className="container" onPointerDown={handlePointerDown}>
-      <button className="back-home-btn" onClick={() => setShowQuitConfirm(true)}>Quit</button>
-
       {showQuitConfirm && (
         <div className="quit-confirm-overlay">
           <div className="quit-confirm-box">
@@ -722,8 +720,9 @@ export default function TargetScoreGame({ onBackToHome, onPlayAgain, onGoHighSco
         />
       ))}
 
-      {/* Top HUD: Level + progress bar + timer */}
+      {/* Top HUD: Quit + Level + progress bar + timer */}
       <div className="ts-top-hud">
+        <button className="ts-quit-btn" onClick={() => setShowQuitConfirm(true)}>Quit</button>
         <div className="ts-level-label">LVL {level}</div>
         <div className="ts-progress-bar">
           <div className="ts-progress-fill" style={{ width: `${progressPct}%` }} />
