@@ -8,6 +8,7 @@ const MODES = [
   { id: 'timeTrial',   label: 'Time Trial' },
   { id: 'survival',    label: 'Survival' },
   { id: 'targetScore', label: 'Target Score' },
+  { id: 'quota',       label: 'Quota' },
   { id: 'free',        label: 'Free Fishing' },
 ];
 
@@ -161,6 +162,31 @@ export default function InstructionsScreen({ onBackToHome }) {
               <div className="instr-row">
                 <span className="instr-icon">✗</span>
                 <p>Clicking <strong>empty water</strong> resets your combo. Misses during Frenzy don't count against you.</p>
+              </div>
+            </div>
+          )}
+
+          {tab === 'quota' && (
+            <div className="instructions-section">
+              <div className="instr-row">
+                <span className="instr-icon">📋</span>
+                <p>Each level gives you a <strong>catch quota</strong> — a required number of common, rare, and super rare fish to catch before time runs out.</p>
+              </div>
+              <div className="instr-row">
+                <span className="instr-icon">🐟</span>
+                <p>The quota items are shown in the top bar. Each one turns green with a checkmark when complete. Fill them all to advance!</p>
+              </div>
+              <div className="instr-row">
+                <span className="instr-icon">📈</span>
+                <p>Higher levels require more fish and rarer types. Fish also swim faster each level.</p>
+              </div>
+              <div className="instr-row">
+                <span className="instr-icon">⏱</span>
+                <p>You start with <strong>45 seconds</strong> per level, decreasing by 3s each level (minimum 20s).</p>
+              </div>
+              <div className="instr-row">
+                <span className="instr-icon">✨</span>
+                <p><strong>Frenzy</strong> is your best power-up here — it floods the screen including rare fish, perfect for filling tough quotas fast.</p>
               </div>
             </div>
           )}

@@ -8,6 +8,8 @@ const BONUS_COLORS = {
   multiplier: { body: '#00CED1', stroke: '#009AA0', tail: '#009AA0', tailStroke: '#006068' },
   slowmo:     { body: '#87CEEB', stroke: '#5BA8CC', tail: '#5BA8CC', tailStroke: '#3A7A99' },
   bad:        { body: '#0d0d0d', stroke: '#CC0000', tail: '#330000', tailStroke: '#220000' },
+  free:       { body: '#22c55e', stroke: '#16a34a', tail: '#16a34a', tailStroke: '#166534' },
+  lure:       { body: '#f59e0b', stroke: '#d97706', tail: '#d97706', tailStroke: '#92400e' },
 };
 
 const BONUS_LABELS = {
@@ -16,6 +18,8 @@ const BONUS_LABELS = {
   multiplier: 'x2',
   slowmo:     'SLOW',
   bad:        '☠',
+  free:       'FREE',
+  lure:       'LURE',
 };
 
 /**
@@ -29,13 +33,13 @@ const BONUS_LABELS = {
  *  - isMobile:   bind touch instead of click
  *  - isExpiring: show flicker warning (last 2s of lifespan)
  */
-export default function BonusFish({ id, x, y, type, angle, onClick, isMobile, isExpiring }) {
+export default function BonusFish({ id, x, y, type, angle, onClick, isMobile, isExpiring, labelText }) {
   const BONUS_W = 150;
   const BONUS_H = 75;
 
   const facing = Math.cos(angle) >= 0 ? 1 : -1;
   const c      = BONUS_COLORS[type] || BONUS_COLORS.frenzy;
-  const label  = BONUS_LABELS[type] || '?';
+  const label  = labelText ?? BONUS_LABELS[type] ?? '?';
 
   const wrapperStyle = {
     position:        'absolute',

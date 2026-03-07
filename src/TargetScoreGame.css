@@ -11,7 +11,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 14px;
+  padding: 10px 16px;
   background: rgba(0, 8, 20, 0.8);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -20,11 +20,11 @@
 
 /* Push score display below the top HUD */
 .ts-top-hud ~ .top-center-ui {
-  top: 52px;
+  top: 68px;
 }
 @media (max-width: 600px) {
   .ts-top-hud ~ .top-center-ui {
-    top: 46px;
+    top: 62px;
   }
 }
 
@@ -32,28 +32,28 @@
   background: rgba(0, 10, 22, 0.6);
   border: 1px solid rgba(0, 212, 255, 0.3);
   color: rgba(0, 212, 255, 0.8);
-  padding: 4px 10px;
+  padding: 6px 12px;
   border-radius: 7px;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  min-height: 30px;
+  min-height: 34px;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .ts-level-label {
-  font-size: 0.85rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #00d4ff;
   white-space: nowrap;
-  min-width: 50px;
+  min-width: 54px;
 }
 
 .ts-progress-bar {
   flex: 1;
   position: relative;
-  height: 18px;
+  height: 22px;
   background: rgba(0, 212, 255, 0.1);
   border: 1px solid rgba(0, 212, 255, 0.25);
   border-radius: 9px;
@@ -84,22 +84,30 @@
 }
 
 .ts-timer {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #cce8f0;
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: #ffffff;
   white-space: nowrap;
-  min-width: 36px;
-  text-align: right;
+  min-width: 52px;
+  text-align: center;
+  background: rgba(0, 212, 255, 0.1);
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  border-radius: 8px;
+  padding: 2px 10px;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
 }
 
 .ts-timer-urgent {
-  color: #ff5555;
+  border-color: rgba(255, 85, 85, 0.5);
+  background: rgba(255, 60, 60, 0.12);
+  box-shadow: 0 0 12px rgba(255, 60, 60, 0.2);
   animation: ts-timer-pulse 0.5s ease-in-out infinite alternate;
 }
 
 @keyframes ts-timer-pulse {
-  from { opacity: 1; }
-  to   { opacity: 0.45; }
+  from { color: #ff5555; }
+  to   { color: rgba(255, 85, 85, 0.45); }
 }
 
 /* ── Level-up flash ── */

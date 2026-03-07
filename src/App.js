@@ -4,6 +4,7 @@ import FreePlayGame from "./FreePlayGame";
 import TimeTrialGame from "./TimeTrialGame";
 import SurvivalGame from "./SurvivalGame";
 import TargetScoreGame from "./TargetScoreGame";
+import QuotaGame from "./QuotaGame";
 import HighScoreScreen from "./HighScoreScreen";
 import InstructionsScreen from "./InstructionsScreen";
 import FishField from "./components/FishField";
@@ -14,6 +15,7 @@ export default function App() {
   const [ttKey, setTtKey] = useState(0);
   const [survivalKey, setSurvivalKey] = useState(0);
   const [tsKey, setTsKey] = useState(0);
+  const [quotaKey, setQuotaKey] = useState(0);
   const [showModes, setShowModes] = useState(false);
 
   const goHome = () => { setMode("home"); setShowModes(false); };
@@ -21,6 +23,7 @@ export default function App() {
   const goTimeTrial = () => setMode("timeTrial");
   const goSurvival = () => setMode("survival");
   const goTargetScore = () => setMode("targetScore");
+  const goQuota       = () => setMode("quota");
   const goHighScore = () => setMode("highScore");
   const goInstructions = () => setMode("instructions");
 
@@ -66,6 +69,11 @@ export default function App() {
                   <span className="home-mode-name">Target Score</span>
                   <span className="home-mode-desc">Hit the target each level before time runs out.</span>
                 </button>
+                <button className="home-mode-card" onClick={goQuota}>
+                  <span className="home-mode-icon">📋</span>
+                  <span className="home-mode-name">Quota</span>
+                  <span className="home-mode-desc">Fill the catch quota each level before time runs out.</span>
+                </button>
                 <button className="home-mode-card home-mode-card-casual" onClick={goFree}>
                   <span className="home-mode-icon">🎣</span>
                   <span className="home-mode-name">Free Fishing</span>
@@ -98,6 +106,15 @@ export default function App() {
       key={survivalKey}
       onBackToHome={goHome}
       onPlayAgain={() => setSurvivalKey((k) => k + 1)}
+    />;
+  }
+
+  if (mode === "quota") {
+    return <QuotaGame
+      key={quotaKey}
+      onBackToHome={goHome}
+      onPlayAgain={() => setQuotaKey((k) => k + 1)}
+      onGoHighScore={goHighScore}
     />;
   }
 

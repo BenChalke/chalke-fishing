@@ -47,6 +47,22 @@
   animation: bad-glow 0.5s ease-in-out infinite;
 }
 
+@keyframes free-glow {
+  0%, 100% { filter: drop-shadow(0 0 6px #22c55e) drop-shadow(0 0 12px #16a34a); }
+  50%       { filter: drop-shadow(0 0 22px #22c55e) drop-shadow(0 0 44px #16a34a) drop-shadow(0 0 10px #bbf7d0); }
+}
+.bonus-fish-free svg {
+  animation: free-glow 0.8s ease-in-out infinite;
+}
+
+@keyframes lure-glow {
+  0%, 100% { filter: drop-shadow(0 0 6px #f59e0b) drop-shadow(0 0 12px #d97706); }
+  50%       { filter: drop-shadow(0 0 22px #f59e0b) drop-shadow(0 0 44px #d97706) drop-shadow(0 0 10px #fef9c3); }
+}
+.bonus-fish-lure svg {
+  animation: lure-glow 0.8s ease-in-out infinite;
+}
+
 /* ── Expiring state: opacity flicker warning ── */
 @keyframes bonus-flicker {
   0%, 100% { opacity: 1;   }

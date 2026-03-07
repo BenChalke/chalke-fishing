@@ -97,6 +97,14 @@ function readSavedTsScore() {
   return { score: 0, level: 0, records: {} };
 }
 
+function readSavedQuotaScore() {
+  try {
+    const saved = localStorage.getItem('quotaHighScore');
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  return { level: 0, fish: 0, records: {} };
+}
+
 export default function HighScoreScreen({ onBackToHome }) {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -107,6 +115,7 @@ export default function HighScoreScreen({ onBackToHome }) {
   const [ttLocal]       = useState(() => readSavedHighScore());
   const [survivalLocal] = useState(() => readSavedSurvivalScore());
   const [tsLocal]       = useState(() => readSavedTsScore());
+  const [quotaLocal]    = useState(() => readSavedQuotaScore());
 
   // Global scores
   const [leaderTab, setLeaderTab]     = useState('local');
@@ -142,14 +151,19 @@ export default function HighScoreScreen({ onBackToHome }) {
   const renderRow = (rank, name, primaryScore, records, i, pointsScore) => {
     const isSurvival    = gameMode === 'survival';
     const isTargetScore = gameMode === 'targetScore';
+    const isQuota       = gameMode === 'quota';
     const scoreLabel = isSurvival
       ? formatTime(primaryScore)
-      : `${primaryScore.toLocaleString()} pts`;
+      : isQuota
+        ? `Lvl ${primaryScore}`
+        : `${primaryScore.toLocaleString()} pts`;
     const subLabel = isSurvival && pointsScore != null
       ? `${pointsScore.toLocaleString()} pts`
       : isTargetScore && pointsScore != null
         ? `Lvl ${pointsScore}`
-        : null;
+        : isQuota && pointsScore != null
+          ? `${pointsScore} fish`
+          : null;
     const hasRecords = records && (Array.isArray(records) ? records.length > 0 : Object.keys(records).length > 0);
 
     return (
@@ -187,6 +201,11 @@ export default function HighScoreScreen({ onBackToHome }) {
         ? renderRow(1, 'Your Best', tsLocal.score, tsLocal.records, 0, tsLocal.level)
         : <p className="no-fish-text">No local high score yet. Play Target Score!</p>;
     }
+    if (gameMode === 'quota') {
+      return quotaLocal.level > 0
+        ? renderRow(1, 'Your Best', quotaLocal.level, quotaLocal.records, 0, quotaLocal.fish)
+        : <p className="no-fish-text">No local high score yet. Play Quota!</p>;
+    }
     return survivalLocal.time > 0
       ? renderRow(1, 'Your Best', survivalLocal.time, survivalLocal.records, 0, survivalLocal.score)
       : <p className="no-fish-text">No local high score yet. Play Survival!</p>;
@@ -220,6 +239,12 @@ export default function HighScoreScreen({ onBackToHome }) {
           onClick={() => switchGameMode('targetScore')}
         >
           🎯 Target
+        </button>
+        <button
+          className={`hs-tab${gameMode === 'quota' ? ' hs-tab-active' : ''}`}
+          onClick={() => switchGameMode('quota')}
+        >
+          📋 Quota
         </button>
       </div>
 

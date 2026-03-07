@@ -342,12 +342,26 @@
   -webkit-backdrop-filter: blur(12px);
   padding: 8px 18px;
   border-radius: 10px;
-  font-size: 1.6rem;
-  font-weight: bold;
+  font-size: 2.2rem;
+  font-weight: 900;
   color: #ffffff;
   z-index: 50;
   pointer-events: none;
   box-shadow: 0 2px 14px rgba(0, 0, 0, 0.5);
+  min-width: 80px;
+  text-align: center;
+  letter-spacing: -0.02em;
+}
+
+.time-left-urgent {
+  border-color: rgba(255, 85, 85, 0.5);
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 60, 60, 0.25);
+  animation: tt-timer-pulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes tt-timer-pulse {
+  from { color: #ff5555; }
+  to   { color: rgba(255, 85, 85, 0.45); }
 }
 
 /* ----------------------------------------
@@ -397,6 +411,8 @@
 .screen-flash-multiplier { background: #00CED1; }
 .screen-flash-slowmo     { background: #87CEEB; }
 .screen-flash-bad        { background: #8B0000; }
+.screen-flash-free       { background: #22c55e; }
+.screen-flash-lure       { background: #f59e0b; }
 
 /* ----------------------------------------
    ACTIVE POWER-UP VIGNETTE (persistent glow while effect is running)
@@ -545,10 +561,11 @@
    ---------------------------------------- */
 @media (max-width: 600px) {
   .time-left-display {
-    font-size: 1.3rem;
+    font-size: 1.7rem;
     top: 12px;
     right: 8px;
-    padding: 8px 14px;
+    padding: 6px 14px;
+    min-width: 64px;
   }
   .power-up-hud {
     bottom: 12px;

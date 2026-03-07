@@ -30,7 +30,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 10px;
+  padding: 10px 16px;
   background: rgba(10, 0, 0, 0.82);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -39,11 +39,11 @@
 
 /* Push score display below the survival HUD */
 .survival-top-hud ~ .top-center-ui {
-  top: 52px;
+  top: 68px;
 }
 @media (max-width: 600px) {
   .survival-top-hud ~ .top-center-ui {
-    top: 46px;
+    top: 62px;
   }
 }
 
@@ -51,30 +51,30 @@
   background: rgba(10, 0, 0, 0.6);
   border: 1px solid rgba(255, 60, 60, 0.35);
   color: rgba(255, 120, 120, 0.85);
-  padding: 4px 10px;
+  padding: 6px 12px;
   border-radius: 7px;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  min-height: 30px;
+  min-height: 34px;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .sq-time {
-  font-size: 0.85rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #ffaaaa;
   white-space: nowrap;
   flex-shrink: 0;
-  min-width: 44px;
+  min-width: 48px;
   text-align: center;
 }
 
 .sq-bar {
   flex: 1;
   position: relative;
-  height: 18px;
+  height: 22px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 60, 60, 0.3);
   border-radius: 9px;
@@ -115,11 +115,16 @@
 }
 
 .sq-text.sq-urgent-text {
-  animation: quota-pulse 0.45s ease-in-out infinite;
+  animation: sq-text-pulse 0.45s ease-in-out infinite;
+}
+
+@keyframes sq-text-pulse {
+  0%, 100% { color: #ff5555; }
+  50%       { color: rgba(255, 85, 85, 0.45); }
 }
 
 .sq-skulls {
-  font-size: 0.85rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #ff8888;
   white-space: nowrap;

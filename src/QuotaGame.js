@@ -1,17 +1,11 @@
-// src/TimeTrialGame.js
-
+// src/QuotaGame.js
 import React, { useState, useEffect, useRef } from 'react';
-import FishDisplay    from './components/FishDisplay';
-import FishField      from './components/FishField';
-import Hook           from './components/Hook';
-import Fish           from './components/Fish';
-import BonusFish      from './components/BonusFish';
+import FishDisplay from './components/FishDisplay';
+import FishField   from './components/FishField';
+import Fish        from './components/Fish';
+import BonusFish   from './components/BonusFish';
 
-import {
-  RARE_COLOURS,
-  SUPER_COLOURS,
-} from './constants/fishConstants';
-
+import { COLOURS, PATTERNS, RARE_COLOURS, SUPER_COLOURS } from './constants/fishConstants';
 import {
   createRandomFish,
   createOffscreenFish,
@@ -21,69 +15,65 @@ import {
 } from './utils/fishUtils';
 
 import { leaderboardEnabled, submitScore } from './utils/leaderboard';
-import './TimeTrialGame.css';
+import './QuotaGame.css';
 
 function generateUUID() {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = Math.random() * 16 | 0;
     return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
   });
 }
 
-// ── Tuning constants ─────────────────────────────────────────────────────────
-const MIN_SPEED           = 0.5;
-const MAX_SPEED           = 20.0;
-const TOTAL_TIME          = 60;
+// ── Tuning ────────────────────────────────────────────────────────────────────
 const BONUS_FISH_SIZE     = 150;
 const BONUS_FISH_LIFESPAN = 8000;
 const SPEED_FISH_CHANCE   = 0.12;
 const SPEED_FISH_LIFESPAN = 12000;
+const DESKTOP_TICK        = 30;
+const MOBILE_TICK         = 30;
+const FRENZY_FISH_MULT    = 3.5;
+const DESKTOP_FRENZY_INT  = 150;
+const MOBILE_FRENZY_INT   = 400;
+const FRENZY_SPEED_MULT        = 1.75;
+const MOBILE_FRENZY_SPEED_MULT = 1.6;
+const BAD_FISH_SPAWN_DELAY = 2500;
+const BAD_FISH_SPEED_MULT  = 4.0;
+const BAD_FISH_TURN_MIN    = 1500;
+const BAD_FISH_TURN_MAX    = 3000;
+const FISH_SCATTER_SPEED   = 12;
+const TIME_BONUS_SECS      = 8;
+const TIME_URGENT_SECS     = 8;
 
-// Mobile gets slower ticks and a lower frenzy cap; fish count is viewport-based
-
-const DESKTOP_TICK          = 30;  // ms between movement updates
-const MOBILE_TICK           = 30;
-const FRENZY_FISH_MULT      = 3.5; // frenzy spawns up to this multiple of the base fish count
-const DESKTOP_FRENZY_INT    = 150; // ms between frenzy spawns
-const MOBILE_FRENZY_INT     = 400;
-const FRENZY_SPEED_MULT        = 1.75; // speed multiplier for regular fish during frenzy (desktop)
-const MOBILE_FRENZY_SPEED_MULT = 1.6;  // slightly slower on mobile for manageability
-const BAD_FISH_SPAWN_DELAY  = 2500; // ms after frenzy starts before bad fish appears
-const BAD_FISH_SPEED_MULT   = 4.0; // post-entry speedMult for bad fish (faster than frenzy fish)
-const BAD_FISH_TURN_MIN     = 1500; // ms min between random direction changes
-const BAD_FISH_TURN_MAX     = 3000; // ms max between random direction changes
-const FISH_SCATTER_SPEED    = 12;  // speedMult for scattered fish (gets off screen fast)
-
-const COMBO_THRESHOLDS = [
-  { min: 12, mult: 5 },
-  { min: 8,  mult: 4 },
-  { min: 5,  mult: 3 },
-  { min: 3,  mult: 2 },
+// Quota required per level { common, rare, super }
+const LEVEL_QUOTAS = [
+  { common: 5, rare: 0, super: 0 },
+  { common: 5, rare: 1, super: 0 },
+  { common: 6, rare: 2, super: 0 },
+  { common: 6, rare: 2, super: 1 },
+  { common: 8, rare: 3, super: 1 },
+  { common: 8, rare: 4, super: 2 },
+  { common: 10, rare: 4, super: 2 },
+  { common: 10, rare: 5, super: 3 },
 ];
-function getComboMult(combo) {
-  for (const { min, mult } of COMBO_THRESHOLDS) {
-    if (combo >= min) return mult;
-  }
-  return 1;
+function getLevelQuota(level) {
+  if (level <= LEVEL_QUOTAS.length) return LEVEL_QUOTAS[level - 1];
+  const extra = level - LEVEL_QUOTAS.length;
+  const base  = LEVEL_QUOTAS[LEVEL_QUOTAS.length - 1];
+  return { common: base.common + extra * 2, rare: base.rare + extra, super: base.super + Math.ceil(extra / 2) };
 }
 
-// ── Pure helpers (no React, no closures) ─────────────────────────────────────
+function getLevelTime(level)  { return Math.max(20, 45 - (level - 1) * 3); }
+function getLevelSpeed(level) { return Math.min(8.0, 3.5 + (level - 1) * 0.3); }
 
-/** Angle (radians) pointing from (x,y) toward the nearest screen edge. */
 function nearestEdgeAngle(x, y, fishSize = FISH_SIZE) {
-  const w  = window.innerWidth;
-  const h  = window.innerHeight;
-  const cx = x + fishSize / 2;
-  const cy = y + fishSize * 0.25;
-  const distances = [cx, w - cx, cy, h - cy];   // left, right, top, bottom
+  const w = window.innerWidth, h = window.innerHeight;
+  const cx = x + fishSize / 2, cy = y + fishSize * 0.25;
+  const distances = [cx, w - cx, cy, h - cy];
   const angles    = [Math.PI, 0, -Math.PI / 2, Math.PI / 2];
   return angles[distances.indexOf(Math.min(...distances))];
 }
 
-/** Possibly wrap an offscreen fish with speed-fish flags (~12% chance). */
 function createMaybeFastFish(id) {
   const fish = createOffscreenFish(id);
   if (Math.random() < SPEED_FISH_CHANCE) {
@@ -92,99 +82,81 @@ function createMaybeFastFish(id) {
   return fish;
 }
 
-/**
- * Move one fish one tick. Returns an updated fish object.
- * Returns { ...fish, remove: true } when a swimOff fish exits the screen.
- * slowmoEndTs is read as a plain number (not a ref) so it stays fresh.
- */
 function moveSingleFish(fish, speed, cursor, isMobile, slowmoEndTs, frenzyEndTs = 0, fishSize = FISH_SIZE) {
-  const w          = window.innerWidth;
-  const h          = window.innerHeight;
+  const w = window.innerWidth, h = window.innerHeight;
   const fishHeight = fishSize * 0.5;
   const { x, y, angle, speedMult } = fish;
   const now        = Date.now();
   const frenzyMult = frenzyEndTs > 0 && now < frenzyEndTs ? (isMobile ? MOBILE_FRENZY_SPEED_MULT : FRENZY_SPEED_MULT) : 1;
   const effSpeed   = speed * speedMult * (now < slowmoEndTs ? 0.35 : 1) * frenzyMult;
-
-  // ── SWIM-OFF: head straight for the edge, then vanish ──
   if (fish.swimOff) {
-    const nx = x + Math.cos(angle) * effSpeed;
-    const ny = y + Math.sin(angle) * effSpeed;
-    return { ...fish, x: nx, y: ny,
-      remove: nx + fishSize < 0 || nx > w || ny + fishHeight < 0 || ny > h };
+    const nx = x + Math.cos(angle) * effSpeed, ny = y + Math.sin(angle) * effSpeed;
+    return { ...fish, x: nx, y: ny, remove: nx + fishSize < 0 || nx > w || ny + fishHeight < 0 || ny > h };
   }
-
-  // ── ENTRY: steer toward screen centre ──
   if (fish.justSpawned) {
-    const cx = x + fishSize / 2;
-    const cy = y + fishHeight / 2;
+    const cx = x + fishSize / 2, cy = y + fishHeight / 2;
     const at = Math.atan2(h / 2 - cy, w / 2 - cx);
-    const nx = x + Math.cos(at) * effSpeed;
-    const ny = y + Math.sin(at) * effSpeed;
+    const nx = x + Math.cos(at) * effSpeed, ny = y + Math.sin(at) * effSpeed;
     const inside = nx >= 0 && nx + fishSize <= w && ny >= 0 && ny + fishHeight <= h;
-    const entryAngle = inside ? at + (Math.random() - 0.5) * (Math.PI * 0.75) : at;
-    return { ...fish, x: nx, y: ny, angle: entryAngle, justSpawned: !inside,
-             speedMult: inside ? (fish.postEntrySpeedMult ?? 1) : ENTRY_MULT };
+    return { ...fish, x: nx, y: ny, angle: inside ? at + (Math.random() - 0.5) * (Math.PI * 0.75) : at,
+      justSpawned: !inside, speedMult: inside ? (fish.postEntrySpeedMult ?? 1) : ENTRY_MULT };
   }
-
-  // ── NORMAL ──
-  const nx = x + Math.cos(angle) * effSpeed;
-  const ny = y + Math.sin(angle) * effSpeed;
-
-  if (nx + fishSize < 0 || nx > w || ny + fishHeight < 0 || ny > h) {
-    return { ...fish, x: nx, y: ny, remove: true };
-  }
-
+  const nx = x + Math.cos(angle) * effSpeed, ny = y + Math.sin(angle) * effSpeed;
+  if (nx + fishSize < 0 || nx > w || ny + fishHeight < 0 || ny > h) return { ...fish, x: nx, y: ny, remove: true };
   return { ...fish, x: nx, y: ny };
 }
 
 // ────────────────────────────────────────────────────────────────────────────
 
-export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore }) {
-  // ── Phase ──
-  const [phase, setPhase]                 = useState('countdown');
+export default function QuotaGame({ onBackToHome, onPlayAgain, onGoHighScore }) {
+  const [phase, setPhase]               = useState('countdown');
   const [displayNumber, setDisplayNumber] = useState(3);
-  const [timeLeft, setTimeLeft]           = useState(TOTAL_TIME);
+  const [level, setLevel]               = useState(1);
+  const [timeLeft, setTimeLeft]         = useState(getLevelTime(1));
+  const [levelUpFlash, setLevelUpFlash]         = useState(false);
+  const [showLevelComplete, setShowLevelComplete] = useState(false);
+  const [completedLevel, setCompletedLevel]       = useState(null);
+  const [showLevelCard, setShowLevelCard]         = useState(false);
+  const [levelCardQuota, setLevelCardQuota]       = useState(null);
 
-  // ── Fish / score ──
+  // Per-level quota progress (resets on level up)
+  const [caughtCommon, setCaughtCommon] = useState(0);
+  const [caughtRare,   setCaughtRare]   = useState(0);
+  const [caughtSuper,  setCaughtSuper]  = useState(0);
+  const caughtCommonRef = useRef(0);
+  const caughtRareRef   = useRef(0);
+  const caughtSuperRef  = useRef(0);
+
   const [fishArray, setFishArray]         = useState([]);
-  const [speed, setSpeed]                 = useState(4.0);
+  const [speed, setSpeed]                 = useState(getLevelSpeed(1));
   const [cursorPos, setCursorPos]         = useState({ x: -1000, y: -1000 });
   const [isJerking, setIsJerking]         = useState(false);
   const [catchAnimations, setCatchAnimations] = useState([]);
   const [caughtRecords, setCaughtRecords] = useState({});
-  const [score, setScore]                 = useState(0);
   const [isMobile, setIsMobile]           = useState(false);
   const [scoreNotifs, setScoreNotifs]     = useState([]);
-
-  const [comboCount, setComboCount]           = useState(0);
-
-  // ── Game over view ──
-  const [gameOverView, setGameOverView] = useState('summary'); // 'summary' | 'catches'
+  const [gameOverView, setGameOverView]   = useState('summary');
   const [menuVisible, setMenuVisible]     = useState(false);
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
 
-  // ── Leaderboard submit ──
-  const [playerName, setPlayerName]     = useState('');
-  const [submitting, setSubmitting]     = useState(false);
+  const [playerName, setPlayerName]       = useState('');
+  const [submitting, setSubmitting]       = useState(false);
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
-  const [submitError, setSubmitError]   = useState('');
-  const sessionToken                    = useRef(generateUUID());
+  const [submitError, setSubmitError]     = useState('');
+  const sessionToken                      = useRef(generateUUID());
 
-  // ── Power-ups ──
-  const [bonusFish, setBonusFish]           = useState([]);
-  const [badFish, setBadFish]               = useState([]);
-  const [effectsDisplay, setEffectsDisplay] = useState({ frenzy: 0, multiplier: 0, slowmo: 0 });
-  const [powerUpNotifs, setPowerUpNotifs]   = useState([]);
-  const [screenFlash, setScreenFlash]       = useState(null);
+  const [bonusFish, setBonusFish]             = useState([]);
+  const [badFish, setBadFish]                 = useState([]);
+  const [effectsDisplay, setEffectsDisplay]   = useState({ frenzy: 0, multiplier: 0, slowmo: 0 });
+  const [powerUpNotifs, setPowerUpNotifs]     = useState([]);
+  const [screenFlash, setScreenFlash]         = useState(null);
 
-  // ── Refs (safe to read from RAF / intervals without stale-closure issues) ──
   const nextNotif           = useRef(0);
   const cursorRef           = useRef({ x: -1000, y: -1000 });
   const nextId              = useRef(FISH_SIZE);
-  const speedRef            = useRef(4.0);        // mirrors speed state
+  const speedRef            = useRef(getLevelSpeed(1));
   const isMobileRef         = useRef(false);
-  const initialFishCount    = useRef(0); // set at mount based on viewport
+  const initialFishCount    = useRef(0);
   const frenzyEndRef        = useRef(0);
   const multiplierEndRef    = useRef(0);
   const slowmoEndRef        = useRef(0);
@@ -195,14 +167,12 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
   const badFishRef          = useRef([]);
   const badFishTimerRef     = useRef(null);
   const fishRespawnTimerRef = useRef(null);
-  const rafRef              = useRef(null);
-  const lastTickRef         = useRef(0);
-  const comboRef            = useRef(0);
+  const levelRef            = useRef(1);
+  const totalFishRef        = useRef(0); // total fish caught across all levels
+  const pausedRef           = useRef(true); // true while level card is showing
 
-  // Keep speedRef in sync
   useEffect(() => { speedRef.current = speed; }, [speed]);
 
-  // ── Mount: detect mobile & create appropriate number of fish ──
   useEffect(() => {
     const mobile = 'ontouchstart' in window;
     isMobileRef.current = mobile;
@@ -212,26 +182,18 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
     setFishArray(Array.from({ length: count }, (_, i) => createRandomFish(i)));
   }, []);
 
-  // ── Cursor track – throttled to once per animation frame ──
   useEffect(() => {
     let pendingRAF = null;
     const onMove = (e) => {
       cursorRef.current = { x: e.clientX, y: e.clientY };
       if (!pendingRAF) {
-        pendingRAF = requestAnimationFrame(() => {
-          setCursorPos({ ...cursorRef.current });
-          pendingRAF = null;
-        });
+        pendingRAF = requestAnimationFrame(() => { setCursorPos({ ...cursorRef.current }); pendingRAF = null; });
       }
     };
     window.addEventListener('mousemove', onMove);
-    return () => {
-      window.removeEventListener('mousemove', onMove);
-      if (pendingRAF) cancelAnimationFrame(pendingRAF);
-    };
+    return () => { window.removeEventListener('mousemove', onMove); if (pendingRAF) cancelAnimationFrame(pendingRAF); };
   }, []);
 
-  // ── Pointer down (jerk hook) ──
   const handlePointerDown = (e) => {
     const clientX = e.clientX ?? e.touches?.[0]?.clientX;
     const clientY = e.clientY ?? e.touches?.[0]?.clientY;
@@ -240,22 +202,8 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
     setCursorPos({ x: clientX, y: clientY });
     setIsJerking(true);
     setTimeout(() => setIsJerking(false), 300);
-
-    // Empty water click — reset combo (not during frenzy)
-    const inFrenzy = frenzyEndRef.current > 0 && Date.now() < frenzyEndRef.current;
-    if (phase === 'running' && comboRef.current > 0 && !inFrenzy) {
-      comboRef.current = 0;
-      setComboCount(0);
-      const id = nextNotif.current++;
-      setPowerUpNotifs((prev) => [...prev, {
-        id, type: 'combo-reset', label: 'MISS!',
-        x: clientX, y: clientY,
-      }]);
-      setTimeout(() => setPowerUpNotifs((prev) => prev.filter((n) => n.id !== id)), 900);
-    }
   };
 
-  // ── Countdown ──
   useEffect(() => {
     if (phase !== 'countdown') return;
     if (typeof displayNumber === 'number' && displayNumber > 0) {
@@ -268,41 +216,77 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
     }
   }, [displayNumber, phase]);
 
-  // ── Power-up notification ──
   const spawnPowerUpNotif = (type) => {
-    const labels = { frenzy: 'FRENZY!', timebonus: '+15s!', multiplier: 'x2!', slowmo: 'SLOW!', bad: '☠ SCATTER!' };
+    const labels = { frenzy: 'FRENZY!', timebonus: `+${TIME_BONUS_SECS}s!`, multiplier: 'x2!', slowmo: 'SLOW!', bad: '☠ SCATTER!', free: 'FREE!', lure: 'LURE!' };
     const id = nextNotif.current++;
-    setPowerUpNotifs((prev) => [...prev, {
-      id, type, label: labels[type] || '!',
-      x: window.innerWidth / 2, y: window.innerHeight / 2,
-    }]);
+    setPowerUpNotifs((prev) => [...prev, { id, type, label: labels[type] ?? '!', x: window.innerWidth / 2, y: window.innerHeight / 2 }]);
     setTimeout(() => setPowerUpNotifs((prev) => prev.filter((n) => n.id !== id)), 1500);
   };
 
-  // ── Running phase: RAF movement loop + 1 s timer ──
-  // Deps: [phase] only — speed/mobile read via refs so the effect never restarts
-  // mid-game (avoids resetting the bonus-fish spawn timer on speed changes).
+  const COMMON_COLOURS = COLOURS.filter((c) => !RARE_COLOURS.includes(c) && !SUPER_COLOURS.includes(c));
+
+  const injectGuaranteedFish = (lv) => {
+    const q = getLevelQuota(lv);
+    const pick = (pool) => pool[Math.floor(Math.random() * pool.length)];
+    const pickPattern = () => PATTERNS[Math.floor(Math.random() * PATTERNS.length)];
+    const seeds = [];
+    if (q.common > 0) seeds.push({ ...createRandomFish(nextId.current++), colour: pick(COMMON_COLOURS), pattern: pickPattern() });
+    if (q.rare   > 0) seeds.push({ ...createRandomFish(nextId.current++), colour: pick(RARE_COLOURS),   pattern: pickPattern() });
+    if (q.super  > 0) seeds.push({ ...createRandomFish(nextId.current++), colour: pick(SUPER_COLOURS),  pattern: pickPattern() });
+    if (seeds.length > 0) setFishArray((prev) => [...prev, ...seeds]);
+  };
+
+  const dismissLevelCard = () => {
+    setShowLevelCard(false);
+    pausedRef.current = false;
+    injectGuaranteedFish(levelRef.current);
+  };
+
+  const triggerLevelUp = () => {
+    const finishedLevel = levelRef.current;
+    const newLevel = finishedLevel + 1;
+    levelRef.current = newLevel;
+    setLevel(newLevel);
+    caughtCommonRef.current = 0; setCaughtCommon(0);
+    caughtRareRef.current   = 0; setCaughtRare(0);
+    caughtSuperRef.current  = 0; setCaughtSuper(0);
+    const newSpeed = getLevelSpeed(newLevel);
+    speedRef.current = newSpeed;
+    setSpeed(newSpeed);
+    setTimeLeft(getLevelTime(newLevel));
+    setLevelUpFlash(true);
+    setTimeout(() => setLevelUpFlash(false), 800);
+    // Pause clock, show level-complete screen, then level card after delay
+    pausedRef.current = true;
+    setCompletedLevel(finishedLevel);
+    setShowLevelComplete(true);
+    setTimeout(() => {
+      setShowLevelComplete(false);
+      setLevelCardQuota(getLevelQuota(newLevel));
+      setShowLevelCard(true);
+    }, 2000);
+  };
+
+  // Show level card when game first starts (clock paused until dismissed)
   useEffect(() => {
     if (phase !== 'running') return;
+    pausedRef.current = true;
+    setLevelCardQuota(getLevelQuota(1));
+    setShowLevelCard(true);
+  }, [phase]); // eslint-disable-line
 
-    const mobile    = isMobileRef.current;
-    const TICK_MS   = mobile ? MOBILE_TICK  : DESKTOP_TICK;
-    const FRENZ_CAP = Math.round(initialFishCount.current * FRENZY_FISH_MULT);
-    const FRENZ_INT = mobile ? MOBILE_FRENZY_INT  : DESKTOP_FRENZY_INT;
-    const target    = initialFishCount.current; // fish count to restore after frenzy
+  useEffect(() => {
+    if (phase !== 'running') return;
+    const mobile  = isMobileRef.current;
+    const TICK_MS = mobile ? MOBILE_TICK : DESKTOP_TICK;
+    const target  = initialFishCount.current;
 
-    // Bonus fish scheduler (first spawn: 2–5 s; subsequent: 7–11 s)
     const scheduleBonusSpawn = (isFirst = false) => {
-      const delay = isFirst
-        ? 2000 + Math.random() * 3000
-        : 7000 + Math.random() * 4000;
+      const delay = isFirst ? 2000 + Math.random() * 3000 : 7000 + Math.random() * 4000;
       bonusSpawnTimerRef.current = setTimeout(() => {
-        const types = ['frenzy', 'timebonus', 'multiplier', 'slowmo'];
+        const types = ['frenzy', 'timebonus', 'slowmo', 'free', 'lure'];
         const type  = types[Math.floor(Math.random() * types.length)];
-        const fish  = {
-          ...createOffscreenFish(nextId.current++),
-          type, spawnedAt: Date.now(), postEntrySpeedMult: 1.3,
-        };
+        const fish  = { ...createOffscreenFish(nextId.current++), type, spawnedAt: Date.now(), postEntrySpeedMult: 1.3 };
         bonusFishRef.current = [...bonusFishRef.current, fish];
         setBonusFish([...bonusFishRef.current]);
         scheduleBonusSpawn(false);
@@ -310,30 +294,20 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
     };
     scheduleBonusSpawn(true);
 
-    // Movement interval — simple setInterval at TICK_MS
     const fishInterval = setInterval(() => {
-      const now        = Date.now();
+      const now       = Date.now();
       const frenzyDone = frenzyEndRef.current > 0 && now > frenzyEndRef.current;
       const doCleanup  = frenzyDone && !frenzyCleanedRef.current;
       if (doCleanup) frenzyCleanedRef.current = true;
 
-      // Regular fish
       setFishArray((prev) => {
-        // 1. Move
-        let result = prev.map((f) =>
-          moveSingleFish(f, speedRef.current, cursorRef.current, mobile, slowmoEndRef.current, frenzyEndRef.current)
-        );
-        // 2. Count naturally-exited fish and remove all off-screen fish
+        let result = prev.map((f) => moveSingleFish(f, speedRef.current, cursorRef.current, mobile, slowmoEndRef.current, frenzyEndRef.current));
         const exitedCount = result.filter((f) => f.remove && !f.swimOff).length;
         result = result.filter((f) => !f.remove);
-        for (let i = 0; i < exitedCount; i++) {
-          result.push(createMaybeFastFish(nextId.current++));
-        }
-
-        // 3. Frenzy cleanup: point excess fish to nearest edge and let them swim out
+        for (let i = 0; i < exitedCount; i++) result.push(createMaybeFastFish(nextId.current++));
         if (doCleanup) {
           const activeNormal = result.filter((f) => !f.swimOff && !f.speedFish);
-          const excess       = Math.max(0, activeNormal.length - target);
+          const excess = Math.max(0, activeNormal.length - target);
           let marked = 0;
           result = result.map((f) => {
             if (!f.swimOff && !f.speedFish && marked < excess) {
@@ -343,25 +317,20 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
             return f;
           });
         }
-
-        // 4. Speed fish lifespan
         result = result.map((f) => {
           if (f.speedFish && !f.swimOff && f.spawnedAt && now - f.spawnedAt > SPEED_FISH_LIFESPAN) {
             return { ...f, swimOff: true, angle: nearestEdgeAngle(f.x, f.y) };
           }
           return f;
         });
-
         return result;
       });
 
-      // Bonus fish (array)
       if (bonusFishRef.current.length > 0) {
         const updated = bonusFishRef.current
           .map((bf) => {
-            if (now - bf.spawnedAt > BONUS_FISH_LIFESPAN && !bf.swimOff) {
+            if (now - bf.spawnedAt > BONUS_FISH_LIFESPAN && !bf.swimOff)
               return { ...bf, swimOff: true, angle: nearestEdgeAngle(bf.x, bf.y, BONUS_FISH_SIZE) };
-            }
             return moveSingleFish(bf, speedRef.current, cursorRef.current, mobile, slowmoEndRef.current, 0, BONUS_FISH_SIZE);
           })
           .filter((bf) => !bf.remove);
@@ -369,38 +338,28 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
         setBonusFish(updated);
       }
 
-      // Bad fish (frenzy trap) — fast, chaotic, ignores frenzy multiplier
       if (badFishRef.current.length > 0) {
         if (doCleanup) {
-          badFishRef.current = [];
-          setBadFish([]);
+          badFishRef.current = []; setBadFish([]);
         } else {
           const updated = badFishRef.current.map((bdf) => {
             let fish = bdf;
-            // Random direction changes after entry
             if (!fish.justSpawned && now > fish.nextTurnAt) {
               fish = { ...fish, angle: Math.random() * 2 * Math.PI,
                 nextTurnAt: now + BAD_FISH_TURN_MIN + Math.random() * (BAD_FISH_TURN_MAX - BAD_FISH_TURN_MIN) };
             }
             const moved = moveSingleFish(fish, speedRef.current, cursorRef.current, mobile, slowmoEndRef.current, 0, BONUS_FISH_SIZE);
-            // Respawn from a random edge to keep count constant during frenzy
             if (moved.remove) {
-              return {
-                ...createOffscreenFish(nextId.current++),
-                type: 'bad',
-                postEntrySpeedMult: BAD_FISH_SPEED_MULT,
-                nextTurnAt: now + BAD_FISH_TURN_MIN + Math.random() * (BAD_FISH_TURN_MAX - BAD_FISH_TURN_MIN),
-              };
+              return { ...createOffscreenFish(nextId.current++), type: 'bad', postEntrySpeedMult: BAD_FISH_SPEED_MULT,
+                nextTurnAt: now + BAD_FISH_TURN_MIN + Math.random() * (BAD_FISH_TURN_MAX - BAD_FISH_TURN_MIN) };
             }
             return moved;
           });
-          badFishRef.current = updated;
-          setBadFish(updated);
+          badFishRef.current = updated; setBadFish(updated);
         }
       }
     }, TICK_MS);
 
-    // 1 s timer
     const timeInterval = setInterval(() => {
       const now = Date.now();
       setEffectsDisplay({
@@ -409,6 +368,7 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
         slowmo:     Math.max(0, Math.round((slowmoEndRef.current    - now) / 1000)),
       });
       setTimeLeft((t) => {
+        if (pausedRef.current) return t; // clock paused while level card showing
         if (t <= 1) {
           clearInterval(fishInterval);
           clearInterval(timeInterval);
@@ -416,13 +376,11 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
           clearInterval(frenzySpawnRef.current);
           clearTimeout(badFishTimerRef.current);
           clearTimeout(fishRespawnTimerRef.current);
-          badFishRef.current = [];
-          setBadFish([]);
-          comboRef.current = 0;
+          badFishRef.current = []; setBadFish([]);
           setPhase('gameover');
           return 0;
         }
-        if (now < slowmoEndRef.current) return t; // pause timer during slow-mo
+        if (now < slowmoEndRef.current) return t;
         return t - 1;
       });
     }, 1000);
@@ -437,25 +395,20 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
     };
   }, [phase]); // eslint-disable-line
 
-  // ── Bonus fish click ──
   const handleBonusFishClick = (fishId, e) => {
     e.stopPropagation();
     if (phase !== 'running') return;
     const bf = bonusFishRef.current.find((f) => f.id === fishId);
     if (!bf) return;
-
     const { type } = bf;
     bonusFishRef.current = bonusFishRef.current.filter((f) => f.id !== fishId);
     setBonusFish([...bonusFishRef.current]);
-
     setScreenFlash(type);
     setTimeout(() => setScreenFlash(null), 700);
-
     const now    = Date.now();
     const mobile = isMobileRef.current;
-
     if (type === 'frenzy') {
-      frenzyEndRef.current   = now + 10000;
+      frenzyEndRef.current = now + 10000;
       frenzyCleanedRef.current = false;
       clearInterval(frenzySpawnRef.current);
       frenzySpawnRef.current = setInterval(() => {
@@ -465,123 +418,158 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
           return [...prev, createOffscreenFish(nextId.current++)];
         });
       }, mobile ? MOBILE_FRENZY_INT : DESKTOP_FRENZY_INT);
-
-      // Spawn 1–2 bad fish after a short delay
       clearTimeout(badFishTimerRef.current);
       badFishTimerRef.current = setTimeout(() => {
         if (frenzyEndRef.current <= 0 || Date.now() >= frenzyEndRef.current) return;
-        const count = isMobileRef.current ? 2 : 4;
+        const count = mobile ? 2 : 4;
         const spawnedAt = Date.now();
         const newBadFish = Array.from({ length: count }, () => ({
-          ...createOffscreenFish(nextId.current++),
-          type: 'bad',
-          spawnedAt,
+          ...createOffscreenFish(nextId.current++), type: 'bad', spawnedAt,
           postEntrySpeedMult: BAD_FISH_SPEED_MULT,
           nextTurnAt: spawnedAt + BAD_FISH_TURN_MIN + Math.random() * (BAD_FISH_TURN_MAX - BAD_FISH_TURN_MIN),
         }));
-        badFishRef.current = newBadFish;
-        setBadFish(newBadFish);
+        badFishRef.current = newBadFish; setBadFish(newBadFish);
       }, BAD_FISH_SPAWN_DELAY);
     } else if (type === 'timebonus') {
-      setTimeLeft((prev) => Math.min(prev + 15, 99));
-    } else if (type === 'multiplier') {
-      multiplierEndRef.current = now + 8000;
+      const cap = getLevelTime(levelRef.current) + TIME_BONUS_SECS;
+      setTimeLeft((prev) => Math.min(prev + TIME_BONUS_SECS, cap));
+    } else if (type === 'free') {
+      // Auto-catch +1 of each incomplete quota category
+      const quota = getLevelQuota(levelRef.current);
+      let caught = 0;
+      if (caughtCommonRef.current < quota.common) {
+        caughtCommonRef.current++;
+        setCaughtCommon(caughtCommonRef.current);
+        caught++;
+      }
+      if (quota.rare > 0 && caughtRareRef.current < quota.rare) {
+        caughtRareRef.current++;
+        setCaughtRare(caughtRareRef.current);
+        caught++;
+      }
+      if (quota.super > 0 && caughtSuperRef.current < quota.super) {
+        caughtSuperRef.current++;
+        setCaughtSuper(caughtSuperRef.current);
+        caught++;
+      }
+      totalFishRef.current += caught;
+      // Check if quota is now complete
+      if (
+        caughtCommonRef.current >= quota.common &&
+        caughtRareRef.current   >= quota.rare   &&
+        caughtSuperRef.current  >= quota.super
+      ) {
+        triggerLevelUp();
+      }
+    } else if (type === 'lure') {
+      // Spawn guaranteed quota fish on screen (still need to catch manually)
+      const quota = getLevelQuota(levelRef.current);
+      const pick = (pool) => pool[Math.floor(Math.random() * pool.length)];
+      const pickPattern = () => PATTERNS[Math.floor(Math.random() * PATTERNS.length)];
+      const seeds = [];
+      if (caughtCommonRef.current < quota.common) {
+        const need = Math.min(3, quota.common - caughtCommonRef.current);
+        for (let i = 0; i < need; i++)
+          seeds.push({ ...createRandomFish(nextId.current++), colour: pick(COMMON_COLOURS), pattern: pickPattern() });
+      }
+      if (quota.rare > 0 && caughtRareRef.current < quota.rare) {
+        const need = Math.min(2, quota.rare - caughtRareRef.current);
+        for (let i = 0; i < need; i++)
+          seeds.push({ ...createRandomFish(nextId.current++), colour: pick(RARE_COLOURS), pattern: pickPattern() });
+      }
+      if (quota.super > 0 && caughtSuperRef.current < quota.super) {
+        seeds.push({ ...createRandomFish(nextId.current++), colour: pick(SUPER_COLOURS), pattern: pickPattern() });
+      }
+      if (seeds.length > 0) setFishArray((prev) => [...prev, ...seeds]);
     } else if (type === 'slowmo') {
       slowmoEndRef.current = now + 6000;
     }
-
     spawnPowerUpNotif(type);
   };
 
-  // ── Bad fish click — ends frenzy and scatters all fish for 3s ──
   const handleBadFishClick = (fishId, e) => {
     e.stopPropagation();
     if (!badFishRef.current.find((f) => f.id === fishId) || phase !== 'running') return;
-
-    // End frenzy immediately
     frenzyEndRef.current = 0;
     frenzyCleanedRef.current = true;
     clearInterval(frenzySpawnRef.current);
     clearTimeout(badFishTimerRef.current);
-
-    // Remove all bad fish
-    badFishRef.current = [];
-    setBadFish([]);
-
-    // Scatter all regular fish toward the nearest edge at high speed
+    badFishRef.current = []; setBadFish([]);
     setFishArray((prev) => prev.map((f) => ({
-      ...f,
-      swimOff: true,
-      justSpawned: false,
-      speedMult: FISH_SCATTER_SPEED,
-      angle: nearestEdgeAngle(f.x, f.y),
+      ...f, swimOff: true, justSpawned: false, speedMult: FISH_SCATTER_SPEED, angle: nearestEdgeAngle(f.x, f.y),
     })));
-
-    // 3-second break before fish respawn
     clearTimeout(fishRespawnTimerRef.current);
     fishRespawnTimerRef.current = setTimeout(() => {
       setFishArray(Array.from({ length: initialFishCount.current }, () => createOffscreenFish(nextId.current++)));
     }, 3000);
-
     setScreenFlash('bad');
     setTimeout(() => setScreenFlash(null), 700);
     spawnPowerUpNotif('bad');
   };
 
-  // ── Regular fish click ──
   const handleFishClick = (fishId, e) => {
     e.stopPropagation();
     if (phase !== 'running') return;
-
-    // Sync cursor position — stopPropagation prevents container's onPointerDown from firing
     const clientX = e.clientX ?? e.touches?.[0]?.clientX;
     const clientY = e.clientY ?? e.touches?.[0]?.clientY;
     if (clientX != null && clientY != null) {
       cursorRef.current = { x: clientX, y: clientY };
       setCursorPos({ x: clientX, y: clientY });
     }
-
     const fishObj = fishArray.find((f) => f.id === fishId);
     if (!fishObj) return;
     const { colour, pattern } = fishObj;
 
-    const newCombo = comboRef.current + 1;
-    comboRef.current = newCombo;
-    setComboCount(newCombo);
+    // Determine tier
+    const isSuper  = SUPER_COLOURS.includes(colour);
+    const isRare   = !isSuper && RARE_COLOURS.includes(colour);
 
-    let points = 10;
-    if (SUPER_COLOURS.includes(colour))     points = 200;
-    else if (RARE_COLOURS.includes(colour)) points = 50;
+    // Update quota counts
+    if (isSuper) {
+      const n = caughtSuperRef.current + 1;
+      caughtSuperRef.current = n;
+      setCaughtSuper(n);
+    } else if (isRare) {
+      const n = caughtRareRef.current + 1;
+      caughtRareRef.current = n;
+      setCaughtRare(n);
+    } else {
+      const n = caughtCommonRef.current + 1;
+      caughtCommonRef.current = n;
+      setCaughtCommon(n);
+    }
+    totalFishRef.current++;
+
+    // Score notification
+    let points = isSuper ? 200 : isRare ? 50 : 10;
     if (fishObj.speedFish) points = Math.floor(points * 3);
-    points = Math.round(points * getComboMult(newCombo));
     if (Date.now() < multiplierEndRef.current) points *= 2;
-
-    setScore((prev) => prev + points);
 
     const notifId = nextNotif.current++;
     const { x: curX, y: curY } = cursorRef.current;
-    let notifRarity = fishObj.speedFish ? 'speed' : 'common';
-    if (!fishObj.speedFish && SUPER_COLOURS.includes(colour))     notifRarity = 'super';
-    else if (!fishObj.speedFish && RARE_COLOURS.includes(colour)) notifRarity = 'rare';
+    const notifRarity = fishObj.speedFish ? 'speed' : isSuper ? 'super' : isRare ? 'rare' : 'common';
     setScoreNotifs((prev) => [...prev, { id: notifId, x: curX, y: curY, points, rarity: notifRarity }]);
     setTimeout(() => setScoreNotifs((prev) => prev.filter((n) => n.id !== notifId)), 1000);
 
     setFishArray((prev) => [...prev.filter((f) => f.id !== fishId), createMaybeFastFish(nextId.current++)]);
-
     const key = `${colour} ${pattern}`;
     setCaughtRecords((prev) => ({ ...prev, [key]: (prev[key] || 0) + 1 }));
     setCatchAnimations((prev) => [...prev, { id: fishId, startX: curX, startY: curY, colour, pattern }]);
+
+    // Check quota completion (after updating refs)
+    const quota = getLevelQuota(levelRef.current);
+    if (
+      caughtCommonRef.current >= quota.common &&
+      caughtRareRef.current   >= quota.rare   &&
+      caughtSuperRef.current  >= quota.super
+    ) {
+      triggerLevelUp();
+    }
   };
 
   const handleCatchAnimationEnd = (animId) =>
     setCatchAnimations((prev) => prev.filter((a) => a.id !== animId));
 
-  // ── Speed controls ──
-  const handleReset     = () => { setFishArray(Array.from({ length: initialFishCount.current }, (_, i) => createRandomFish(i))); nextId.current = FISH_SIZE; setSpeed(4.0); };
-  const handleSpeedDown = () => setSpeed((s) => Math.max(MIN_SPEED, parseFloat((s - 0.5).toFixed(2))));
-  const handleSpeedUp   = () => setSpeed((s) => Math.min(MAX_SPEED, parseFloat((s + 0.5).toFixed(2))));
-
-  // ── Submit score to global leaderboard ──
   const handleSubmitScore = async () => {
     if (submitting || scoreSubmitted) return;
     setSubmitting(true);
@@ -589,10 +577,11 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
     try {
       await submitScore({
         playerName,
-        score,
-        sessionId: sessionToken.current,
-        gameMode: 'timeTrial',
-        records: caughtRecords,
+        score:       levelRef.current,
+        sessionId:   sessionToken.current,
+        gameMode:    'quota',
+        records:     caughtRecords,
+        pointsScore: totalFishRef.current,
       });
       setScoreSubmitted(true);
     } catch (err) {
@@ -602,7 +591,6 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
     }
   };
 
-  // ── Game over menu delay ──
   useEffect(() => {
     if (phase !== 'gameover') return;
     setMenuVisible(false);
@@ -610,14 +598,13 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
     return () => clearTimeout(t);
   }, [phase]);
 
-  // ── High score ──
   useEffect(() => {
     if (phase !== 'gameover') return;
-    const saved = JSON.parse(localStorage.getItem('ttHighScore')) || { score: 0, records: [] };
-    if (score > saved.score) {
-      localStorage.setItem('ttHighScore', JSON.stringify({ score, records: caughtRecords }));
+    const saved = JSON.parse(localStorage.getItem('quotaHighScore') || 'null') || { level: 0, fish: 0, records: {} };
+    if (levelRef.current > saved.level || (levelRef.current === saved.level && totalFishRef.current > saved.fish)) {
+      localStorage.setItem('quotaHighScore', JSON.stringify({ level: levelRef.current, fish: totalFishRef.current, records: caughtRecords }));
     }
-  }, [phase, score, caughtRecords]);
+  }, [phase, caughtRecords]);
 
   // ════════════════════════════════════════════════════════════════════════════
   // RENDER
@@ -653,20 +640,24 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
         </li>
       );
     };
-
     return (
       <div className="container">
         <FishField count={0} isInteractive={false} isMobile={isMobile} />
         <div className="trial-gameover-overlay">
           <div className="trial-gameover-content">
-
             {gameOverView === 'summary' ? (
-              /* ── SUMMARY VIEW ── */
               <div className="gameover-summary">
-                <h2 className="gameover-title">Game Over</h2>
-                <div className="gameover-score-block">
-                  <span className="gameover-score-number">{score}</span>
-                  <span className="gameover-score-label">POINTS</span>
+                <h2 className="gameover-title">Time's Up!</h2>
+                <div className="ts-gameover-stats">
+                  <div className="ts-stat-block">
+                    <span className="ts-stat-number">{levelRef.current}</span>
+                    <span className="ts-stat-label">LEVEL</span>
+                  </div>
+                  <div className="ts-stat-divider" />
+                  <div className="ts-stat-block">
+                    <span className="ts-stat-number">{totalFishRef.current}</span>
+                    <span className="ts-stat-label">FISH</span>
+                  </div>
                 </div>
                 {menuVisible && leaderboardEnabled && (
                   <div className="gameover-submit">
@@ -696,9 +687,11 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
                     <button className="gameover-action-btn gameover-action-primary" onClick={onPlayAgain}>
                       ▶ Play Again
                     </button>
-                    <button className="gameover-action-btn" onClick={onGoHighScore}>
-                      🏆 Leaderboard
-                    </button>
+                    {onGoHighScore && (
+                      <button className="gameover-action-btn" onClick={onGoHighScore}>
+                        🏆 Leaderboard
+                      </button>
+                    )}
                   </div>
                 )}
                 {menuVisible && (
@@ -706,7 +699,6 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
                 )}
               </div>
             ) : (
-              /* ── CATCHES VIEW ── */
               <>
                 <button className="gameover-back-btn" onClick={() => setGameOverView('summary')}>← Back</button>
                 <h2>Fish Caught</h2>
@@ -730,7 +722,6 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
                 </div>
               </>
             )}
-
           </div>
         </div>
       </div>
@@ -738,11 +729,13 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
   }
 
   // RUNNING
+  const quota        = getLevelQuota(level);
+  const doneCommon   = caughtCommon >= quota.common;
+  const doneRare     = caughtRare   >= quota.rare;
+  const doneSuper    = caughtSuper  >= quota.super;
 
   return (
     <div className="container" onPointerDown={handlePointerDown}>
-      <button className="back-home-btn" onClick={() => setShowQuitConfirm(true)}>Quit</button>
-
       {showQuitConfirm && (
         <div className="quit-confirm-overlay">
           <div className="quit-confirm-box">
@@ -755,23 +748,60 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
         </div>
       )}
 
-      {/* Active power-up vignettes */}
+      {levelUpFlash && <div className="ts-levelup-flash" />}
+
+      {/* Level complete screen (non-interactive, auto-dismisses) */}
+      {showLevelComplete && completedLevel && (
+        <div className="quota-level-complete">
+          <div className="quota-level-complete-inner">
+            <div className="quota-level-complete-check">✓</div>
+            <div className="quota-level-complete-title">Level {completedLevel} Complete!</div>
+            <p className="quota-level-complete-sub">Get ready for Level {completedLevel + 1}…</p>
+          </div>
+        </div>
+      )}
+
+      {/* Level intro card */}
+      {showLevelCard && levelCardQuota && (
+        <div className="quota-level-card" onPointerDown={dismissLevelCard}>
+          <div className="quota-level-card-inner">
+            <div className="quota-level-card-title">Level {level}</div>
+            <p className="quota-level-card-subtitle">Catch before time runs out:</p>
+            <ul className="quota-level-card-list">
+              <li className="quota-card-row quota-card-common">
+                <span className="quota-card-icon">🐟</span>
+                <span>{levelCardQuota.common} Common fish</span>
+              </li>
+              {levelCardQuota.rare > 0 && (
+                <li className="quota-card-row quota-card-rare">
+                  <span className="quota-card-icon">✨</span>
+                  <span>{levelCardQuota.rare} Rare fish <span className="quota-card-hint">(shimmering)</span></span>
+                </li>
+              )}
+              {levelCardQuota.super > 0 && (
+                <li className="quota-card-row quota-card-super">
+                  <span className="quota-card-icon">🌟</span>
+                  <span>{levelCardQuota.super} Super Rare fish <span className="quota-card-hint">(glowing)</span></span>
+                </li>
+              )}
+            </ul>
+            <p className="quota-level-card-time">{getLevelTime(level)}s on the clock</p>
+            <p className="quota-level-card-tap">Tap to start</p>
+          </div>
+        </div>
+      )}
+
       {effectsDisplay.frenzy     > 0 && <div className="powerup-vignette powerup-vignette-frenzy" />}
       {effectsDisplay.multiplier > 0 && <div className="powerup-vignette powerup-vignette-multiplier" />}
       {effectsDisplay.slowmo     > 0 && <div className="powerup-vignette powerup-vignette-slowmo" />}
-
-      {/* Screen flash on power-up catch */}
       {screenFlash && <div className={`screen-flash screen-flash-${screenFlash}`} />}
 
-      {/* Floating score notifications */}
       {scoreNotifs.map((n) => (
         <span key={n.id} className={`score-notif score-notif-${n.rarity}`}
           style={{ left: `${n.x}px`, top: `${n.y}px` }}>
           +{n.points}
         </span>
       ))}
-
-      {/* Power-up catch notifications */}
       {powerUpNotifs.map((n) => (
         <span key={n.id} className={`power-up-notif pup-notif-${n.type}`}
           style={{ left: `${n.x}px`, top: `${n.y}px` }}>
@@ -782,7 +812,6 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
       <div className="light-rays" />
       <div className="water-surface" />
 
-      {/* FishDisplay handles Bubbles, live fish, hook cursor, and catch animations */}
       <FishDisplay
         fishArray={fishArray}
         isMobile={isMobile}
@@ -795,57 +824,54 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
         speed={speed}
       />
 
-      {/* Bonus fish (rendered on top of regular fish) */}
       {bonusFish.map((bf) => (
         <BonusFish
-          key={bf.id}
-          id={bf.id}
-          x={bf.x}
-          y={bf.y}
-          type={bf.type}
-          angle={bf.angle}
+          key={bf.id} id={bf.id} x={bf.x} y={bf.y} type={bf.type} angle={bf.angle}
           onClick={(e) => handleBonusFishClick(bf.id, e)}
           isMobile={isMobile}
           isExpiring={Date.now() - bf.spawnedAt > BONUS_FISH_LIFESPAN - 2000}
+          labelText={bf.type === 'timebonus' ? `+${TIME_BONUS_SECS}s` : undefined}
         />
       ))}
 
-      {/* Bad fish — frenzy trap (clicking any one ends frenzy and scatters all fish) */}
       {badFish.map((bdf) => (
         <BonusFish
-          key={bdf.id}
-          id={bdf.id}
-          x={bdf.x}
-          y={bdf.y}
-          type="bad"
-          angle={bdf.angle}
+          key={bdf.id} id={bdf.id} x={bdf.x} y={bdf.y} type="bad" angle={bdf.angle}
           onClick={(e) => handleBadFishClick(bdf.id, e)}
           isMobile={isMobile}
           isExpiring={false}
         />
       ))}
 
-      <div className={`time-left-display${timeLeft <= 10 ? ' time-left-urgent' : ''}`}>{timeLeft}s</div>
-      <div className="top-center-ui">
-        <div className="score-display">Score: {score}</div>
+      {/* Top HUD */}
+      <div className="quota-top-hud">
+        <button className="ts-quit-btn" onClick={() => setShowQuitConfirm(true)}>Quit</button>
+        <div className="quota-hud-level">LVL {level}</div>
+        <div className={`quota-hud-timer${timeLeft <= TIME_URGENT_SECS ? ' quota-hud-timer-urgent' : ''}`}>{timeLeft}s</div>
+        <div className="quota-hud-items">
+          <span className={`quota-item${doneCommon ? ' quota-item-done' : ''}`}>
+            {doneCommon ? '✓ Common' : `Common ${caughtCommon}/${quota.common}`}
+          </span>
+          {quota.rare > 0 && (
+            <span className={`quota-item quota-item-rare${doneRare ? ' quota-item-done' : ''}`}>
+              {doneRare ? '✓ Rare' : `Rare ${caughtRare}/${quota.rare}`}
+            </span>
+          )}
+          {quota.super > 0 && (
+            <span className={`quota-item quota-item-super${doneSuper ? ' quota-item-done' : ''}`}>
+              {doneSuper ? '✓ Super' : `Super ${caughtSuper}/${quota.super}`}
+            </span>
+          )}
+        </div>
       </div>
 
-      {/* Power-up HUD */}
-      {comboCount >= 3 && (
-        <div className={`combo-bg-watermark combo-bg-x${getComboMult(comboCount)}`}>
-          x{getComboMult(comboCount)}
-        </div>
-      )}
+      <div className="top-center-ui">
+        <div className="score-display">Fish: {totalFishRef.current}</div>
+      </div>
 
       <div className="power-up-hud">
-        {comboCount >= 3 && (
-          <div className={`pup-pill pup-combo pup-combo-x${getComboMult(comboCount)}`}>
-            🔥 x{getComboMult(comboCount)} ({comboCount})
-          </div>
-        )}
-        {effectsDisplay.frenzy     > 0 && <div className="pup-pill pup-frenzy">💥 FRENZY {effectsDisplay.frenzy}s</div>}
-        {effectsDisplay.multiplier > 0 && <div className="pup-pill pup-multiplier">⚡ x2 {effectsDisplay.multiplier}s</div>}
-        {effectsDisplay.slowmo     > 0 && <div className="pup-pill pup-slowmo">❄ SLOW {effectsDisplay.slowmo}s</div>}
+        {effectsDisplay.frenzy > 0 && <div className="pup-pill pup-frenzy">💥 FRENZY {effectsDisplay.frenzy}s</div>}
+        {effectsDisplay.slowmo > 0 && <div className="pup-pill pup-slowmo">❄ SLOW {effectsDisplay.slowmo}s</div>}
       </div>
     </div>
   );
