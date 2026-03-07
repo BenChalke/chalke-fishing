@@ -7,7 +7,6 @@ import Hook from "./components/Hook";
 import Bubbles from "./components/Bubbles";
 import CatchAnimation from "./components/CatchAnimation";
 import Controls from "./components/Controls";
-import WelcomePopup from "./components/WelcomePopup";
 import StatsPopup from "./components/StatsPopup";
 import InfoPopup from "./components/InfoPopup";
 
@@ -46,10 +45,16 @@ export default function FreePlayGame({ onBackToHome }) {
   const [caughtRecords, setCaughtRecords] = useState(() => {
     try {
       const saved = localStorage.getItem("caughtRecords");
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // backwards compat: convert old array format to tally object
+        if (Array.isArray(parsed)) {
+          return parsed.reduce((acc, t) => { acc[t] = (acc[t] || 0) + 1; return acc; }, {});
+        }
+        return parsed;
+      }
+    } catch {}
+    return {};
   });
   const [score, setScore] = useState(() => {
     try {
@@ -62,7 +67,6 @@ export default function FreePlayGame({ onBackToHome }) {
   const [scoreNotifs, setScoreNotifs] = useState([]);
   const [showCaughtPopup, setShowCaughtPopup] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
-  const [showWelcome, setShowWelcome] = useState(false);
   const [showControls, setShowControls] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -81,8 +85,6 @@ export default function FreePlayGame({ onBackToHome }) {
     nextId.current = count;
     setFishArray(createInitialFish());
     setIsMobile("ontouchstart" in window);
-    const seen = localStorage.getItem("seenWelcome");
-    if (!seen) setShowWelcome(true);
   }, []);
 
   // Persist caughtRecords → localStorage
@@ -214,6 +216,15 @@ export default function FreePlayGame({ onBackToHome }) {
   // ——— FISH‐CLICK HANDLER ———
   const handleFishClick = (fishId, e) => {
     e.stopPropagation();
+
+    // Sync cursor position — stopPropagation prevents container's onPointerDown from firing
+    const clientX = e.clientX ?? e.touches?.[0]?.clientX;
+    const clientY = e.clientY ?? e.touches?.[0]?.clientY;
+    if (clientX != null && clientY != null) {
+      cursorRef.current = { x: clientX, y: clientY };
+      setCursorPos({ x: clientX, y: clientY });
+    }
+
     const fishObj = fishArray.find((f) => f.id === fishId);
     if (!fishObj) return;
     const { colour, pattern } = fishObj;
@@ -234,7 +245,7 @@ export default function FreePlayGame({ onBackToHome }) {
     });
     // 3) Add to caughtRecords & trigger catch animation
     const caughtType = `${colour} ${pattern}`;
-    setCaughtRecords((prev) => [...prev, caughtType]);
+    setCaughtRecords((prev) => ({ ...prev, [caughtType]: (prev[caughtType] || 0) + 1 }));
     const { x: curX, y: curY } = cursorRef.current;
     setCatchAnimations((prev) => [
       ...prev,
@@ -279,21 +290,14 @@ export default function FreePlayGame({ onBackToHome }) {
     setShowCaughtPopup((prev) => !prev);
   };
 
-  // Close welcome popup
-  const closeWelcome = () => {
-    localStorage.setItem("seenWelcome", "true");
-    setShowWelcome(false);
-  };
 
-  // Build tally for StatsPopup
-  const tally = caughtRecords.reduce((acc, typeStr) => {
-    acc[typeStr] = (acc[typeStr] || 0) + 1;
-    return acc;
-  }, {});
+  // caughtRecords is already a tally object
+  const tally = caughtRecords;
+  const totalCaught = Object.values(caughtRecords).reduce((a, b) => a + b, 0);
 
   return (
     <div
-      className={`container ${!showWelcome ? "no-cursor" : ""}`}
+      className="container no-cursor"
       onPointerDown={handlePointerDown}
     >
   
@@ -341,9 +345,6 @@ export default function FreePlayGame({ onBackToHome }) {
         )}
       </div>
 
-      {/* — WELCOME POPUP (only once) — */}
-      {showWelcome && <WelcomePopup onClose={closeWelcome} />}
-
       {/* — ENVIRONMENT OVERLAYS — */}
       <div className="light-rays" />
       <div className="water-surface" />
@@ -379,7 +380,7 @@ export default function FreePlayGame({ onBackToHome }) {
 
       {/* — SPEED & FISH‐CAUGHT LABELS (top-right) — */}
       <div className="speed-label">Speed: {speed.toFixed(1)}</div>
-      <div className="fish-count-label">Fish Caught: {caughtRecords.length}</div>
+      <div className="fish-count-label">Fish Caught: {totalCaught}</div>
 
       {/* — LIVE FISH SWIMMING AROUND — */}
       {fishArray.map((fish) => {
@@ -403,7 +404,7 @@ export default function FreePlayGame({ onBackToHome }) {
       })}
 
       {/* — HOOK AS CURSOR ON DESKTOP (only when not catching and welcome is closed) — */}
-      {!isMobile && !showWelcome && (
+      {!isMobile && (
         <Hook x={cursorPos.x} y={cursorPos.y} jerking={isJerking} />
       )}
 

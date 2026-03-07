@@ -46,11 +46,11 @@ const SPEED_FISH_LIFESPAN = 12000;
 
 const DESKTOP_TICK          = 30;  // ms between movement updates
 const MOBILE_TICK           = 30;
-const FRENZY_FISH_MULT      = 2.5; // frenzy spawns up to this multiple of the base fish count
+const FRENZY_FISH_MULT      = 3.5; // frenzy spawns up to this multiple of the base fish count
 const DESKTOP_FRENZY_INT    = 150; // ms between frenzy spawns
 const MOBILE_FRENZY_INT     = 400;
-const FRENZY_SPEED_MULT        = 2.2; // speed multiplier for regular fish during frenzy (desktop)
-const MOBILE_FRENZY_SPEED_MULT = 2.0; // slightly slower on mobile for manageability
+const FRENZY_SPEED_MULT        = 1.75; // speed multiplier for regular fish during frenzy (desktop)
+const MOBILE_FRENZY_SPEED_MULT = 1.6;  // slightly slower on mobile for manageability
 const BAD_FISH_SPAWN_DELAY  = 2500; // ms after frenzy starts before bad fish appears
 const BAD_FISH_SPEED_MULT   = 4.0; // post-entry speedMult for bad fish (faster than frenzy fish)
 const BAD_FISH_TURN_MIN     = 1500; // ms min between random direction changes
@@ -262,11 +262,11 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
     const FRENZ_INT = mobile ? MOBILE_FRENZY_INT  : DESKTOP_FRENZY_INT;
     const target    = initialFishCount.current; // fish count to restore after frenzy
 
-    // Bonus fish scheduler (first spawn: 3–10 s; subsequent: 15–20 s)
+    // Bonus fish scheduler (first spawn: 2–5 s; subsequent: 7–11 s)
     const scheduleBonusSpawn = (isFirst = false) => {
       const delay = isFirst
-        ? 3000  + Math.random() * 7000
-        : 15000 + Math.random() * 5000;
+        ? 2000 + Math.random() * 3000
+        : 7000 + Math.random() * 4000;
       bonusSpawnTimerRef.current = setTimeout(() => {
         const types = ['frenzy', 'timebonus', 'multiplier', 'slowmo'];
         const type  = types[Math.floor(Math.random() * types.length)];
