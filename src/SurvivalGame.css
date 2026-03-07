@@ -1,0 +1,122 @@
+/* src/SurvivalGame.css */
+
+/* Imports shared game styles */
+@import './TimeTrialGame.css';
+
+/* ----------------------------------------
+   Danger vignette — always-on red glow
+   ---------------------------------------- */
+@keyframes danger-pulse {
+  0%, 100% { box-shadow: inset 0 0 60px 16px rgba(180, 0, 0, 0.18); }
+  50%       { box-shadow: inset 0 0 90px 28px rgba(220, 0, 0, 0.32); }
+}
+.survival-danger-vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 49;
+  animation: danger-pulse 2.5s ease-in-out infinite;
+}
+
+/* ----------------------------------------
+   Timer — same pill as time-left-display
+   ---------------------------------------- */
+.survival-timer {
+  color: #ffffff;
+}
+
+/* ----------------------------------------
+   Bad fish skull counter (top-left area)
+   ---------------------------------------- */
+.survival-bad-count {
+  position: absolute;
+  top: 60px;
+  right: 12px;
+  background: rgba(140, 0, 0, 0.55);
+  border: 1px solid rgba(255, 60, 60, 0.40);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 6px 14px;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #ff8888;
+  z-index: 50;
+  pointer-events: none;
+  text-shadow: 0 0 8px rgba(255, 60, 60, 0.6);
+}
+
+@media (max-width: 600px) {
+  .survival-bad-count {
+    top: 56px;
+    right: 8px;
+    font-size: 0.95rem;
+    padding: 4px 10px;
+  }
+}
+
+/* ----------------------------------------
+   Game over — "You died!" title
+   ---------------------------------------- */
+.survival-gameover-title {
+  color: #ff4444 !important;
+  text-shadow: 0 0 30px rgba(255, 60, 60, 0.8), 0 0 60px rgba(255, 0, 0, 0.4) !important;
+}
+
+/* ----------------------------------------
+   Survival stats block (time + score)
+   ---------------------------------------- */
+.survival-stats-block {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.survival-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.survival-stat-number {
+  font-size: 3.6rem;
+  font-weight: 900;
+  line-height: 1;
+  background: linear-gradient(135deg, #ff6666, #ffaaaa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 14px rgba(255, 80, 80, 0.5));
+}
+
+.survival-stat-score {
+  background: linear-gradient(135deg, #00d4ff, #00ffcc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 14px rgba(0, 212, 255, 0.5));
+}
+
+.survival-stat-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  color: rgba(200, 200, 200, 0.50);
+  text-transform: uppercase;
+}
+
+.survival-stat-divider {
+  width: 1px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+@media (max-width: 400px) {
+  .survival-stat-number {
+    font-size: 2.8rem;
+  }
+  .survival-stats-block {
+    gap: 16px;
+  }
+}

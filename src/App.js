@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import FreePlayGame from "./FreePlayGame";
 import TimeTrialGame from "./TimeTrialGame";
+import SurvivalGame from "./SurvivalGame";
 import HighScoreScreen from "./HighScoreScreen";
 import FishField from "./components/FishField";
 import "./App.css";
@@ -9,10 +10,12 @@ import "./App.css";
 export default function App() {
   const [mode, setMode] = useState("home");
   const [ttKey, setTtKey] = useState(0);
+  const [survivalKey, setSurvivalKey] = useState(0);
 
   const goHome = () => setMode("home");
   const goFree = () => setMode("free");
   const goTimeTrial = () => setMode("timeTrial");
+  const goSurvival = () => setMode("survival");
   const goHighScore = () => setMode("highScore");
 
   // Otherwise, render the rest of the app
@@ -37,6 +40,7 @@ export default function App() {
               <p className="home-btn-desc">60 seconds — how many can you catch?</p>
             </div>
             <div className="home-secondary-row">
+              <button className="home-btn-secondary" onClick={goSurvival}>☠ Survival</button>
               <button className="home-btn-secondary" onClick={goFree}>🎣 Free Fishing</button>
               <button className="home-btn-secondary" onClick={goHighScore}>🏆 High Scores</button>
             </div>
@@ -57,6 +61,14 @@ export default function App() {
       onBackToHome={goHome}
       onPlayAgain={() => setTtKey((k) => k + 1)}
       onGoHighScore={goHighScore}
+    />;
+  }
+
+  if (mode === "survival") {
+    return <SurvivalGame
+      key={survivalKey}
+      onBackToHome={goHome}
+      onPlayAgain={() => setSurvivalKey((k) => k + 1)}
     />;
   }
 
