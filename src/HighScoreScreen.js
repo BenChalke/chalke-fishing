@@ -118,7 +118,7 @@ export default function HighScoreScreen({ onBackToHome }) {
   const [quotaLocal]    = useState(() => readSavedQuotaScore());
 
   // Global scores
-  const [leaderTab, setLeaderTab]     = useState('local');
+  const [leaderTab, setLeaderTab]     = useState('global');
   const [globalScores, setGlobalScores] = useState([]);
   const [globalLoading, setGlobalLoading] = useState(false);
   const [globalError, setGlobalError]   = useState('');
@@ -140,7 +140,7 @@ export default function HighScoreScreen({ onBackToHome }) {
 
   const switchGameMode = (m) => {
     setGameMode(m);
-    setLeaderTab('local');
+    setLeaderTab('global');
     setExpandedRow(null);
     setGlobalScores([]);
     setGlobalError('');
@@ -252,16 +252,16 @@ export default function HighScoreScreen({ onBackToHome }) {
       {leaderboardEnabled && (
         <div className="hs-tab-bar hs-tab-bar-secondary">
           <button
-            className={`hs-tab hs-tab-sm${leaderTab === 'local' ? ' hs-tab-active' : ''}`}
-            onClick={() => { setLeaderTab('local'); setExpandedRow(null); }}
-          >
-            Local
-          </button>
-          <button
             className={`hs-tab hs-tab-sm${leaderTab === 'global' ? ' hs-tab-active' : ''}`}
             onClick={() => setLeaderTab('global')}
           >
             Global
+          </button>
+          <button
+            className={`hs-tab hs-tab-sm${leaderTab === 'local' ? ' hs-tab-active' : ''}`}
+            onClick={() => { setLeaderTab('local'); setExpandedRow(null); }}
+          >
+            Local
           </button>
         </div>
       )}
