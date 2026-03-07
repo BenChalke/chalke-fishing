@@ -51,6 +51,20 @@ const FISH_SCATTER_SPEED      = 12;
 
 const CATCH_QUOTA_SECS        = 10; // seconds to catch a fish before game over
 
+const COMBO_THRESHOLDS = [
+  { min: 12, mult: 5 },
+  { min: 8,  mult: 4 },
+  { min: 5,  mult: 3 },
+  { min: 3,  mult: 2 },
+];
+
+function getComboMult(combo) {
+  for (const { min, mult } of COMBO_THRESHOLDS) {
+    if (combo >= min) return mult;
+  }
+  return 1;
+}
+
 // ── Pure helpers ──────────────────────────────────────────────────────────────
 
 function nearestEdgeAngle(x, y, fishSize = FISH_SIZE) {
@@ -128,6 +142,7 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
   const [timeSurvived, setTimeSurvived]       = useState(0);
   const [catchTimer, setCatchTimer]           = useState(CATCH_QUOTA_SECS);
   const [deathReason, setDeathReason]         = useState('');
+  const [comboCount, setComboCount]           = useState(0);
 
   // ── UI ──
   const [gameOverView, setGameOverView]       = useState('summary');
@@ -162,6 +177,7 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
   const badEscalationRef    = useRef(null);
   const maxBadRef           = useRef(BAD_FISH_MAX_DESKTOP);
   const catchTimerRef       = useRef(CATCH_QUOTA_SECS);
+  const comboRef            = useRef(0);
   const gameOverRef         = useRef(false);
 
   useEffect(() => { speedRef.current = speed; }, [speed]);
@@ -205,6 +221,19 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
     setCursorPos({ x: clientX, y: clientY });
     setIsJerking(true);
     setTimeout(() => setIsJerking(false), 300);
+
+    // Empty water click — reset combo (not during frenzy)
+    const inFrenzy = frenzyEndRef.current > 0 && Date.now() < frenzyEndRef.current;
+    if (phase === 'running' && comboRef.current > 0 && !inFrenzy) {
+      comboRef.current = 0;
+      setComboCount(0);
+      const id = nextNotif.current++;
+      setPowerUpNotifs((prev) => [...prev, {
+        id, type: 'combo-reset', label: 'MISS!',
+        x: clientX, y: clientY,
+      }]);
+      setTimeout(() => setPowerUpNotifs((prev) => prev.filter((n) => n.id !== id)), 900);
+    }
   };
 
   // ── Countdown ──
@@ -248,6 +277,7 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
     badFishRef.current = [];
     frenzyBadRef.current = [];
     setBadFish([]);
+    comboRef.current = 0;
     setDeathReason(reason);
     setPhase('gameover');
   };
@@ -257,6 +287,7 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
     if (phase !== 'running') return;
     gameOverRef.current = false;
     catchTimerRef.current = CATCH_QUOTA_SECS;
+    comboRef.current = 0;
 
     const mobile    = isMobileRef.current;
     const TICK_MS   = mobile ? MOBILE_TICK : DESKTOP_TICK;
@@ -436,6 +467,10 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
     const now    = Date.now();
     const mobile = isMobileRef.current;
 
+    // Catching a power-up counts as keeping the quota alive
+    catchTimerRef.current = CATCH_QUOTA_SECS;
+    setCatchTimer(CATCH_QUOTA_SECS);
+
     if (type === 'frenzy') {
       frenzyEndRef.current     = now + 10000;
       frenzyCleanedRef.current = false;
@@ -499,10 +534,15 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
     if (!fishObj) return;
     const { colour, pattern } = fishObj;
 
+    const newCombo = comboRef.current + 1;
+    comboRef.current = newCombo;
+    setComboCount(newCombo);
+
     let points = 10;
     if (SUPER_COLOURS.includes(colour))     points = 200;
     else if (RARE_COLOURS.includes(colour)) points = 50;
     if (fishObj.speedFish) points = Math.floor(points * 3);
+    points = Math.round(points * getComboMult(newCombo));
     if (Date.now() < multiplierEndRef.current) points *= 2;
 
     setScore((prev) => prev + points);
@@ -726,20 +766,32 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
         ☠ {allBadFish.length}
       </div>
 
-      {/* Catch quota bar */}
-      <div className="catch-quota-container">
-        <div className="catch-quota-label">
-          {quotaUrgent ? 'CATCH A FISH!' : 'Next catch'}
-        </div>
-        <div className="catch-quota-track">
+      {/* Catch quota bar — top of screen */}
+      <div className="catch-quota-top">
+        <div className="catch-quota-top-track">
           <div
-            className={`catch-quota-bar ${quotaUrgent ? 'catch-quota-urgent' : quotaWarning ? 'catch-quota-warning' : ''}`}
+            className={`catch-quota-top-fill ${quotaUrgent ? 'catch-quota-urgent' : quotaWarning ? 'catch-quota-warning' : ''}`}
             style={{ width: `${quotaPct}%` }}
           />
         </div>
+        <div className={`catch-quota-top-label ${quotaUrgent ? 'catch-quota-urgent-text' : quotaWarning ? 'catch-quota-warning-text' : ''}`}>
+          {quotaUrgent ? `CATCH! ${catchTimer}s` : `${catchTimer}s`}
+        </div>
       </div>
 
+      {/* Combo multiplier background watermark */}
+      {comboCount >= 3 && (
+        <div className={`combo-bg-watermark combo-bg-x${getComboMult(comboCount)}`}>
+          x{getComboMult(comboCount)}
+        </div>
+      )}
+
       <div className="power-up-hud">
+        {comboCount >= 3 && (
+          <div className={`pup-pill pup-combo pup-combo-x${getComboMult(comboCount)}`}>
+            🔥 x{getComboMult(comboCount)} ({comboCount})
+          </div>
+        )}
         {effectsDisplay.frenzy     > 0 && <div className="pup-pill pup-frenzy">💥 FRENZY {effectsDisplay.frenzy}s</div>}
         {effectsDisplay.multiplier > 0 && <div className="pup-pill pup-multiplier">⚡ x2 {effectsDisplay.multiplier}s</div>}
         {effectsDisplay.slowmo     > 0 && <div className="pup-pill pup-slowmo">❄ SLOW {effectsDisplay.slowmo}s</div>}

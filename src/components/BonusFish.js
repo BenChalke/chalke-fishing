@@ -61,7 +61,7 @@ export default function BonusFish({ id, x, y, type, angle, onClick, isMobile, is
     <div
       className={`bonus-fish bonus-fish-${type}${isExpiring ? ' bonus-fish-expiring' : ''}`}
       style={wrapperStyle}
-      {...(isMobile ? { onTouchEnd: onClick } : { onClick })}
+      onPointerDown={onClick}
     >
       <svg
         viewBox="0 0 200 100"

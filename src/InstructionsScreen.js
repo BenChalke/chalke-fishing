@@ -100,15 +100,25 @@ export default function InstructionsScreen({ onBackToHome }) {
               </div>
               <div className="instr-row">
                 <span className="instr-icon">⏳</span>
-                <p>You must catch a fish <strong>every 10 seconds</strong> or you die. Watch the bar at the bottom — keep it full!</p>
+                <p>You must catch a fish <strong>every 10 seconds</strong> or you die. Watch the bar at the top — keep it full!</p>
               </div>
               <div className="instr-row">
                 <span className="instr-icon">📈</span>
                 <p>The longer you survive, the faster the fish swim and the more skull fish appear. How long can you last?</p>
               </div>
+              <hr className="instr-divider" />
+              <p className="instr-subheading">Combo Chain</p>
+              <div className="instr-row">
+                <span className="instr-icon">🔥</span>
+                <p>Catch fish consecutively to build a <strong>combo multiplier</strong> — x2 at 3 catches, x3 at 5, x4 at 8, x5 at 12.</p>
+              </div>
+              <div className="instr-row">
+                <span className="instr-icon">✗</span>
+                <p>Clicking <strong>empty water</strong> resets your combo back to zero — aim carefully!</p>
+              </div>
               <div className="instr-row">
                 <span className="instr-icon">💥</span>
-                <p>During <strong>Frenzy</strong>, extra skull fish spawn — high risk, high reward.</p>
+                <p>During <strong>Frenzy</strong>, misses don't break your combo — extra skull fish spawn but the risk is worth it.</p>
               </div>
             </div>
           )}
