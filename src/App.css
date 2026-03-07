@@ -327,34 +327,92 @@ body {
 
 .home-buttons {
   display: flex;
-  gap: 14px;
-  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
 }
 
-.home-buttons button {
-  padding: 13px 28px;
-  font-size: 1rem;
+/* Primary block: Time Trial */
+.home-primary-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.home-btn-primary {
+  width: 100%;
+  padding: 16px 28px;
+  font-size: 1.15rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   background: linear-gradient(135deg, #00d4ff, #00ffcc);
   color: #001a22;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   transition: filter 0.2s, transform 0.12s;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  box-shadow: 0 4px 20px rgba(0, 212, 255, 0.35);
+  box-shadow: 0 4px 22px rgba(0, 212, 255, 0.45);
 }
 
-.home-buttons button:hover {
+.home-btn-primary:hover {
   filter: brightness(1.12);
   transform: translateY(-2px);
 }
 
-.home-buttons button:active {
+.home-btn-primary:active {
   transform: scale(0.96);
   filter: brightness(0.9);
+}
+
+.home-btn-desc {
+  margin: 0;
+  font-size: 0.78rem;
+  color: rgba(0, 212, 255, 0.55);
+  letter-spacing: 0.05em;
+}
+
+/* Secondary row: Free Fishing + High Scores */
+.home-secondary-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.home-btn-secondary {
+  flex: 1;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  background: rgba(0, 212, 255, 0.08);
+  color: rgba(0, 212, 255, 0.85);
+  border: 1px solid rgba(0, 212, 255, 0.28);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.12s;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.home-btn-secondary:hover {
+  background: rgba(0, 212, 255, 0.16);
+  border-color: rgba(0, 212, 255, 0.50);
+  transform: translateY(-1px);
+}
+
+.home-btn-secondary:active {
+  transform: scale(0.96);
+}
+
+.home-free-desc {
+  margin: 0;
+  font-size: 0.72rem;
+  color: rgba(0, 212, 255, 0.35);
+  letter-spacing: 0.04em;
 }
 
 /* Mobile tweak */
@@ -366,11 +424,12 @@ body {
   .home-overlay h1 {
     font-size: 2rem;
   }
-  .home-buttons {
-    flex-direction: column;
-    gap: 12px;
+  .home-btn-primary {
+    font-size: 1rem;
+    padding: 14px 20px;
   }
-  .home-buttons button {
-    padding: 13px 20px;
+  .home-btn-secondary {
+    font-size: 0.82rem;
+    padding: 9px 10px;
   }
 }

@@ -38,7 +38,7 @@ const MAX_SPEED = 20.0;
 export default function FreePlayGame({ onBackToHome }) {
   // ——— STATE ———
   const [fishArray, setFishArray] = useState([]);
-  const [speed, setSpeed] = useState(4.0);
+  const [speed, setSpeed] = useState(2.5);
   const [cursorPos, setCursorPos] = useState({ x: -1000, y: -1000 });
   const [isJerking, setIsJerking] = useState(false);
   const [catchAnimations, setCatchAnimations] = useState([]);

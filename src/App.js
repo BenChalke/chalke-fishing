@@ -32,9 +32,15 @@ export default function App() {
           <h1>Chalke Fishing</h1>
           <p className="home-subtitle">Cast your line. Catch them all.</p>
           <div className="home-buttons">
-            <button onClick={goFree}>🎣 Fishing</button>
-            <button onClick={goTimeTrial}>⏱ Time Trial</button>
-            <button onClick={goHighScore}>🏆 High Score</button>
+            <div className="home-primary-block">
+              <button className="home-btn-primary" onClick={goTimeTrial}>⏱ Time Trial</button>
+              <p className="home-btn-desc">60 seconds — how many can you catch?</p>
+            </div>
+            <div className="home-secondary-row">
+              <button className="home-btn-secondary" onClick={goFree}>🎣 Free Fishing</button>
+              <button className="home-btn-secondary" onClick={goHighScore}>🏆 High Scores</button>
+            </div>
+            <p className="home-free-desc">Free Fishing is just for fun — no timer, no pressure</p>
           </div>
         </div>
       </div>
