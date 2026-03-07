@@ -4,6 +4,7 @@ import FreePlayGame from "./FreePlayGame";
 import TimeTrialGame from "./TimeTrialGame";
 import SurvivalGame from "./SurvivalGame";
 import HighScoreScreen from "./HighScoreScreen";
+import InstructionsScreen from "./InstructionsScreen";
 import FishField from "./components/FishField";
 import "./App.css";
 
@@ -17,6 +18,7 @@ export default function App() {
   const goTimeTrial = () => setMode("timeTrial");
   const goSurvival = () => setMode("survival");
   const goHighScore = () => setMode("highScore");
+  const goInstructions = () => setMode("instructions");
 
   // Otherwise, render the rest of the app
   if (mode === "home") {
@@ -45,6 +47,7 @@ export default function App() {
               <button className="home-btn-secondary" onClick={goHighScore}>🏆 High Scores</button>
             </div>
             <p className="home-free-desc">Free Fishing is just for fun — no timer, no pressure</p>
+            <button className="home-how-to-play" onClick={goInstructions}>? How to Play</button>
           </div>
         </div>
       </div>
@@ -74,6 +77,10 @@ export default function App() {
 
   if (mode === "highScore") {
     return <HighScoreScreen onBackToHome={goHome} />;
+  }
+
+  if (mode === "instructions") {
+    return <InstructionsScreen onBackToHome={goHome} />;
   }
 
   return null;

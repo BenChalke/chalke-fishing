@@ -30,7 +30,7 @@
    ---------------------------------------- */
 .survival-bad-count {
   position: absolute;
-  top: 60px;
+  top: 80px;
   right: 12px;
   background: rgba(140, 0, 0, 0.55);
   border: 1px solid rgba(255, 60, 60, 0.40);
@@ -48,7 +48,7 @@
 
 @media (max-width: 600px) {
   .survival-bad-count {
-    top: 56px;
+    top: 64px;
     right: 8px;
     font-size: 0.95rem;
     padding: 4px 10px;
@@ -118,5 +118,77 @@
   }
   .survival-stats-block {
     gap: 16px;
+  }
+}
+
+/* ----------------------------------------
+   Catch quota bar (bottom of screen)
+   ---------------------------------------- */
+.catch-quota-container {
+  position: absolute;
+  bottom: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.catch-quota-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(200, 200, 200, 0.55);
+  transition: color 0.3s;
+}
+
+.catch-quota-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.10);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.catch-quota-bar {
+  height: 100%;
+  border-radius: 4px;
+  background: rgba(0, 212, 255, 0.75);
+  transition: width 0.95s linear, background 0.3s;
+}
+
+.catch-quota-warning .catch-quota-label,
+.catch-quota-container:has(.catch-quota-warning) .catch-quota-label {
+  color: rgba(255, 180, 0, 0.85);
+}
+
+.catch-quota-warning {
+  background: rgba(255, 160, 0, 0.80);
+}
+
+@keyframes quota-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+
+.catch-quota-urgent {
+  background: rgba(255, 50, 50, 0.90);
+  animation: quota-pulse 0.5s ease-in-out infinite;
+}
+
+.catch-quota-container:has(.catch-quota-urgent) .catch-quota-label {
+  color: rgba(255, 80, 80, 0.95);
+  animation: quota-pulse 0.5s ease-in-out infinite;
+}
+
+@media (max-width: 600px) {
+  .catch-quota-container {
+    width: 200px;
+    bottom: 48px;
   }
 }

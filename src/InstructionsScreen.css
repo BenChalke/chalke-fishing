@@ -1,0 +1,162 @@
+/* src/InstructionsScreen.css */
+
+.instructions-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 10, 22, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 212, 255, 0.22);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.75), 0 0 28px rgba(0, 212, 255, 0.05);
+  border-radius: 18px;
+  padding: 28px 32px 24px;
+  width: 420px;
+  max-width: 92vw;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+}
+
+.instructions-title {
+  margin: 0 0 18px;
+  font-size: 1.8rem;
+  text-align: center;
+  background: linear-gradient(135deg, #00d4ff 0%, #00ffcc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 12px rgba(0, 212, 255, 0.4));
+}
+
+/* ── Tabs ── */
+.instructions-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.instructions-tab {
+  flex: 1;
+  min-width: 70px;
+  padding: 7px 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  background: rgba(0, 212, 255, 0.06);
+  color: rgba(0, 212, 255, 0.65);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.instructions-tab:hover {
+  background: rgba(0, 212, 255, 0.14);
+  color: rgba(0, 212, 255, 0.90);
+}
+
+.instructions-tab-active {
+  background: rgba(0, 212, 255, 0.18);
+  border-color: rgba(0, 212, 255, 0.55);
+  color: #00d4ff;
+}
+
+/* ── Body ── */
+.instructions-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 4px;
+}
+
+.instructions-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.instr-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.instr-icon {
+  flex-shrink: 0;
+  width: 32px;
+  font-size: 1.1rem;
+  text-align: center;
+  padding-top: 1px;
+}
+
+.instr-row p {
+  margin: 0;
+  font-size: 0.92rem;
+  color: #b8d8e8;
+  line-height: 1.5;
+}
+
+.instr-row strong {
+  color: #ffffff;
+}
+
+.instr-divider {
+  border: none;
+  border-top: 1px solid rgba(0, 212, 255, 0.12);
+  margin: 4px 0;
+}
+
+.instr-subheading {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(0, 212, 255, 0.45);
+}
+
+/* ── Back button ── */
+.instructions-back-btn {
+  margin-top: 20px;
+  padding: 11px 20px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #00d4ff, #00ffcc);
+  color: #001a22;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: filter 0.2s, transform 0.12s;
+  box-shadow: 0 4px 18px rgba(0, 212, 255, 0.35);
+  align-self: center;
+  min-width: 140px;
+}
+
+.instructions-back-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+
+.instructions-back-btn:active {
+  transform: scale(0.96);
+}
+
+@media (max-width: 600px) {
+  .instructions-overlay {
+    padding: 20px 18px 18px;
+  }
+  .instructions-title {
+    font-size: 1.4rem;
+  }
+  .instructions-tab {
+    font-size: 0.76rem;
+    padding: 6px 8px;
+  }
+}

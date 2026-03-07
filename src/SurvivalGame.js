@@ -20,7 +20,7 @@ import './components/StatsPopup.css';
 
 // ── Tuning ────────────────────────────────────────────────────────────────────
 const BASE_SPEED              = 3.5;
-const SPEED_ESCALATION_MS     = 20000; // ms between automatic speed bumps
+const SPEED_ESCALATION_MS     = 20000;
 const SPEED_ESCALATION_AMT    = 0.35;
 const SPEED_CAP               = 9.0;
 
@@ -34,6 +34,9 @@ const MOBILE_TICK             = 30;
 
 const BAD_FISH_COUNT_DESKTOP  = 2;
 const BAD_FISH_COUNT_MOBILE   = 1;
+const BAD_FISH_MAX_DESKTOP    = 6;
+const BAD_FISH_MAX_MOBILE     = 3;
+const BAD_FISH_ESCALATION_MS  = 30000; // add 1 bad fish every 30s
 const BAD_FISH_SPEED_MULT     = 3.5;
 const BAD_FISH_TURN_MIN       = 1200;
 const BAD_FISH_TURN_MAX       = 2800;
@@ -43,8 +46,10 @@ const DESKTOP_FRENZY_INT      = 150;
 const MOBILE_FRENZY_INT       = 400;
 const FRENZY_SPEED_MULT       = 1.75;
 const MOBILE_FRENZY_SPEED_MULT = 1.6;
-const FRENZY_EXTRA_BAD        = 2; // extra bad fish during frenzy (desktop)
+const FRENZY_EXTRA_BAD        = 2;
 const FISH_SCATTER_SPEED      = 12;
+
+const CATCH_QUOTA_SECS        = 10; // seconds to catch a fish before game over
 
 // ── Pure helpers ──────────────────────────────────────────────────────────────
 
@@ -70,11 +75,11 @@ function moveSingleFish(fish, speed, cursor, isMobile, slowmoEndTs, frenzyEndTs 
   const w          = window.innerWidth;
   const h          = window.innerHeight;
   const fishHeight = fishSize * 0.5;
-  const { x, y, angle, speedMult } = fish;
+  const { x, y, angle } = fish;
   const now        = Date.now();
   const frenzyMult = frenzyEndTs > 0 && now < frenzyEndTs
     ? (isMobile ? MOBILE_FRENZY_SPEED_MULT : FRENZY_SPEED_MULT) : 1;
-  const effSpeed   = speed * speedMult * (now < slowmoEndTs ? 0.35 : 1) * frenzyMult;
+  const effSpeed   = speed * fish.speedMult * (now < slowmoEndTs ? 0.35 : 1) * frenzyMult;
 
   if (fish.swimOff) {
     const nx = x + Math.cos(angle) * effSpeed;
@@ -121,6 +126,7 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
   const [isMobile, setIsMobile]               = useState(false);
   const [scoreNotifs, setScoreNotifs]         = useState([]);
   const [timeSurvived, setTimeSurvived]       = useState(0);
+  const [catchTimer, setCatchTimer]           = useState(CATCH_QUOTA_SECS);
 
   // ── UI ──
   const [gameOverView, setGameOverView]       = useState('summary');
@@ -150,10 +156,12 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
   const bonusFishRef        = useRef([]);
   const bonusSpawnTimerRef  = useRef(null);
   const badFishRef          = useRef([]);
-  const frenzyBadRef        = useRef([]);  // extra bad fish spawned during frenzy
+  const frenzyBadRef        = useRef([]);
   const speedEscalationRef  = useRef(null);
-  const rafRef              = useRef(null);
-  const gameOverRef         = useRef(false); // prevent double game-over
+  const badEscalationRef    = useRef(null);
+  const maxBadRef           = useRef(BAD_FISH_MAX_DESKTOP);
+  const catchTimerRef       = useRef(CATCH_QUOTA_SECS);
+  const gameOverRef         = useRef(false);
 
   useEffect(() => { speedRef.current = speed; }, [speed]);
 
@@ -163,6 +171,7 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
     isMobileRef.current = mobile;
     setIsMobile(mobile);
     baseBadCount.current = mobile ? BAD_FISH_COUNT_MOBILE : BAD_FISH_COUNT_DESKTOP;
+    maxBadRef.current    = mobile ? BAD_FISH_MAX_MOBILE   : BAD_FISH_MAX_DESKTOP;
     const count = viewportFishCount();
     initialFishCount.current = count;
     setFishArray(Array.from({ length: count }, (_, i) => createRandomFish(i)));
@@ -210,7 +219,6 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
     }
   }, [displayNumber, phase]);
 
-  // ── Spawn bad fish (call when bad fish array needs to be initialised or refreshed) ──
   const spawnInitialBadFish = (count) => {
     const now = Date.now();
     const fish = Array.from({ length: count }, () => ({
@@ -223,7 +231,6 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
     setBadFish(fish);
   };
 
-  // ── Power-up notification ──
   const spawnPowerUpNotif = (type) => {
     const labels = { frenzy: 'FRENZY!', multiplier: 'x2!', slowmo: 'SLOW!' };
     const id = nextNotif.current++;
@@ -234,7 +241,6 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
     setTimeout(() => setPowerUpNotifs((prev) => prev.filter((n) => n.id !== id)), 1500);
   };
 
-  // ── Trigger game over (called from intervals / click handlers) ──
   const triggerGameOver = () => {
     if (gameOverRef.current) return;
     gameOverRef.current = true;
@@ -248,17 +254,14 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
   useEffect(() => {
     if (phase !== 'running') return;
     gameOverRef.current = false;
+    catchTimerRef.current = CATCH_QUOTA_SECS;
 
     const mobile    = isMobileRef.current;
     const TICK_MS   = mobile ? MOBILE_TICK : DESKTOP_TICK;
-    const FRENZ_CAP = Math.round(initialFishCount.current * FRENZY_FISH_MULT);
-    const FRENZ_INT = mobile ? MOBILE_FRENZY_INT : DESKTOP_FRENZY_INT;
     const target    = initialFishCount.current;
 
-    // Spawn initial bad fish
     spawnInitialBadFish(baseBadCount.current);
 
-    // Bonus fish scheduler (no timebonus — survival has no timer)
     const scheduleBonusSpawn = (isFirst = false) => {
       const delay = isFirst ? 3000 + Math.random() * 4000 : 8000 + Math.random() * 5000;
       bonusSpawnTimerRef.current = setTimeout(() => {
@@ -275,7 +278,6 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
     };
     scheduleBonusSpawn(true);
 
-    // Speed escalation every SPEED_ESCALATION_MS
     speedEscalationRef.current = setInterval(() => {
       setSpeed((s) => {
         const next = Math.min(SPEED_CAP, parseFloat((s + SPEED_ESCALATION_AMT).toFixed(2)));
@@ -284,15 +286,28 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
       });
     }, SPEED_ESCALATION_MS);
 
-    // Movement interval
+    badEscalationRef.current = setInterval(() => {
+      if (gameOverRef.current) return;
+      const currentCount = badFishRef.current.length + frenzyBadRef.current.length;
+      if (currentCount >= maxBadRef.current) return;
+      const now = Date.now();
+      const newFish = {
+        ...createOffscreenFish(nextId.current++),
+        type: 'bad',
+        postEntrySpeedMult: BAD_FISH_SPEED_MULT,
+        nextTurnAt: now + BAD_FISH_TURN_MIN + Math.random() * (BAD_FISH_TURN_MAX - BAD_FISH_TURN_MIN),
+      };
+      badFishRef.current = [...badFishRef.current, newFish];
+      setBadFish([...badFishRef.current, ...frenzyBadRef.current]);
+    }, BAD_FISH_ESCALATION_MS);
+
     const fishInterval = setInterval(() => {
       if (gameOverRef.current) return;
-      const now       = Date.now();
+      const now        = Date.now();
       const frenzyDone = frenzyEndRef.current > 0 && now > frenzyEndRef.current;
       const doCleanup  = frenzyDone && !frenzyCleanedRef.current;
       if (doCleanup) frenzyCleanedRef.current = true;
 
-      // Regular fish
       setFishArray((prev) => {
         let result = prev.map((f) =>
           moveSingleFish(f, speedRef.current, cursorRef.current, mobile, slowmoEndRef.current, frenzyEndRef.current)
@@ -323,7 +338,6 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
         return result;
       });
 
-      // Bonus fish
       if (bonusFishRef.current.length > 0) {
         const updated = bonusFishRef.current
           .map((bf) => {
@@ -337,7 +351,6 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
         setBonusFish(updated);
       }
 
-      // Bad fish — always present, respawn on exit
       const moveBadFish = (arr) => arr.map((bdf) => {
         let fish = bdf;
         if (!fish.justSpawned && now > fish.nextTurnAt) {
@@ -362,29 +375,35 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
         setBadFish(updated);
       }
 
-      // Frenzy extra bad fish — cleared when frenzy ends
       if (frenzyBadRef.current.length > 0) {
         if (doCleanup) {
           frenzyBadRef.current = [];
         } else {
-          const updated = moveBadFish(frenzyBadRef.current);
-          frenzyBadRef.current = updated;
+          frenzyBadRef.current = moveBadFish(frenzyBadRef.current);
         }
         setBadFish([...badFishRef.current, ...frenzyBadRef.current]);
       }
     }, TICK_MS);
 
-    // Survive timer — counts up every second
+    // 1 s interval: survive timer + catch quota
     const timeInterval = setInterval(() => {
       if (gameOverRef.current) return;
       const now = Date.now();
+
       setEffectsDisplay({
         frenzy:     Math.max(0, Math.round((frenzyEndRef.current    - now) / 1000)),
         multiplier: Math.max(0, Math.round((multiplierEndRef.current - now) / 1000)),
         slowmo:     Math.max(0, Math.round((slowmoEndRef.current    - now) / 1000)),
       });
-      if (now >= slowmoEndRef.current) {
-        setTimeSurvived((t) => t + 1);
+
+      setTimeSurvived((t) => t + 1);
+
+      // Catch quota countdown — always ticks in survival (slowmo only slows fish)
+      catchTimerRef.current -= 1;
+      if (catchTimerRef.current <= 0) {
+        triggerGameOver();
+      } else {
+        setCatchTimer(catchTimerRef.current);
       }
     }, 1000);
 
@@ -394,6 +413,7 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
       clearTimeout(bonusSpawnTimerRef.current);
       clearInterval(frenzySpawnRef.current);
       clearInterval(speedEscalationRef.current);
+      clearInterval(badEscalationRef.current);
     };
   }, [phase]); // eslint-disable-line
 
@@ -406,7 +426,7 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
 
     const { type } = bf;
     bonusFishRef.current = bonusFishRef.current.filter((f) => f.id !== fishId);
-    setBonusFish([...bonusFishRef.current, ...frenzyBadRef.current]);
+    setBonusFish([...bonusFishRef.current]);
 
     setScreenFlash(type);
     setTimeout(() => setScreenFlash(null), 700);
@@ -426,7 +446,6 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
         });
       }, mobile ? MOBILE_FRENZY_INT : DESKTOP_FRENZY_INT);
 
-      // Spawn extra bad fish during frenzy
       const extraCount = mobile ? 1 : FRENZY_EXTRA_BAD;
       const extraBad = Array.from({ length: extraCount }, () => ({
         ...createOffscreenFish(nextId.current++),
@@ -455,6 +474,7 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
     clearInterval(frenzySpawnRef.current);
     clearTimeout(bonusSpawnTimerRef.current);
     clearInterval(speedEscalationRef.current);
+    clearInterval(badEscalationRef.current);
 
     setScreenFlash('bad');
     setTimeout(() => setScreenFlash(null), 700);
@@ -498,6 +518,10 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
     const key = `${colour} ${pattern}`;
     setCaughtRecords((prev) => ({ ...prev, [key]: (prev[key] || 0) + 1 }));
     setCatchAnimations((prev) => [...prev, { id: fishId, startX: curX, startY: curY, colour, pattern }]);
+
+    // Reset catch quota timer
+    catchTimerRef.current = CATCH_QUOTA_SECS;
+    setCatchTimer(CATCH_QUOTA_SECS);
   };
 
   const handleCatchAnimationEnd = (animId) =>
@@ -551,8 +575,8 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
       );
     };
 
-    const mins = Math.floor(timeSurvived / 60);
-    const secs = timeSurvived % 60;
+    const mins    = Math.floor(timeSurvived / 60);
+    const secs    = timeSurvived % 60;
     const timeStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
 
     return (
@@ -619,7 +643,10 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
   }
 
   // RUNNING
-  const allBadFish = [...badFish];
+  const allBadFish      = [...badFish];
+  const quotaPct        = (catchTimer / CATCH_QUOTA_SECS) * 100;
+  const quotaUrgent     = catchTimer <= 3;
+  const quotaWarning    = catchTimer <= 5 && catchTimer > 3;
 
   return (
     <div className="container no-cursor" onPointerDown={handlePointerDown}>
@@ -637,14 +664,10 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
         </div>
       )}
 
-      {/* Danger vignette — always present in survival */}
       <div className="survival-danger-vignette" />
-
-      {/* Active power-up vignettes */}
       {effectsDisplay.frenzy     > 0 && <div className="powerup-vignette powerup-vignette-frenzy" />}
       {effectsDisplay.multiplier > 0 && <div className="powerup-vignette powerup-vignette-multiplier" />}
       {effectsDisplay.slowmo     > 0 && <div className="powerup-vignette powerup-vignette-slowmo" />}
-
       {screenFlash && <div className={`screen-flash screen-flash-${screenFlash}`} />}
 
       {scoreNotifs.map((n) => (
@@ -653,7 +676,6 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
           +{n.points}
         </span>
       ))}
-
       {powerUpNotifs.map((n) => (
         <span key={n.id} className={`power-up-notif pup-notif-${n.type}`}
           style={{ left: `${n.x}px`, top: `${n.y}px` }}>
@@ -677,34 +699,16 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
       />
 
       {bonusFish.map((bf) => (
-        <BonusFish
-          key={bf.id}
-          id={bf.id}
-          x={bf.x}
-          y={bf.y}
-          type={bf.type}
-          angle={bf.angle}
-          onClick={(e) => handleBonusFishClick(bf.id, e)}
-          isMobile={isMobile}
-          isExpiring={Date.now() - bf.spawnedAt > BONUS_FISH_LIFESPAN - 2000}
-        />
+        <BonusFish key={bf.id} id={bf.id} x={bf.x} y={bf.y} type={bf.type} angle={bf.angle}
+          onClick={(e) => handleBonusFishClick(bf.id, e)} isMobile={isMobile}
+          isExpiring={Date.now() - bf.spawnedAt > BONUS_FISH_LIFESPAN - 2000} />
       ))}
 
       {allBadFish.map((bdf) => (
-        <BonusFish
-          key={bdf.id}
-          id={bdf.id}
-          x={bdf.x}
-          y={bdf.y}
-          type="bad"
-          angle={bdf.angle}
-          onClick={(e) => handleBadFishClick(bdf.id, e)}
-          isMobile={isMobile}
-          isExpiring={false}
-        />
+        <BonusFish key={bdf.id} id={bdf.id} x={bdf.x} y={bdf.y} type="bad" angle={bdf.angle}
+          onClick={(e) => handleBadFishClick(bdf.id, e)} isMobile={isMobile} isExpiring={false} />
       ))}
 
-      {/* Timer */}
       <div className="time-left-display survival-timer">
         {Math.floor(timeSurvived / 60) > 0
           ? `${Math.floor(timeSurvived / 60)}m ${timeSurvived % 60}s`
@@ -715,9 +719,21 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
         <div className="score-display">Score: {score}</div>
       </div>
 
-      {/* Bad fish warning */}
       <div className="survival-bad-count">
         ☠ {allBadFish.length}
+      </div>
+
+      {/* Catch quota bar */}
+      <div className="catch-quota-container">
+        <div className="catch-quota-label">
+          {quotaUrgent ? 'CATCH A FISH!' : 'Next catch'}
+        </div>
+        <div className="catch-quota-track">
+          <div
+            className={`catch-quota-bar ${quotaUrgent ? 'catch-quota-urgent' : quotaWarning ? 'catch-quota-warning' : ''}`}
+            style={{ width: `${quotaPct}%` }}
+          />
+        </div>
       </div>
 
       <div className="power-up-hud">

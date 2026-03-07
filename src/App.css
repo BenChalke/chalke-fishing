@@ -415,6 +415,23 @@ body {
   letter-spacing: 0.04em;
 }
 
+.home-how-to-play {
+  margin-top: 6px;
+  background: none;
+  border: none;
+  color: rgba(0, 212, 255, 0.40);
+  font-size: 0.78rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.home-how-to-play:hover {
+  color: rgba(0, 212, 255, 0.75);
+}
+
 /* Mobile tweak */
 @media (max-width: 600px) {
   .home-overlay {
