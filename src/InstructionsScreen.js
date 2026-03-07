@@ -4,10 +4,11 @@ import FishField from './components/FishField';
 import './InstructionsScreen.css';
 
 const MODES = [
-  { id: 'basics',    label: 'Basics' },
-  { id: 'timeTrial', label: 'Time Trial' },
-  { id: 'survival',  label: 'Survival' },
-  { id: 'free',      label: 'Free Fishing' },
+  { id: 'basics',      label: 'Basics' },
+  { id: 'timeTrial',   label: 'Time Trial' },
+  { id: 'survival',    label: 'Survival' },
+  { id: 'targetScore', label: 'Target Score' },
+  { id: 'free',        label: 'Free Fishing' },
 ];
 
 export default function InstructionsScreen({ onBackToHome }) {
@@ -129,6 +130,37 @@ export default function InstructionsScreen({ onBackToHome }) {
               <div className="instr-row">
                 <span className="instr-icon">💥</span>
                 <p>During <strong>Frenzy</strong>, misses don't break your combo — extra skull fish spawn but the risk is worth it.</p>
+              </div>
+            </div>
+          )}
+
+          {tab === 'targetScore' && (
+            <div className="instructions-section">
+              <div className="instr-row">
+                <span className="instr-icon">🎯</span>
+                <p>Each level has a <strong>target score</strong> to reach before the timer runs out. Hit it to advance!</p>
+              </div>
+              <div className="instr-row">
+                <span className="instr-icon">📈</span>
+                <p>Each new level raises the target, speeds up the fish, and slightly reduces your time limit.</p>
+              </div>
+              <div className="instr-row">
+                <span className="instr-icon">⏱</span>
+                <p>You start with <strong>35 seconds</strong> per level. This decreases by 2s each level (minimum 15s).</p>
+              </div>
+              <div className="instr-row">
+                <span className="instr-icon">+10s</span>
+                <p><strong>Time Bonus</strong> power-up adds 10 seconds to your current level timer.</p>
+              </div>
+              <hr className="instr-divider" />
+              <p className="instr-subheading">Combo Chain</p>
+              <div className="instr-row">
+                <span className="instr-icon">🔥</span>
+                <p>Build a combo for multiplied points — crucial for hitting level targets fast.</p>
+              </div>
+              <div className="instr-row">
+                <span className="instr-icon">✗</span>
+                <p>Clicking <strong>empty water</strong> resets your combo. Misses during Frenzy don't count against you.</p>
               </div>
             </div>
           )}

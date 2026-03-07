@@ -89,6 +89,14 @@ function readSavedSurvivalScore() {
   return { time: 0, score: 0, records: {} };
 }
 
+function readSavedTsScore() {
+  try {
+    const saved = localStorage.getItem('tsHighScore');
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  return { score: 0, level: 0, records: {} };
+}
+
 export default function HighScoreScreen({ onBackToHome }) {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -98,6 +106,7 @@ export default function HighScoreScreen({ onBackToHome }) {
   // Local scores
   const [ttLocal]       = useState(() => readSavedHighScore());
   const [survivalLocal] = useState(() => readSavedSurvivalScore());
+  const [tsLocal]       = useState(() => readSavedTsScore());
 
   // Global scores
   const [leaderTab, setLeaderTab]     = useState('local');
@@ -131,13 +140,16 @@ export default function HighScoreScreen({ onBackToHome }) {
   const toggleRow = (i) => setExpandedRow((prev) => (prev === i ? null : i));
 
   const renderRow = (rank, name, primaryScore, records, i, pointsScore) => {
-    const isSurvival = gameMode === 'survival';
+    const isSurvival    = gameMode === 'survival';
+    const isTargetScore = gameMode === 'targetScore';
     const scoreLabel = isSurvival
       ? formatTime(primaryScore)
       : `${primaryScore.toLocaleString()} pts`;
     const subLabel = isSurvival && pointsScore != null
       ? `${pointsScore.toLocaleString()} pts`
-      : null;
+      : isTargetScore && pointsScore != null
+        ? `Lvl ${pointsScore}`
+        : null;
     const hasRecords = records && (Array.isArray(records) ? records.length > 0 : Object.keys(records).length > 0);
 
     return (
@@ -170,6 +182,11 @@ export default function HighScoreScreen({ onBackToHome }) {
         ? renderRow(1, 'Your Best', ttLocal.score, ttLocal.records, 0, null)
         : <p className="no-fish-text">No local high score yet. Play Time Trial!</p>;
     }
+    if (gameMode === 'targetScore') {
+      return tsLocal.score > 0
+        ? renderRow(1, 'Your Best', tsLocal.score, tsLocal.records, 0, tsLocal.level)
+        : <p className="no-fish-text">No local high score yet. Play Target Score!</p>;
+    }
     return survivalLocal.time > 0
       ? renderRow(1, 'Your Best', survivalLocal.time, survivalLocal.records, 0, survivalLocal.score)
       : <p className="no-fish-text">No local high score yet. Play Survival!</p>;
@@ -197,6 +214,12 @@ export default function HighScoreScreen({ onBackToHome }) {
           onClick={() => switchGameMode('survival')}
         >
           ☠ Survival
+        </button>
+        <button
+          className={`hs-tab${gameMode === 'targetScore' ? ' hs-tab-active' : ''}`}
+          onClick={() => switchGameMode('targetScore')}
+        >
+          🎯 Target
         </button>
       </div>
 
