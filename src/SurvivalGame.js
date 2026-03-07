@@ -127,6 +127,7 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
   const [scoreNotifs, setScoreNotifs]         = useState([]);
   const [timeSurvived, setTimeSurvived]       = useState(0);
   const [catchTimer, setCatchTimer]           = useState(CATCH_QUOTA_SECS);
+  const [deathReason, setDeathReason]         = useState('');
 
   // ── UI ──
   const [gameOverView, setGameOverView]       = useState('summary');
@@ -241,12 +242,13 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
     setTimeout(() => setPowerUpNotifs((prev) => prev.filter((n) => n.id !== id)), 1500);
   };
 
-  const triggerGameOver = () => {
+  const triggerGameOver = (reason = '') => {
     if (gameOverRef.current) return;
     gameOverRef.current = true;
     badFishRef.current = [];
     frenzyBadRef.current = [];
     setBadFish([]);
+    setDeathReason(reason);
     setPhase('gameover');
   };
 
@@ -401,7 +403,7 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
       // Catch quota countdown — always ticks in survival (slowmo only slows fish)
       catchTimerRef.current -= 1;
       if (catchTimerRef.current <= 0) {
-        triggerGameOver();
+        triggerGameOver('Too slow! You didn\'t catch a fish in time.');
       } else {
         setCatchTimer(catchTimerRef.current);
       }
@@ -478,7 +480,7 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
 
     setScreenFlash('bad');
     setTimeout(() => setScreenFlash(null), 700);
-    triggerGameOver();
+    triggerGameOver('You clicked a skull fish!');
   };
 
   // ── Regular fish click ──
@@ -587,6 +589,7 @@ export default function SurvivalGame({ onBackToHome, onPlayAgain }) {
             {gameOverView === 'summary' ? (
               <div className="gameover-summary">
                 <h2 className="gameover-title survival-gameover-title">You died!</h2>
+                {deathReason && <p className="survival-death-reason">{deathReason}</p>}
                 <div className="survival-stats-block">
                   <div className="survival-stat">
                     <span className="survival-stat-number">{timeStr}</span>

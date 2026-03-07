@@ -64,6 +64,16 @@
 }
 
 /* ----------------------------------------
+   Death reason
+   ---------------------------------------- */
+.survival-death-reason {
+  margin: -8px 0 16px;
+  font-size: 0.88rem;
+  color: rgba(255, 120, 120, 0.85);
+  text-align: center;
+}
+
+/* ----------------------------------------
    Survival stats block (time + score)
    ---------------------------------------- */
 .survival-stats-block {

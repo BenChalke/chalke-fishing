@@ -417,19 +417,23 @@ body {
 
 .home-how-to-play {
   margin-top: 6px;
-  background: none;
-  border: none;
-  color: rgba(0, 212, 255, 0.40);
-  font-size: 0.78rem;
+  background: rgba(0, 212, 255, 0.08);
+  border: 1px solid rgba(0, 212, 255, 0.28);
+  color: rgba(0, 212, 255, 0.80);
+  font-size: 0.82rem;
+  font-weight: 600;
   cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 6px;
-  transition: color 0.2s;
+  padding: 7px 18px;
+  border-radius: 8px;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
   -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
 .home-how-to-play:hover {
-  color: rgba(0, 212, 255, 0.75);
+  background: rgba(0, 212, 255, 0.16);
+  border-color: rgba(0, 212, 255, 0.50);
+  color: #00d4ff;
 }
 
 /* Mobile tweak */
