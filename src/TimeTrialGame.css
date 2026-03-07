@@ -1,6 +1,59 @@
 /* src/components/TimeTrialGame.css */
 
 /* ----------------------------------------
+   Quit Confirm Modal
+   ---------------------------------------- */
+.quit-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 4, 12, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+}
+.quit-confirm-box {
+  background: rgba(0, 8, 20, 0.92);
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 14px;
+  padding: 28px 32px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.65);
+}
+.quit-confirm-text {
+  color: #c8e8f8;
+  font-size: 1.2rem;
+  margin: 0 0 20px;
+}
+.quit-confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+.quit-confirm-btn {
+  padding: 10px 24px;
+  border-radius: 8px;
+  border: none;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.quit-confirm-btn:hover { opacity: 0.85; }
+.quit-confirm-yes {
+  background: rgba(255, 80, 80, 0.2);
+  border: 1px solid rgba(255, 80, 80, 0.5);
+  color: #ff8888;
+}
+.quit-confirm-no {
+  background: rgba(0, 212, 255, 0.15);
+  border: 1px solid rgba(0, 212, 255, 0.4);
+  color: #00d4ff;
+}
+
+/* ----------------------------------------
    Trial Countdown Overlay (3 → 2 → 1 → Start)
    ---------------------------------------- */
 .trial-countdown-container {

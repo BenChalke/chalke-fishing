@@ -146,6 +146,8 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
 
   // ── Game over view ──
   const [gameOverView, setGameOverView] = useState('summary'); // 'summary' | 'catches'
+  const [menuVisible, setMenuVisible]     = useState(false);
+  const [showQuitConfirm, setShowQuitConfirm] = useState(false);
 
   // ── Leaderboard submit ──
   const [playerName, setPlayerName]     = useState('');
@@ -351,8 +353,18 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
               fish = { ...fish, angle: Math.random() * 2 * Math.PI,
                 nextTurnAt: now + BAD_FISH_TURN_MIN + Math.random() * (BAD_FISH_TURN_MAX - BAD_FISH_TURN_MIN) };
             }
-            return moveSingleFish(fish, speedRef.current, cursorRef.current, mobile, slowmoEndRef.current, 0, BONUS_FISH_SIZE);
-          }).filter((f) => !f.remove);
+            const moved = moveSingleFish(fish, speedRef.current, cursorRef.current, mobile, slowmoEndRef.current, 0, BONUS_FISH_SIZE);
+            // Respawn from a random edge to keep count constant during frenzy
+            if (moved.remove) {
+              return {
+                ...createOffscreenFish(nextId.current++),
+                type: 'bad',
+                postEntrySpeedMult: BAD_FISH_SPEED_MULT,
+                nextTurnAt: now + BAD_FISH_TURN_MIN + Math.random() * (BAD_FISH_TURN_MAX - BAD_FISH_TURN_MIN),
+              };
+            }
+            return moved;
+          });
           badFishRef.current = updated;
           setBadFish(updated);
         }
@@ -555,6 +567,14 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
     }
   };
 
+  // ── Game over menu delay ──
+  useEffect(() => {
+    if (phase !== 'gameover') return;
+    setMenuVisible(false);
+    const t = setTimeout(() => setMenuVisible(true), 2500);
+    return () => clearTimeout(t);
+  }, [phase]);
+
   // ── High score ──
   useEffect(() => {
     if (phase !== 'gameover') return;
@@ -613,7 +633,7 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
                   <span className="gameover-score-number">{score}</span>
                   <span className="gameover-score-label">POINTS</span>
                 </div>
-                {leaderboardEnabled && (
+                {menuVisible && leaderboardEnabled && (
                   <div className="gameover-submit">
                     <input
                       className="gameover-name-input"
@@ -633,18 +653,22 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
                     {submitError && <p className="gameover-submit-error">{submitError}</p>}
                   </div>
                 )}
-                <div className="gameover-actions">
-                  <button className="gameover-action-btn" onClick={() => setGameOverView('catches')}>
-                    🐟 Fish Caught
-                  </button>
-                  <button className="gameover-action-btn gameover-action-primary" onClick={onPlayAgain}>
-                    ▶ Play Again
-                  </button>
-                  <button className="gameover-action-btn" onClick={onGoHighScore}>
-                    🏆 Leaderboard
-                  </button>
-                </div>
-                <button className="gameover-home-link" onClick={onBackToHome}>Back to Home</button>
+                {menuVisible && (
+                  <div className="gameover-actions">
+                    <button className="gameover-action-btn" onClick={() => setGameOverView('catches')}>
+                      🐟 Fish Caught
+                    </button>
+                    <button className="gameover-action-btn gameover-action-primary" onClick={onPlayAgain}>
+                      ▶ Play Again
+                    </button>
+                    <button className="gameover-action-btn" onClick={onGoHighScore}>
+                      🏆 Leaderboard
+                    </button>
+                  </div>
+                )}
+                {menuVisible && (
+                  <button className="gameover-home-link" onClick={onBackToHome}>Back to Home</button>
+                )}
               </div>
             ) : (
               /* ── CATCHES VIEW ── */
@@ -682,7 +706,19 @@ export default function TimeTrialGame({ onBackToHome, onPlayAgain, onGoHighScore
 
   return (
     <div className="container" onPointerDown={handlePointerDown}>
-      <button className="back-home-btn" onClick={onBackToHome}>Quit</button>
+      <button className="back-home-btn" onClick={() => setShowQuitConfirm(true)}>Quit</button>
+
+      {showQuitConfirm && (
+        <div className="quit-confirm-overlay">
+          <div className="quit-confirm-box">
+            <p className="quit-confirm-text">Quit the game?</p>
+            <div className="quit-confirm-actions">
+              <button className="quit-confirm-btn quit-confirm-yes" onClick={onBackToHome}>Quit</button>
+              <button className="quit-confirm-btn quit-confirm-no" onClick={() => setShowQuitConfirm(false)}>Keep Playing</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Active power-up vignettes */}
       {effectsDisplay.frenzy     > 0 && <div className="powerup-vignette powerup-vignette-frenzy" />}
